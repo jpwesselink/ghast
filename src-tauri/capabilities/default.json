@@ -1,0 +1,10 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for ghast",
+  "windows": ["*"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "notification:default"
+  ]
+}

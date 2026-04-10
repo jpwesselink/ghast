@@ -1,0 +1,12 @@
+# Rust build artifacts
+/src-tauri/target/
+
+# macOS
+.DS_Store
+
+# Worktrees
+.worktrees/
+
+# Panel build
+/src-panel/dist/
+/src-panel/node_modules/

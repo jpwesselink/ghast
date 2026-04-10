@@ -1,0 +1,48 @@
+{
+  "productName": "ghast",
+  "version": "0.1.0",
+  "identifier": "com.ghast.app",
+  "build": {
+    "frontendDist": "../src-panel/dist",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "cd ../src-panel && npm run build",
+    "beforeDevCommand": "cd ../src-panel && npm run dev"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "panel",
+        "url": "index.html",
+        "transparent": true,
+        "decorations": false,
+        "visible": false,
+        "width": 280,
+        "height": 400,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "resizable": true,
+        "windowEffects": {
+          "effects": ["menu"],
+          "state": "active",
+          "radius": 14
+        }
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' https://api.iconify.design; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

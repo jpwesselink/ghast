@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ghast Settings</title>
+  <style>
+    @keyframes ember-glow {
+      0%, 100% { text-shadow: 0 0 20px #ff4400, 0 0 40px #cc3300, 0 0 80px #991100; }
+      50% { text-shadow: 0 0 30px #ff6600, 0 0 60px #ff4400, 0 0 100px #cc3300, 0 0 140px #661100; }
+    }
+    @keyframes burn-pulse {
+      0%, 100% { border-color: #5c1a00; }
+      50% { border-color: #7a2200; }
+    }
+    @keyframes flicker {
+      0%, 100% { opacity: 0.7; }
+      25% { opacity: 0.9; }
+      50% { opacity: 0.6; }
+      75% { opacity: 0.85; }
+    }
+    @keyframes ray-rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: Georgia, "Times New Roman", "Palatino", serif;
+      background: #0a0604;
+      color: #c4a882;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- HEADER ---- */
+    .header {
+      flex-shrink: 0;
+      text-align: center;
+      padding: 28px 24px 18px;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 120%, #5c1a00 0%, #2a0d00 35%, #0a0604 70%);
+    }
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -60%;
+      left: -20%;
+      width: 140%;
+      height: 220%;
+      background: conic-gradient(from 0deg at 50% 70%,
+        transparent 0deg, rgba(204,68,0,0.06) 10deg, transparent 20deg,
+        transparent 30deg, rgba(204,68,0,0.04) 40deg, transparent 50deg,
+        transparent 60deg, rgba(204,68,0,0.06) 70deg, transparent 80deg,
+        transparent 90deg, rgba(204,68,0,0.04) 100deg, transparent 110deg,
+        transparent 120deg, rgba(204,68,0,0.06) 130deg, transparent 140deg,
+        transparent 150deg, rgba(204,68,0,0.04) 160deg, transparent 170deg,
+        transparent 180deg, rgba(204,68,0,0.06) 190deg, transparent 200deg,
+        transparent 210deg, rgba(204,68,0,0.04) 220deg, transparent 230deg,
+        transparent 240deg, rgba(204,68,0,0.06) 250deg, transparent 260deg,
+        transparent 270deg, rgba(204,68,0,0.04) 280deg, transparent 290deg,
+        transparent 300deg, rgba(204,68,0,0.06) 310deg, transparent 320deg,
+        transparent 330deg, rgba(204,68,0,0.04) 340deg, transparent 350deg
+      );
+      animation: ray-rotate 120s linear infinite;
+      pointer-events: none;
+    }
+    .header::after {
+      content: "";
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, #5c1a00 30%, #8b2500 50%, #5c1a00 70%, transparent 100%);
+    }
+    h1 {
+      font-size: 42px;
+      color: #ff8c42;
+      text-transform: uppercase;
+      letter-spacing: 10px;
+      font-weight: 900;
+      font-style: italic;
+      animation: ember-glow 3s ease-in-out infinite;
+      position: relative;
+      z-index: 1;
+      background: linear-gradient(180deg, #ffcc66 0%, #ff8c42 40%, #cc4400 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 8px rgba(204,68,0,0.6));
+    }
+    .subtitle {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #6b4c35;
+      margin-top: 4px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ---- SECTIONS ---- */
+    .section-header {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: #7a5a3a;
+      text-align: center;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .occult { color: #5c1a00; font-size: 12px; }
+
+    /* ---- SOUL BINDING ---- */
+    .pat-section {
+      padding: 16px 24px 14px;
+      flex-shrink: 0;
+      border-bottom: 1px solid #1a0e08;
+      background: rgba(20,10,4,0.6);
+    }
+    .pat-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .pat-row input { flex: 1; }
+    input[type="password"], input[type="text"], input[type="search"] {
+      padding: 9px 12px;
+      border: 1px solid #5c1a00;
+      border-radius: 3px;
+      background: #110804;
+      color: #d4a574;
+      font-size: 13px;
+      font-family: "Courier New", Courier, monospace;
+      outline: none;
+      animation: burn-pulse 4s ease-in-out infinite;
+    }
+    input:focus {
+      border-color: #cc4400;
+      box-shadow: 0 0 10px rgba(204,68,0,0.25), inset 0 0 10px rgba(100,30,0,0.15);
+    }
+    input::placeholder { color: #4a2a18; }
+    button {
+      padding: 9px 20px;
+      border: 1px solid #8b2500;
+      border-radius: 3px;
+      background: linear-gradient(180deg, #6b1a00 0%, #4a1200 100%);
+      color: #ff9966;
+      font-size: 11px;
+      font-family: Georgia, serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: linear-gradient(180deg, #8b2500 0%, #6b1a00 100%);
+      color: #ffcc88;
+      box-shadow: 0 0 15px rgba(139,37,0,0.6), 0 0 30px rgba(139,37,0,0.2);
+      border-color: #cc4400;
+    }
+    button:disabled {
+      background: #140a04;
+      color: #3a2518;
+      border-color: #2a1500;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .status {
+      margin-top: 6px;
+      font-size: 11px;
+      min-height: 16px;
+      font-style: italic;
+      letter-spacing: 0.5px;
+    }
+    .status.error { color: #cc3333; text-shadow: 0 0 8px rgba(204,0,0,0.3); }
+    .status.success { color: #cc7733; text-shadow: 0 0 8px rgba(204,119,51,0.2); }
+
+    /* ---- HAUNTED REPOSITORIES ---- */
+    .repos-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 24px 0;
+      min-height: 0;
+    }
+    #search {
+      width: 100%;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .repo-list {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid #3a1500;
+      border-radius: 3px;
+      background: #0c0704;
+    }
+    .repo-list { overflow-x: hidden; }
+    .repo-list::-webkit-scrollbar { width: 6px; }
+    .repo-list::-webkit-scrollbar-track { background: #0c0704; }
+    .repo-list::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #6b1a00, #4a1200);
+      border-radius: 3px;
+    }
+    .repo-list::-webkit-scrollbar-thumb:hover { background: #8b2500; }
+
+    .repo-item {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s;
+      border-bottom: 1px solid #150a04;
+      background: linear-gradient(90deg,
+        rgba(80,50,20,0.08) 0%,
+        rgba(100,65,25,0.12) 30%,
+        rgba(110,72,30,0.14) 50%,
+        rgba(100,65,25,0.12) 70%,
+        rgba(80,50,20,0.08) 100%
+      );
+    }
+    .repo-item:last-child { border-bottom: none; }
+    .repo-item:hover {
+      background: linear-gradient(90deg,
+        rgba(139,37,0,0.1) 0%,
+        rgba(139,37,0,0.2) 30%,
+        rgba(139,37,0,0.25) 50%,
+        rgba(139,37,0,0.2) 70%,
+        rgba(139,37,0,0.1) 100%
+      );
+    }
+
+    /* Custom checkbox */
+    .repo-item input[type="checkbox"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1px solid #5c1a00;
+      border-radius: 2px;
+      background: #140a04;
+      flex-shrink: 0;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s;
+    }
+    .repo-item input[type="checkbox"]:checked {
+      background: linear-gradient(135deg, #8b2500 0%, #cc4400 100%);
+      border-color: #cc4400;
+      box-shadow: 0 0 6px rgba(204,68,0,0.4);
+    }
+    .repo-item input[type="checkbox"]:checked::after {
+      content: "\2713";
+      position: absolute;
+      top: -1px;
+      left: 2px;
+      font-size: 12px;
+      color: #ffcc88;
+      font-weight: 900;
+    }
+
+    .repo-name { flex: 1; color: #b8956e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .repo-item:hover .repo-name { color: #d4a574; }
+    .repo-private {
+      font-size: 8px;
+      padding: 2px 8px;
+      border: 1px solid #3a1500;
+      border-radius: 2px;
+      color: #6b4c35;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      background: rgba(60,20,0,0.3);
+    }
+    .empty {
+      padding: 30px 20px;
+      text-align: center;
+      color: #3a2518;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    /* ---- FOOTER ---- */
+    .footer {
+      padding: 14px 24px 18px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      border-top: 1px solid #1a0e08;
+      background: linear-gradient(0deg, rgba(40,12,0,0.3) 0%, transparent 100%);
+    }
+    .footer .status { margin: 0; flex: 1; }
+    .footer button {
+      padding: 10px 24px;
+      font-size: 12px;
+      letter-spacing: 3px;
+    }
+
+    /* ---- SCORCHED EDGES ---- */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      box-shadow:
+        inset 0 0 60px rgba(10,6,4,0.9),
+        inset 0 0 120px rgba(10,6,4,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Ghast</h1>
+    <div class="subtitle">the github actions ghost</div>
+  </div>
+
+  <div class="pat-section">
+    <div class="section-header"><span class="occult">&#x26E7;</span> Soul Binding <span class="occult">&#x26E7;</span></div>
+    <div class="pat-row">
+      <input type="password" id="pat" placeholder="ghp_..." />
+      <button id="save-pat">Bind</button>
+    </div>
+    <div class="status" id="pat-status"></div>
+  </div>
+
+  <div class="repos-section">
+    <div class="section-header"><span class="occult">&#x26E7;</span> Haunted Repositories <span class="occult">&#x26E7;</span></div>
+    <input type="search" id="search" placeholder="search the catacombs..." disabled />
+    <div class="repo-list" id="repo-list">
+      <div class="empty">Bind your soul to reveal the repositories</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="status" id="repo-status"></div>
+    <button id="save-repos" disabled>Unleash</button>
+  </div>
+
+  <script>
+    var invoke = window.__TAURI__.core.invoke;
+
+    var patInput = document.getElementById('pat');
+    var savePatBtn = document.getElementById('save-pat');
+    var patStatus = document.getElementById('pat-status');
+    var searchInput = document.getElementById('search');
+    var repoListEl = document.getElementById('repo-list');
+    var saveReposBtn = document.getElementById('save-repos');
+    var repoStatus = document.getElementById('repo-status');
+
+    var allRepos = [];
+    var watchedSet = new Set();
+
+    function setStatus(el, message, type) {
+      el.textContent = message;
+      el.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    function clearRepoList() {
+      while (repoListEl.firstChild) {
+        repoListEl.removeChild(repoListEl.firstChild);
+      }
+    }
+
+    function showEmptyMessage(text) {
+      clearRepoList();
+      var div = document.createElement('div');
+      div.className = 'empty';
+      div.textContent = text;
+      repoListEl.appendChild(div);
+    }
+
+    function renderRepos(repos) {
+      clearRepoList();
+
+      if (repos.length === 0) {
+        showEmptyMessage('No souls found');
+        return;
+      }
+
+      repos.forEach(function(repo) {
+        var labelEl = document.createElement('label');
+        labelEl.className = 'repo-item';
+
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = repo.full_name;
+        checkbox.checked = watchedSet.has(repo.full_name);
+        checkbox.addEventListener('change', function() {
+          if (checkbox.checked) {
+            watchedSet.add(repo.full_name);
+          } else {
+            watchedSet.delete(repo.full_name);
+          }
+        });
+
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'repo-name';
+        nameSpan.textContent = repo.full_name;
+
+        labelEl.appendChild(checkbox);
+        labelEl.appendChild(nameSpan);
+
+        if (repo.private) {
+          var badge = document.createElement('span');
+          badge.className = 'repo-private';
+          badge.textContent = 'private';
+          labelEl.appendChild(badge);
+        }
+
+        repoListEl.appendChild(labelEl);
+      });
+    }
+
+    async function loadRepos() {
+      showEmptyMessage('Summoning repositories...');
+      searchInput.disabled = true;
+      saveReposBtn.disabled = true;
+
+      try {
+        allRepos = await invoke('get_repos');
+        searchInput.disabled = false;
+        saveReposBtn.disabled = false;
+        renderRepos(allRepos);
+      } catch (e) {
+        showEmptyMessage('The ritual failed: ' + e);
+      }
+    }
+
+    async function init() {
+      try {
+        var config = await invoke('get_config');
+        if (config.github_pat) {
+          patInput.value = config.github_pat;
+          setStatus(patStatus, 'Soul bound', 'success');
+          watchedSet = new Set(config.watched_repos);
+          await loadRepos();
+        }
+      } catch (e) {
+        console.error('Init error:', e);
+      }
+    }
+
+    savePatBtn.addEventListener('click', async function() {
+      var pat = patInput.value.trim();
+      if (!pat) return;
+
+      savePatBtn.disabled = true;
+      setStatus(patStatus, 'Performing the ritual...', '');
+
+      try {
+        var login = await invoke('save_pat', { pat: pat });
+        setStatus(patStatus, 'Bound to ' + login, 'success');
+        await loadRepos();
+      } catch (e) {
+        setStatus(patStatus, 'Binding failed: ' + e, 'error');
+      } finally {
+        savePatBtn.disabled = false;
+      }
+    });
+
+    searchInput.addEventListener('input', function() {
+      var q = searchInput.value.toLowerCase();
+      var filtered = allRepos.filter(function(r) {
+        return r.full_name.toLowerCase().indexOf(q) !== -1;
+      });
+      renderRepos(filtered);
+    });
+
+    saveReposBtn.addEventListener('click', async function() {
+      saveReposBtn.disabled = true;
+      try {
+        await invoke('set_watched_repos', {
+          repos: Array.from(watchedSet),
+        });
+        setStatus(repoStatus, 'Haunting ' + watchedSet.size + ' repo(s)', 'success');
+      } catch (e) {
+        setStatus(repoStatus, 'Failed: ' + e, 'error');
+      } finally {
+        saveReposBtn.disabled = false;
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
