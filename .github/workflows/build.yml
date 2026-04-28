@@ -1,0 +1,67 @@
+name: build
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install frontend deps
+        run: cd src-panel && npm ci
+
+      - name: install Tauri CLI
+        run: cargo install tauri-cli --version "^2"
+
+      - name: build
+        run: cargo tauri build
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - name: get version info
+        id: info
+        run: |
+          VERSION=$(grep '^version' src-tauri/Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "filename=ghast-${VERSION}-${SHORT_SHA}.dmg" >> "$GITHUB_OUTPUT"
+
+      - name: rename dmg
+        env:
+          FILENAME: ${{ steps.info.outputs.filename }}
+        run: |
+          DMG=$(ls src-tauri/target/release/bundle/dmg/*.dmg)
+          cp "$DMG" "$FILENAME"
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.info.outputs.filename }}
+          path: ${{ steps.info.outputs.filename }}
+
+      - name: comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: build
+          message: |
+            **Build ready:** `${{ steps.info.outputs.filename }}`
+            Download from [Actions artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
