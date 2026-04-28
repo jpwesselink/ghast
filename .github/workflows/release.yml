@@ -29,15 +29,16 @@ jobs:
 
       - name: build
         run: cargo tauri build
-
-      - name: package
-        run: |
-          cd src-tauri/target/release/bundle/macos
-          tar czf ghast.app.tar.gz ghast.app
-          mv ghast.app.tar.gz "$GITHUB_WORKSPACE/"
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: create release
         uses: softprops/action-gh-release@v2
         with:
-          files: ghast.app.tar.gz
+          files: src-tauri/target/release/bundle/dmg/*.dmg
           generate_release_notes: true

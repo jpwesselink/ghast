@@ -44,7 +44,7 @@ cargo tauri dev
 
 ### Download a release
 
-Grab `ghast.app.tar.gz` from [Releases](https://github.com/jpwesselink/ghast/releases), extract, and drag to Applications. On first launch, macOS will block it because it's not signed yet. Run this once:
+Grab the `.dmg` from [Releases](https://github.com/jpwesselink/ghast/releases), open it, drag ghast to Applications. On first launch, macOS may block it because it's not signed yet. If so, run this once:
 
 ```bash
 xattr -cr /Applications/ghast.app
