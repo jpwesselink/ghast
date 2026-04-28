@@ -63,6 +63,32 @@ pub fn toggle_panel(app: &AppHandle, rect: Rect) {
 
 pub fn setup_panel(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(PANEL_LABEL) {
+        #[cfg(target_os = "macos")]
+        {
+            use objc::runtime::{Object, NO};
+            use objc::{class, msg_send, sel, sel_impl};
+
+            if let Ok(ns_win) = window.ns_window() {
+                unsafe {
+                    let ns_win = ns_win as *mut Object;
+
+                    // Make the window background transparent
+                    let clear: *mut Object = msg_send![class!(NSColor), clearColor];
+                    let _: () = msg_send![ns_win, setBackgroundColor: clear];
+                    let _: () = msg_send![ns_win, setOpaque: NO];
+
+                    // Round the content view at the native layer level
+                    let content_view: *mut Object = msg_send![ns_win, contentView];
+                    let _: () = msg_send![content_view, setWantsLayer: true];
+                    let layer: *mut Object = msg_send![content_view, layer];
+                    if !layer.is_null() {
+                        let _: () = msg_send![layer, setCornerRadius: 14.0_f64];
+                        let _: () = msg_send![layer, setMasksToBounds: true];
+                    }
+                }
+            }
+        }
+
         let win = window.clone();
         window.on_window_event(move |event| {
             if let tauri::WindowEvent::Focused(false) = event {

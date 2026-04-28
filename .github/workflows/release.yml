@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install frontend deps
+        run: cd src-panel && npm ci
+
+      - name: install Tauri CLI
+        run: cargo install tauri-cli --version "^2"
+
+      - name: build
+        run: cargo tauri build
+
+      - name: package
+        run: |
+          cd src-tauri/target/release/bundle/macos
+          tar czf ghast.app.tar.gz ghast.app
+          mv ghast.app.tar.gz "$GITHUB_WORKSPACE/"
+
+      - name: create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ghast.app.tar.gz
+          generate_release_notes: true
