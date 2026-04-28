@@ -42,7 +42,15 @@ cd src-panel && npm install && cd ..
 cargo tauri dev
 ```
 
-### Build a release
+### Download a release
+
+Grab `ghast.app.tar.gz` from [Releases](https://github.com/jpwesselink/ghast/releases), extract, and drag to Applications. On first launch, macOS will block it because it's not signed yet. Run this once:
+
+```bash
+xattr -cr /Applications/ghast.app
+```
+
+### Build from source
 
 ```bash
 cargo tauri build
