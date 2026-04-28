@@ -1,0 +1,6 @@
+[workspace]
+semver_check = false
+
+[[package]]
+name = "ghast"
+publish = false
