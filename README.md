@@ -2,28 +2,25 @@
 
 # ghast
 
-**GitHub Actions Status Tracker**
+**The ghost that haunts your CI.**
 
-A macOS menubar app that watches your GitHub Actions workflows and gets out of your way. Click the ghost, see your builds.
+A macOS menubar app that watches your GitHub Actions workflows, nudges you when builds finish, and stays out of your way the rest of the time.
 
-![Rust](https://img.shields.io/badge/rust-stable-orange) ![Tauri](https://img.shields.io/badge/tauri-v2-blue) ![macOS](https://img.shields.io/badge/macOS-only-black)
+![Rust](https://img.shields.io/badge/rust-stable-orange) ![Tauri](https://img.shields.io/badge/tauri-v2-blue) ![macOS](https://img.shields.io/badge/macOS-only-black) ![haunted by](https://img.shields.io/badge/haunted%20by-GitHub%20Actions-purple) ![theme](https://img.shields.io/badge/theme-cursed-red)
 
 ---
 
 ## What it does
 
-ghast sits in your menubar as a small ghost icon. It polls GitHub Actions every 30 seconds across all your watched repos and shows a live status panel when you click the icon. When a run finishes, a native macOS notification fires with the result.
-
-The badge next to the ghost tells you at a glance how many runs are currently active.
+Click the ghost in your menubar. A panel drops down showing your workflow runs grouped by repo, sorted by most recent activity. Green dot means it passed. Red dot means it didn't. Click any run to open it in your browser. When a run finishes, a native macOS notification tells you the result. A badge on the icon shows how many runs are currently active.
 
 ### Features
 
-- **Custom panel** that drops down from the tray icon, grouped by repo, sorted by most recent activity
-- **Status icons** for each workflow run: pentagram for success, inverted cross for failure, all-seeing eye for in-progress
-- **Badge count** showing active run count directly on the menubar icon
-- **Native notifications** when runs complete, using the ghast icon
-- **Click any run** to open it in your browser
-- **Settings window** for binding your GitHub PAT and selecting which repos to watch
+- **Custom panel** that drops down from the tray icon, grouped by repo
+- **Badge count** showing active runs on the menubar icon
+- **Native notifications** when workflow runs complete
+- **Click any run** to jump straight to it on GitHub
+- **Settings window** for binding your GitHub PAT and picking repos to watch
 
 ---
 
@@ -64,15 +61,13 @@ ghast starts polling immediately.
 
 ---
 
-## The hellripper theme
+## The other realm
 
-With the panel open, type `hellripper`.
+With the panel open, type `hellripper` to enter the other realm. Pentagrams. Baphomet. Blood rain. Gothic blackletter. Candlelight glow.
 
-You are now in hellripper mode.
+To return to humanity, type `holydiver`.
 
-To return to the mortal realm, type `holydiver`.
-
-The theme persists across restarts.
+The theme persists across restarts. You have been warned.
 
 ---
 
@@ -83,38 +78,28 @@ The theme persists across restarts.
 | App shell | [Tauri v2](https://tauri.app) |
 | Backend | Rust, [octocrab](https://github.com/XAMPPRocky/octocrab), tokio |
 | Panel UI | React, Vite, TypeScript |
-| GitHub API | octocrab |
-| Notifications | notify-rust, macOS UNUserNotificationCenter |
+| Notifications | notify-rust |
 
 ## Project structure
 
 ```
-src-panel/          React frontend (panel + settings)
+src-panel/          React frontend (panel + settings + about)
 src-tauri/
   src/
-    lib.rs          Tauri setup, Tauri commands
-    config.rs       Config persistence (~/.config/ghast/)
+    lib.rs          Tauri setup, commands
+    config.rs       Config persistence
     github.rs       GitHub API client
     poller.rs       Background polling loop
-    state.rs        Shared app state, workflow run model
-    panel.rs        Panel window positioning and lifecycle
-    tray.rs         Tray icon, badge, settings window
-    notify.rs       Completion detection and notifications
+    state.rs        Shared app state
+    panel.rs        Panel window positioning
+    tray.rs         Tray icon, badge, settings
+    notify.rs       Completion detection, notifications
 ```
-
-## How it works
-
-1. On launch, ghast loads your config (PAT and watched repos) from disk
-2. A background Tokio task polls GitHub Actions every 30 seconds
-3. After each poll, it diffs the new run states against the previous ones
-4. Any run that transitioned from active to completed fires a native notification
-5. The panel is a transparent Tauri webview window that positions itself below the tray icon on click
-6. Clicking a run in the panel calls the `open_url` command, which opens it in your default browser
 
 ## Credits
 
-Hellripper-mode status icons are from [Game Icons](https://game-icons.net) (pentagram, baphomet, all-seeing eye, skull) by their respective authors, licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), served via [Iconify](https://iconify.design).
+Hellripper-mode status icons are from [Game Icons](https://game-icons.net) by their respective authors, licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), served via [Iconify](https://iconify.design).
 
 ## License
 
-MIT
+MIT. Use it. Fork it. Haunt your own builds.
