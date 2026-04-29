@@ -1,5 +1,6 @@
 mod config;
 mod github;
+mod keychain;
 mod notify;
 mod panel;
 mod poller;
@@ -20,11 +21,11 @@ async fn save_pat(
 ) -> Result<String, String> {
     let client = GitHubClient::new(&pat)?;
     let login = client.validate_pat().await?;
+    keychain::save_pat(&pat)?;
 
     {
         let mut s = state.lock().unwrap();
-        s.config.github_pat = pat;
-        s.config.save(&s.config_dir)?;
+        s.github_pat = pat;
         s.auth_error = false;
     }
 
@@ -44,7 +45,7 @@ async fn get_repos(
 ) -> Result<Vec<github::GitHubRepo>, String> {
     let pat = {
         let s = state.lock().unwrap();
-        s.config.github_pat.clone()
+        s.github_pat.clone()
     };
 
     if pat.is_empty() {
