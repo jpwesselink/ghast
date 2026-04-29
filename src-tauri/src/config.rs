@@ -8,10 +8,16 @@ pub struct Config {
     pub watched_repos: Vec<String>,
     #[serde(default = "default_poll_interval")]
     pub poll_interval_secs: u64,
+    #[serde(default = "default_theme")]
+    pub theme: String,
 }
 
 fn default_poll_interval() -> u64 {
     30
+}
+
+fn default_theme() -> String {
+    "normal".to_string()
 }
 
 impl Default for Config {
@@ -19,6 +25,7 @@ impl Default for Config {
         Self {
             watched_repos: Vec::new(),
             poll_interval_secs: 30,
+            theme: default_theme(),
         }
     }
 }
@@ -70,6 +77,7 @@ mod tests {
         let config = Config {
             watched_repos: vec!["owner/repo".to_string()],
             poll_interval_secs: 30,
+            theme: "blackmetal".to_string(),
         };
         let json = serde_json::to_string(&config).unwrap();
         let loaded: Config = serde_json::from_str(&json).unwrap();
@@ -82,6 +90,7 @@ mod tests {
         let config: Config = serde_json::from_str(json).unwrap();
         assert!(config.watched_repos.is_empty());
         assert_eq!(config.poll_interval_secs, 30);
+        assert_eq!(config.theme, "normal");
     }
 
     #[test]
@@ -92,6 +101,7 @@ mod tests {
         let config = Config {
             watched_repos: vec!["owner/repo".to_string()],
             poll_interval_secs: 60,
+            theme: "normal".to_string(),
         };
         config.save(&dir).unwrap();
 

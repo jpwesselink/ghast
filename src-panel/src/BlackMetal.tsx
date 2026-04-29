@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Icon } from "@iconify/react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelPayload, PanelWorkflowRun } from "./types";
 
 function NoiseCanvas({ opacity = 0.08 }: { opacity?: number }) {
@@ -104,6 +105,24 @@ function GameIcon({
   );
 }
 
+function statusLabel(run: PanelWorkflowRun): string {
+  if (run.status === "in_progress") return "Running";
+  if (run.status === "queued") return "Queued";
+  if (run.status === "completed") {
+    switch (run.conclusion) {
+      case "success": return "Succeeded";
+      case "failure": return "Failed";
+      case "cancelled": return "Cancelled";
+      case "skipped": return "Skipped";
+      case "timed_out": return "Timed out";
+      case "action_required": return "Action required";
+      case "neutral": return "Neutral";
+      default: return "Completed";
+    }
+  }
+  return "Unknown";
+}
+
 function StatusIcon({ run }: { run: PanelWorkflowRun }) {
   if (run.status === "in_progress")
     return <GameIcon name="eye-monster" color="#5577ee" pulse />;
@@ -113,21 +132,32 @@ function StatusIcon({ run }: { run: PanelWorkflowRun }) {
     if (run.conclusion === "success")
       return <GameIcon name="pentagram-rose" color="#55aa22" />;
     if (run.conclusion === "failure")
-      return <GameIcon name="baphomet" color="#cc2020" />;
+      return <GameIcon name="crowned-skull" color="#cc2020" />;
+    if (run.conclusion === "cancelled" || run.conclusion === "skipped")
+      return <GameIcon name="tombstone" color="#9a8a78" />;
+    if (run.conclusion === "timed_out")
+      return <GameIcon name="hourglass" color="#cc6622" />;
+    if (run.conclusion === "action_required")
+      return <GameIcon name="crossed-swords" color="#cc8822" />;
   }
-  return <GameIcon name="skull-crossed-bones" color="#605848" />;
+  return <GameIcon name="skull-crossed-bones" color="#9a8a78" />;
 }
 
 function RunRow({ run }: { run: PanelWorkflowRun }) {
   return (
-    <div
-      className="bm-run-item"
-      onClick={() => invoke("open_url", { url: run.html_url })}
-    >
-      <StatusIcon run={run} />
-      <span className="bm-run-name">{run.workflow_name}</span>
-      <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="bm-run-item"
+          onClick={() => invoke("open_url", { url: run.html_url })}
+        >
+          <StatusIcon run={run} />
+          <span className="bm-run-name">{run.workflow_name}</span>
+          <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
+    </Tooltip>
   );
 }
 

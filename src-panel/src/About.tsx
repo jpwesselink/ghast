@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 const year = new Date().getFullYear();
 
@@ -344,6 +345,27 @@ function HellripperAbout() {
 }
 
 export default function About() {
-  const blackMetal = localStorage.getItem("ghast-theme") === "blackmetal";
+  const [blackMetal, setBlackMetal] = useState(
+    () => localStorage.getItem("ghast-theme") === "blackmetal"
+  );
+
+  useEffect(() => {
+    const applyTheme = (t: string) => {
+      const isBm = t === "blackmetal";
+      setBlackMetal(isBm);
+      localStorage.setItem("ghast-theme", isBm ? "blackmetal" : "normal");
+    };
+
+    invoke<string>("get_theme").then(applyTheme);
+
+    const unlisten = listen<string>("theme-changed", (event) => {
+      applyTheme(event.payload);
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+
   return blackMetal ? <HellripperAbout /> : <CleanAbout />;
 }
