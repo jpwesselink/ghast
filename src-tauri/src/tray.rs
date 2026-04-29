@@ -86,7 +86,7 @@ pub fn open_about_window(app: &AppHandle) {
         .build();
 
         if let Some(win) = app.get_webview_window("about") {
-            let _ = win.set_size(tauri::LogicalSize::new(340.0, 420.0));
+            let _ = win.set_size(tauri::LogicalSize::new(380.0, 520.0));
             let w = win.clone();
             win.on_window_event(move |event| {
                 if let tauri::WindowEvent::Focused(false) = event {

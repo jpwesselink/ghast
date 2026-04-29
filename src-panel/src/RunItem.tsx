@@ -61,15 +61,15 @@ export default function RunItem({ run }: { run: PanelWorkflowRun }) {
   };
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button className="run-item" onClick={handleClick}>
+    <button className="run-item" onClick={handleClick}>
+      <Tooltip>
+        <TooltipTrigger asChild>
           <span className="run-dot" style={{ backgroundColor: dotColor(run) }} />
-          <span className="run-name">{run.workflow_name}</span>
-          <span className="run-time">{formatTimeAgo(run.created_at)}</span>
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>{statusLabel(run)}</TooltipContent>
-    </Tooltip>
+        </TooltipTrigger>
+        <TooltipContent>{statusLabel(run)}</TooltipContent>
+      </Tooltip>
+      <span className="run-name">{run.workflow_name}</span>
+      <span className="run-time">{formatTimeAgo(run.created_at)}</span>
+    </button>
   );
 }

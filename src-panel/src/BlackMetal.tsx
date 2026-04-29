@@ -145,19 +145,21 @@ function StatusIcon({ run }: { run: PanelWorkflowRun }) {
 
 function RunRow({ run }: { run: PanelWorkflowRun }) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          className="bm-run-item"
-          onClick={() => invoke("open_url", { url: run.html_url })}
-        >
-          <StatusIcon run={run} />
-          <span className="bm-run-name">{run.workflow_name}</span>
-          <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
-    </Tooltip>
+    <div
+      className="bm-run-item"
+      onClick={() => invoke("open_url", { url: run.html_url })}
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="bm-icon-trigger">
+            <StatusIcon run={run} />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
+      </Tooltip>
+      <span className="bm-run-name">{run.workflow_name}</span>
+      <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
+    </div>
   );
 }
 
@@ -322,6 +324,8 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           gap: 10px;
           padding: 6px 8px;
           margin: 0 6px;
+          width: calc(100% - 12px);
+          box-sizing: border-box;
           border-radius: 5px;
           cursor: pointer;
           transition: background 0.15s;
@@ -337,6 +341,11 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           height: 16px;
           flex-shrink: 0;
           filter: drop-shadow(0 0 1px var(--glow));
+        }
+
+        .bm-icon-trigger {
+          display: inline-flex;
+          flex-shrink: 0;
         }
 
         .bm-icon-pulse {

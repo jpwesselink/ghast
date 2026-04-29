@@ -40,6 +40,33 @@ function NoiseCanvas({ opacity = 0.06 }: { opacity?: number }) {
   );
 }
 
+function Ghost({
+  size = 96,
+  eyeColor = "#0a0a0a",
+  glow,
+}: {
+  size?: number;
+  eyeColor?: string;
+  glow?: string;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      style={{ overflow: "visible", display: "block" }}
+    >
+      <path
+        d="M50 8 C30 8 18 24 18 50 L18 90 L25 84 L32 90 L40 84 L50 90 L60 84 L68 90 L75 84 L82 90 L82 50 C82 24 70 8 50 8 Z"
+        fill="#1a1a1a"
+        style={glow ? { filter: `drop-shadow(0 0 18px ${glow}) drop-shadow(0 0 36px ${glow})` } : undefined}
+      />
+      <ellipse cx="40" cy="45" rx="5" ry="7" fill={eyeColor} />
+      <ellipse cx="60" cy="45" rx="5" ry="7" fill={eyeColor} />
+    </svg>
+  );
+}
+
 function Pentagram({ size = 20, color = "#8b0000" }: { size?: number; color?: string }) {
   const pts = [];
   for (let i = 0; i < 5; i++) {
@@ -66,6 +93,10 @@ function CleanAbout() {
   return (
     <>
       <style>{`
+        @keyframes ghastHover {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
         .about {
           font: menu;
           display: flex;
@@ -92,18 +123,26 @@ function CleanAbout() {
             --about-secondary: #86868b;
             --about-link: #0a84ff;
           }
+          .about-ghost path { fill: #0d0d0e !important; }
         }
-        .about-icon { width: 64px; height: 64px; margin-bottom: 12px; }
-        .about-name { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
-        .about-tagline { font-size: 0.85em; color: var(--about-secondary); margin-bottom: 16px; }
-        .about-version { font-size: 0.85em; color: var(--about-secondary); margin-bottom: 16px; }
-        .about-copy { font-size: 0.85em; color: var(--about-secondary); line-height: 1.6; }
+        .about-ghost {
+          width: 96px;
+          height: 96px;
+          margin-bottom: 16px;
+          animation: ghastHover 3.4s ease-in-out infinite;
+        }
+        .about-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .about-tagline { font-size: 14px; color: var(--about-secondary); margin-bottom: 18px; }
+        .about-version { font-size: 13px; color: var(--about-secondary); margin-bottom: 20px; }
+        .about-copy { font-size: 14px; color: var(--about-secondary); line-height: 1.7; }
         .about-link { color: var(--about-link); text-decoration: none; cursor: pointer; }
         .about-link:hover { text-decoration: underline; }
-        .about-credits { font-size: 0.78em; color: var(--about-secondary); margin-top: 16px; line-height: 1.5; opacity: 0.8; }
+        .about-credits { font-size: 12px; color: var(--about-secondary); margin-top: 20px; line-height: 1.6; opacity: 0.85; }
       `}</style>
       <div className="about">
-        <img className="about-icon" src="/icons/128x128.png" alt="ghast" />
+        <div className="about-ghost">
+          <Ghost size={96} eyeColor="#e8e4d8" />
+        </div>
         <div className="about-name">ghast</div>
         <div className="about-tagline">GitHub Actions Status Tracker</div>
         <div className="about-version">Version 0.1.0</div>
@@ -142,6 +181,24 @@ function HellripperAbout() {
         @keyframes bloodFall {
           0% { transform: translateY(-100%); }
           100% { transform: translateY(calc(100vh + 100%)); }
+        }
+
+        @keyframes bmGhastHover {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+
+        @keyframes bmGhastGlow {
+          0%, 100% {
+            filter:
+              drop-shadow(0 0 18px rgba(170, 16, 16, 0.55))
+              drop-shadow(0 0 40px rgba(120, 0, 0, 0.45));
+          }
+          50% {
+            filter:
+              drop-shadow(0 0 28px rgba(220, 30, 30, 0.7))
+              drop-shadow(0 0 60px rgba(160, 10, 10, 0.5));
+          }
         }
 
         .bm-about {
@@ -186,7 +243,6 @@ function HellripperAbout() {
           .bm-about-secondary { color: #6a5a48 !important; }
           .bm-about-link { color: #8b0000 !important; }
           .bm-about-divider { background: linear-gradient(to right, transparent, #c0a090, transparent) !important; }
-          .bm-about-icon { filter: none !important; }
         }
 
         .bm-about-inner {
@@ -197,30 +253,34 @@ function HellripperAbout() {
           align-items: center;
         }
 
-        .bm-about-icon {
-          width: 72px;
-          height: 72px;
-          margin-bottom: 10px;
-          filter: drop-shadow(0 0 12px rgba(180, 20, 20, 0.4));
+        .bm-about-ghost {
+          width: 96px;
+          height: 96px;
+          margin-bottom: 14px;
+          animation: bmGhastHover 3.6s ease-in-out infinite;
+        }
+
+        .bm-about-ghost svg {
+          animation: bmGhastGlow 4.2s ease-in-out infinite;
         }
 
         .bm-about-title {
           font-family: 'UnifrakturMaguntia', cursive;
-          font-size: 52px;
+          font-size: 64px;
           color: #ede6d8;
           letter-spacing: 3px;
           animation: candleGlow 4s ease-in-out infinite;
           line-height: 1;
-          margin-bottom: 4px;
+          margin-bottom: 6px;
         }
 
         .bm-about-subtitle {
           font-family: 'IM Fell English SC', serif;
-          font-size: 12px;
+          font-size: 14px;
           letter-spacing: 4px;
           color: #7a7068;
           text-transform: uppercase;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
         }
 
         .bm-about-divider {
@@ -232,15 +292,15 @@ function HellripperAbout() {
 
         .bm-about-version {
           font-family: 'IM Fell English SC', serif;
-          font-size: 13px;
+          font-size: 15px;
           letter-spacing: 3px;
           color: #7a7068;
           text-transform: uppercase;
-          margin-bottom: 16px;
+          margin-bottom: 18px;
         }
 
         .bm-about-secondary {
-          font-size: 15px;
+          font-size: 17px;
           color: #8a7e6e;
           font-style: italic;
           line-height: 1.7;
@@ -259,9 +319,9 @@ function HellripperAbout() {
         }
 
         .bm-about-credits {
-          font-size: 13px;
+          font-size: 14px;
           color: #605848;
-          margin-top: 16px;
+          margin-top: 18px;
           line-height: 1.6;
           font-style: italic;
         }
@@ -309,7 +369,9 @@ function HellripperAbout() {
         </div>
 
         <div className="bm-about-inner">
-          <img className="bm-about-icon" src="/icons/128x128.png" alt="ghast" />
+          <div className="bm-about-ghost">
+            <Ghost size={96} eyeColor="#1a0606" glow="#aa1010" />
+          </div>
           <div className="bm-about-title">Ghast</div>
           <div className="bm-about-subtitle">The GitHub Actions Ghost</div>
           <div className="bm-about-version">v0.1.0</div>
