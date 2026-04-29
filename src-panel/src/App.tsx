@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, type ReactElement } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import Menu from "./Menu";
@@ -6,6 +6,7 @@ import BlackMetal from "./BlackMetal";
 import BlackMetalSettings from "./BlackMetalSettings";
 import Settings from "./Settings";
 import About from "./About";
+import { TooltipProvider } from "./Tooltip";
 import type { PanelPayload } from "./types";
 
 const view = new URLSearchParams(window.location.search).get("view");
@@ -34,6 +35,24 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const applyTheme = (t: string) => {
+      const isBm = t === "blackmetal";
+      setBlackMetal(isBm);
+      localStorage.setItem("ghast-theme", isBm ? "blackmetal" : "normal");
+    };
+
+    invoke<string>("get_theme").then(applyTheme);
+
+    const unlisten = listen<string>("theme-changed", (event) => {
+      applyTheme(event.payload);
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+
   const target = blackMetal ? DEACTIVATE : ACTIVATE;
 
   const handleKeyDown = useCallback(
@@ -47,8 +66,7 @@ export default function App() {
         setBuffer(next);
         if (next === target) {
           const newMode = !blackMetal;
-          setBlackMetal(newMode);
-          localStorage.setItem("ghast-theme", newMode ? "blackmetal" : "normal");
+          invoke("set_theme", { theme: newMode ? "blackmetal" : "normal" });
           setBuffer("");
         }
       } else {
@@ -69,17 +87,14 @@ export default function App() {
     invoke("set_panel_width", { width: blackMetal ? 360 : 280 });
   }, [blackMetal]);
 
-  if (isAbout) return <About />;
-
-  if (isSettings) {
-    return blackMetal ? <BlackMetalSettings /> : <Settings />;
+  let content: ReactElement | null = null;
+  if (isAbout) {
+    content = <About />;
+  } else if (isSettings) {
+    content = blackMetal ? <BlackMetalSettings /> : <Settings />;
+  } else if (data) {
+    content = blackMetal ? <BlackMetal data={data} /> : <Menu data={data} />;
   }
 
-  if (!data) return null;
-
-  if (blackMetal) {
-    return <BlackMetal data={data} />;
-  }
-
-  return <Menu data={data} />;
+  return <TooltipProvider delayDuration={250}>{content}</TooltipProvider>;
 }

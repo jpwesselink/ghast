@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 const year = new Date().getFullYear();
 
@@ -39,6 +40,53 @@ function NoiseCanvas({ opacity = 0.06 }: { opacity?: number }) {
   );
 }
 
+function Ghost({
+  size = 96,
+  bodyColor = "#1a1a1a",
+  bodyOpacity = 1,
+  eyeMilkColor = "#d8d2c4",
+  eyeMilkScale = 1,
+  glow,
+}: {
+  size?: number;
+  bodyColor?: string;
+  bodyOpacity?: number;
+  eyeMilkColor?: string;
+  eyeMilkScale?: number;
+  glow?: string;
+}) {
+  const milkRx = 3.2 * eyeMilkScale;
+  const milkRy = 4.4 * eyeMilkScale;
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      style={{ overflow: "visible", display: "block" }}
+    >
+      <defs>
+        <radialGradient id="ghastEyeMilk" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stopColor={eyeMilkColor} stopOpacity="0.95" />
+          <stop offset="70%" stopColor={eyeMilkColor} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={eyeMilkColor} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <path
+        d="M50 8 C30 8 18 24 18 50 L18 90 L25 84 L32 90 L40 84 L50 90 L60 84 L68 90 L75 84 L82 90 L82 50 C82 24 70 8 50 8 Z"
+        fill={bodyColor}
+        opacity={bodyOpacity}
+        style={glow ? { filter: `drop-shadow(0 0 18px ${glow}) drop-shadow(0 0 36px ${glow})` } : undefined}
+      />
+      <g>
+        <ellipse cx="40" cy="45" rx="5" ry="7" fill="#000" opacity="0.85" />
+        <ellipse cx="40" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
+        <ellipse cx="60" cy="45" rx="5" ry="7" fill="#000" opacity="0.85" />
+        <ellipse cx="60" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
+      </g>
+    </svg>
+  );
+}
+
 function Pentagram({ size = 20, color = "#8b0000" }: { size?: number; color?: string }) {
   const pts = [];
   for (let i = 0; i < 5; i++) {
@@ -65,6 +113,14 @@ function CleanAbout() {
   return (
     <>
       <style>{`
+        @keyframes ghastHover {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        .about, .about * {
+          -webkit-user-select: none;
+          user-select: none;
+        }
         .about {
           font: menu;
           display: flex;
@@ -75,7 +131,6 @@ function CleanAbout() {
           padding: 24px;
           box-sizing: border-box;
           text-align: center;
-          user-select: none;
           overflow: hidden;
           background: var(--about-bg);
           color: var(--about-text);
@@ -91,18 +146,41 @@ function CleanAbout() {
             --about-secondary: #86868b;
             --about-link: #0a84ff;
           }
+          .about-ghost path { fill: #0d0d0e !important; }
         }
-        .about-icon { width: 64px; height: 64px; margin-bottom: 12px; }
-        .about-name { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
-        .about-tagline { font-size: 0.85em; color: var(--about-secondary); margin-bottom: 16px; }
-        .about-version { font-size: 0.85em; color: var(--about-secondary); margin-bottom: 16px; }
-        .about-copy { font-size: 0.85em; color: var(--about-secondary); line-height: 1.6; }
+        @keyframes ghastEerieGlow {
+          0%, 100% {
+            filter:
+              drop-shadow(0 0 12px rgba(220, 230, 240, 0.35))
+              drop-shadow(0 0 28px rgba(180, 200, 220, 0.22));
+          }
+          50% {
+            filter:
+              drop-shadow(0 0 18px rgba(230, 240, 250, 0.5))
+              drop-shadow(0 0 38px rgba(190, 210, 230, 0.3));
+          }
+        }
+        .about-ghost {
+          width: 96px;
+          height: 96px;
+          margin-bottom: 16px;
+          animation: ghastHover 3.4s ease-in-out infinite;
+        }
+        .about-ghost svg {
+          animation: ghastEerieGlow 4.2s ease-in-out infinite;
+        }
+        .about-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .about-tagline { font-size: 14px; color: var(--about-secondary); margin-bottom: 18px; }
+        .about-version { font-size: 13px; color: var(--about-secondary); margin-bottom: 20px; }
+        .about-copy { font-size: 14px; color: var(--about-secondary); line-height: 1.7; }
         .about-link { color: var(--about-link); text-decoration: none; cursor: pointer; }
         .about-link:hover { text-decoration: underline; }
-        .about-credits { font-size: 0.78em; color: var(--about-secondary); margin-top: 16px; line-height: 1.5; opacity: 0.8; }
+        .about-credits { font-size: 12px; color: var(--about-secondary); margin-top: 20px; line-height: 1.6; opacity: 0.85; }
       `}</style>
       <div className="about">
-        <img className="about-icon" src="/icons/128x128.png" alt="ghast" />
+        <div className="about-ghost">
+          <Ghost size={96} eyeMilkScale={0.7} eyeMilkColor="#dcd6c8" />
+        </div>
         <div className="about-name">ghast</div>
         <div className="about-tagline">GitHub Actions Status Tracker</div>
         <div className="about-version">Version 0.1.0</div>
@@ -143,6 +221,28 @@ function HellripperAbout() {
           100% { transform: translateY(calc(100vh + 100%)); }
         }
 
+        @keyframes bmGhastHover {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+
+        @keyframes bmGhastGlow {
+          0%, 100% {
+            filter:
+              drop-shadow(0 0 18px rgba(170, 16, 16, 0.55))
+              drop-shadow(0 0 40px rgba(120, 0, 0, 0.45));
+          }
+          50% {
+            filter:
+              drop-shadow(0 0 28px rgba(220, 30, 30, 0.7))
+              drop-shadow(0 0 60px rgba(160, 10, 10, 0.5));
+          }
+        }
+
+        .bm-about, .bm-about * {
+          -webkit-user-select: none;
+          user-select: none;
+        }
         .bm-about {
           font-family: 'IM Fell English', serif;
           display: flex;
@@ -153,7 +253,6 @@ function HellripperAbout() {
           padding: 24px;
           box-sizing: border-box;
           text-align: center;
-          user-select: none;
           position: relative;
           overflow: hidden;
           background: #0a0808;
@@ -185,7 +284,6 @@ function HellripperAbout() {
           .bm-about-secondary { color: #6a5a48 !important; }
           .bm-about-link { color: #8b0000 !important; }
           .bm-about-divider { background: linear-gradient(to right, transparent, #c0a090, transparent) !important; }
-          .bm-about-icon { filter: none !important; }
         }
 
         .bm-about-inner {
@@ -196,30 +294,34 @@ function HellripperAbout() {
           align-items: center;
         }
 
-        .bm-about-icon {
-          width: 72px;
-          height: 72px;
-          margin-bottom: 10px;
-          filter: drop-shadow(0 0 12px rgba(180, 20, 20, 0.4));
+        .bm-about-ghost {
+          width: 96px;
+          height: 96px;
+          margin-bottom: 14px;
+          animation: bmGhastHover 3.6s ease-in-out infinite;
+        }
+
+        .bm-about-ghost svg {
+          animation: bmGhastGlow 4.2s ease-in-out infinite;
         }
 
         .bm-about-title {
           font-family: 'UnifrakturMaguntia', cursive;
-          font-size: 52px;
+          font-size: 64px;
           color: #ede6d8;
           letter-spacing: 3px;
           animation: candleGlow 4s ease-in-out infinite;
           line-height: 1;
-          margin-bottom: 4px;
+          margin-bottom: 6px;
         }
 
         .bm-about-subtitle {
           font-family: 'IM Fell English SC', serif;
-          font-size: 12px;
+          font-size: 14px;
           letter-spacing: 4px;
           color: #7a7068;
           text-transform: uppercase;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
         }
 
         .bm-about-divider {
@@ -231,15 +333,15 @@ function HellripperAbout() {
 
         .bm-about-version {
           font-family: 'IM Fell English SC', serif;
-          font-size: 13px;
+          font-size: 15px;
           letter-spacing: 3px;
           color: #7a7068;
           text-transform: uppercase;
-          margin-bottom: 16px;
+          margin-bottom: 18px;
         }
 
         .bm-about-secondary {
-          font-size: 15px;
+          font-size: 17px;
           color: #8a7e6e;
           font-style: italic;
           line-height: 1.7;
@@ -258,9 +360,9 @@ function HellripperAbout() {
         }
 
         .bm-about-credits {
-          font-size: 13px;
+          font-size: 14px;
           color: #605848;
-          margin-top: 16px;
+          margin-top: 18px;
           line-height: 1.6;
           font-style: italic;
         }
@@ -308,9 +410,17 @@ function HellripperAbout() {
         </div>
 
         <div className="bm-about-inner">
-          <img className="bm-about-icon" src="/icons/128x128.png" alt="ghast" />
+          <div className="bm-about-ghost">
+            <Ghost
+              size={96}
+              bodyOpacity={0.78}
+              eyeMilkScale={1.15}
+              eyeMilkColor="#e6e0d2"
+              glow="#aa1010"
+            />
+          </div>
           <div className="bm-about-title">Ghast</div>
-          <div className="bm-about-subtitle">The GitHub Actions Ghost</div>
+          <div className="bm-about-subtitle">The GitHub Actions Status Tracker</div>
           <div className="bm-about-version">v0.1.0</div>
 
           <div className="bm-about-divider" />
@@ -344,6 +454,27 @@ function HellripperAbout() {
 }
 
 export default function About() {
-  const blackMetal = localStorage.getItem("ghast-theme") === "blackmetal";
+  const [blackMetal, setBlackMetal] = useState(
+    () => localStorage.getItem("ghast-theme") === "blackmetal"
+  );
+
+  useEffect(() => {
+    const applyTheme = (t: string) => {
+      const isBm = t === "blackmetal";
+      setBlackMetal(isBm);
+      localStorage.setItem("ghast-theme", isBm ? "blackmetal" : "normal");
+    };
+
+    invoke<string>("get_theme").then(applyTheme);
+
+    const unlisten = listen<string>("theme-changed", (event) => {
+      applyTheme(event.payload);
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+
   return blackMetal ? <HellripperAbout /> : <CleanAbout />;
 }
