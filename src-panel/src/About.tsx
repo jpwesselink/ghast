@@ -42,13 +42,21 @@ function NoiseCanvas({ opacity = 0.06 }: { opacity?: number }) {
 
 function Ghost({
   size = 96,
-  eyeColor = "#0a0a0a",
+  bodyColor = "#1a1a1a",
+  bodyOpacity = 1,
+  eyeMilkColor = "#d8d2c4",
+  eyeMilkScale = 1,
   glow,
 }: {
   size?: number;
-  eyeColor?: string;
+  bodyColor?: string;
+  bodyOpacity?: number;
+  eyeMilkColor?: string;
+  eyeMilkScale?: number;
   glow?: string;
 }) {
+  const milkRx = 3.2 * eyeMilkScale;
+  const milkRy = 4.4 * eyeMilkScale;
   return (
     <svg
       width={size}
@@ -56,13 +64,25 @@ function Ghost({
       viewBox="0 0 100 100"
       style={{ overflow: "visible", display: "block" }}
     >
+      <defs>
+        <radialGradient id="ghastEyeMilk" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stopColor={eyeMilkColor} stopOpacity="0.95" />
+          <stop offset="70%" stopColor={eyeMilkColor} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={eyeMilkColor} stopOpacity="0" />
+        </radialGradient>
+      </defs>
       <path
         d="M50 8 C30 8 18 24 18 50 L18 90 L25 84 L32 90 L40 84 L50 90 L60 84 L68 90 L75 84 L82 90 L82 50 C82 24 70 8 50 8 Z"
-        fill="#1a1a1a"
+        fill={bodyColor}
+        opacity={bodyOpacity}
         style={glow ? { filter: `drop-shadow(0 0 18px ${glow}) drop-shadow(0 0 36px ${glow})` } : undefined}
       />
-      <ellipse cx="40" cy="45" rx="5" ry="7" fill={eyeColor} />
-      <ellipse cx="60" cy="45" rx="5" ry="7" fill={eyeColor} />
+      <g>
+        <ellipse cx="40" cy="45" rx="5" ry="7" fill="#000" opacity="0.85" />
+        <ellipse cx="40" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
+        <ellipse cx="60" cy="45" rx="5" ry="7" fill="#000" opacity="0.85" />
+        <ellipse cx="60" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
+      </g>
     </svg>
   );
 }
@@ -97,6 +117,10 @@ function CleanAbout() {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-6px); }
         }
+        .about, .about * {
+          -webkit-user-select: none;
+          user-select: none;
+        }
         .about {
           font: menu;
           display: flex;
@@ -107,7 +131,6 @@ function CleanAbout() {
           padding: 24px;
           box-sizing: border-box;
           text-align: center;
-          user-select: none;
           overflow: hidden;
           background: var(--about-bg);
           color: var(--about-text);
@@ -125,11 +148,26 @@ function CleanAbout() {
           }
           .about-ghost path { fill: #0d0d0e !important; }
         }
+        @keyframes ghastEerieGlow {
+          0%, 100% {
+            filter:
+              drop-shadow(0 0 12px rgba(220, 230, 240, 0.35))
+              drop-shadow(0 0 28px rgba(180, 200, 220, 0.22));
+          }
+          50% {
+            filter:
+              drop-shadow(0 0 18px rgba(230, 240, 250, 0.5))
+              drop-shadow(0 0 38px rgba(190, 210, 230, 0.3));
+          }
+        }
         .about-ghost {
           width: 96px;
           height: 96px;
           margin-bottom: 16px;
           animation: ghastHover 3.4s ease-in-out infinite;
+        }
+        .about-ghost svg {
+          animation: ghastEerieGlow 4.2s ease-in-out infinite;
         }
         .about-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
         .about-tagline { font-size: 14px; color: var(--about-secondary); margin-bottom: 18px; }
@@ -141,7 +179,7 @@ function CleanAbout() {
       `}</style>
       <div className="about">
         <div className="about-ghost">
-          <Ghost size={96} eyeColor="#e8e4d8" />
+          <Ghost size={96} eyeMilkScale={0.7} eyeMilkColor="#dcd6c8" />
         </div>
         <div className="about-name">ghast</div>
         <div className="about-tagline">GitHub Actions Status Tracker</div>
@@ -201,6 +239,10 @@ function HellripperAbout() {
           }
         }
 
+        .bm-about, .bm-about * {
+          -webkit-user-select: none;
+          user-select: none;
+        }
         .bm-about {
           font-family: 'IM Fell English', serif;
           display: flex;
@@ -211,7 +253,6 @@ function HellripperAbout() {
           padding: 24px;
           box-sizing: border-box;
           text-align: center;
-          user-select: none;
           position: relative;
           overflow: hidden;
           background: #0a0808;
@@ -370,10 +411,16 @@ function HellripperAbout() {
 
         <div className="bm-about-inner">
           <div className="bm-about-ghost">
-            <Ghost size={96} eyeColor="#1a0606" glow="#aa1010" />
+            <Ghost
+              size={96}
+              bodyOpacity={0.78}
+              eyeMilkScale={1.15}
+              eyeMilkColor="#e6e0d2"
+              glow="#aa1010"
+            />
           </div>
           <div className="bm-about-title">Ghast</div>
-          <div className="bm-about-subtitle">The GitHub Actions Ghost</div>
+          <div className="bm-about-subtitle">The GitHub Actions Status Tracker</div>
           <div className="bm-about-version">v0.1.0</div>
 
           <div className="bm-about-divider" />
