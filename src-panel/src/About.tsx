@@ -191,8 +191,7 @@ function CleanAbout() {
           <Link url="https://github.com/jpwesselink/ghast">Source on GitHub</Link>
         </div>
         <div className="about-credits">
-          Status icons by <Link url="https://game-icons.net">Game Icons</Link> authors (CC BY 3.0)<br />
-          served via <Link url="https://iconify.design">Iconify</Link>
+          Hand-drawn glyphs by JP Wesselink
         </div>
       </div>
     </>
@@ -437,11 +436,7 @@ function HellripperAbout() {
           </div>
 
           <div className="bm-about-credits">
-            Occult icons by{" "}
-            <Link url="https://game-icons.net"><span className="bm-about-link">Game Icons</span></Link>{" "}
-            authors (CC BY 3.0)<br />
-            served via{" "}
-            <Link url="https://iconify.design"><span className="bm-about-link">Iconify</span></Link>
+            Occult glyphs hand-summoned by JP Wesselink
           </div>
 
           <div className="bm-about-sigil">

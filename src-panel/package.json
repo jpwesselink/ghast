@@ -7,9 +7,9 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@iconify/react": "^6.0.2",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-notification": "^2.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
