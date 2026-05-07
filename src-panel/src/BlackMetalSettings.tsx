@@ -95,15 +95,12 @@ export default function BlackMetalSettings() {
   const [search, setSearch] = useState("");
   const [showToken, setShowToken] = useState(false);
   const [flickerClass, setFlickerClass] = useState("");
-  const [unleashPulse, setUnleashPulse] = useState(false);
   const [patStatus, setPatStatus] = useState("");
   const [patError, setPatError] = useState(false);
-  const [repoStatus, setRepoStatus] = useState("");
 
   useEffect(() => {
-    invoke<{ github_pat: string; watched_repos: string[] }>("get_config").then((config) => {
-      if (config.github_pat) {
-        setToken(config.github_pat);
+    invoke<{ has_pat: boolean; watched_repos: string[] }>("get_config").then((config) => {
+      if (config.has_pat) {
         setBound(true);
         setPatStatus("Soul bound");
         setWatchedSet(new Set(config.watched_repos));
@@ -126,13 +123,16 @@ export default function BlackMetalSettings() {
     r.full_name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const toggleRepo = (name: string) => {
-    setWatchedSet((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
+  const toggleRepo = async (name: string) => {
+    const next = new Set(watchedSet);
+    if (next.has(name)) next.delete(name);
+    else next.add(name);
+    setWatchedSet(next);
+    try {
+      await invoke("set_watched_repos", { repos: Array.from(next) });
+    } catch (e) {
+      console.error("set_watched_repos failed", e);
+    }
   };
 
   const handleBind = async () => {
@@ -151,17 +151,6 @@ export default function BlackMetalSettings() {
     } catch (e) {
       setPatStatus(`Binding failed: ${e}`);
       setPatError(true);
-    }
-  };
-
-  const handleUnleash = async () => {
-    setUnleashPulse(true);
-    setTimeout(() => setUnleashPulse(false), 1000);
-    try {
-      await invoke("set_watched_repos", { repos: Array.from(watchedSet) });
-      setRepoStatus(`Haunting ${watchedSet.size} repo(s)`);
-    } catch (e) {
-      setRepoStatus(`Failed: ${e}`);
     }
   };
 
@@ -669,17 +658,6 @@ export default function BlackMetalSettings() {
                 </div>
               ))
             )}
-          </div>
-
-          <div className="bms-unleash-wrap">
-            {repoStatus && <span className="bms-repo-status">{repoStatus}</span>}
-            <button
-              className={`bms-unleash ${unleashPulse ? "pulse" : ""}`}
-              onClick={handleUnleash}
-              disabled={allRepos.length === 0}
-            >
-              Unleash
-            </button>
           </div>
 
         </div>

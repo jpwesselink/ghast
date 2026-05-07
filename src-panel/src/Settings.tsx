@@ -15,13 +15,11 @@ export default function Settings() {
   const [search, setSearch] = useState("");
   const [patStatus, setPatStatus] = useState("");
   const [patError, setPatError] = useState(false);
-  const [repoStatus, setRepoStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    invoke<{ github_pat: string; watched_repos: string[] }>("get_config").then((config) => {
-      if (config.github_pat) {
-        setToken(config.github_pat);
+    invoke<{ has_pat: boolean; watched_repos: string[] }>("get_config").then((config) => {
+      if (config.has_pat) {
         setBound(true);
         setPatStatus("Connected");
         setWatchedSet(new Set(config.watched_repos));
@@ -47,13 +45,16 @@ export default function Settings() {
     r.full_name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const toggleRepo = (name: string) => {
-    setWatchedSet((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
+  const toggleRepo = async (name: string) => {
+    const next = new Set(watchedSet);
+    if (next.has(name)) next.delete(name);
+    else next.add(name);
+    setWatchedSet(next);
+    try {
+      await invoke("set_watched_repos", { repos: Array.from(next) });
+    } catch (e) {
+      console.error("set_watched_repos failed", e);
+    }
   };
 
   const handleConnect = async () => {
@@ -69,15 +70,6 @@ export default function Settings() {
     } catch (e) {
       setPatStatus(`${e}`);
       setPatError(true);
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      await invoke("set_watched_repos", { repos: Array.from(watchedSet) });
-      setRepoStatus(`Watching ${watchedSet.size} repo(s)`);
-    } catch (e) {
-      setRepoStatus(`Failed: ${e}`);
     }
   };
 
@@ -332,12 +324,6 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="s-footer">
-          {repoStatus && <span className="s-footer-status">{repoStatus}</span>}
-          <button className="s-btn" onClick={handleSave} disabled={allRepos.length === 0}>
-            Save
-          </button>
-        </div>
       </div>
     </>
   );

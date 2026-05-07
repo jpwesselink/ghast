@@ -1,5 +1,6 @@
-use crate::config::Config;
+use crate::config::{self, Config};
 use crate::github::WorkflowRun as ApiWorkflowRun;
+use crate::keychain;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -122,6 +123,7 @@ pub struct PanelPayload {
 
 pub struct AppState {
     pub config: Config,
+    pub github_pat: String,
     pub runs: HashMap<String, Vec<WorkflowRun>>,
     pub auth_error: bool,
     pub config_dir: PathBuf,
@@ -130,9 +132,19 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(config_dir: PathBuf) -> Self {
+        if let Some(legacy) = config::take_legacy_pat(&config_dir) {
+            if let Err(e) = keychain::save_pat(&legacy) {
+                eprintln!("warning: failed to migrate PAT to keychain: {e}");
+            }
+        }
         let config = Config::load(&config_dir);
+        let github_pat = keychain::load_pat().unwrap_or_else(|e| {
+            eprintln!("warning: keychain unavailable: {e}");
+            None
+        }).unwrap_or_default();
         Self {
             config,
+            github_pat,
             runs: HashMap::new(),
             auth_error: false,
             config_dir,
@@ -162,7 +174,7 @@ impl AppState {
             repos,
             runs,
             auth_error: self.auth_error,
-            has_pat: !self.config.github_pat.is_empty(),
+            has_pat: !self.github_pat.is_empty(),
             badge_count: self.badge_count(),
         }
     }

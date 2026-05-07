@@ -1,5 +1,6 @@
 mod config;
 mod github;
+mod keychain;
 mod notify;
 mod panel;
 mod poller;
@@ -20,11 +21,11 @@ async fn save_pat(
 ) -> Result<String, String> {
     let client = GitHubClient::new(&pat)?;
     let login = client.validate_pat().await?;
+    keychain::save_pat(&pat)?;
 
     {
         let mut s = state.lock().unwrap();
-        s.config.github_pat = pat;
-        s.config.save(&s.config_dir)?;
+        s.github_pat = pat;
         s.auth_error = false;
     }
 
@@ -32,10 +33,45 @@ async fn save_pat(
     Ok(login)
 }
 
+#[derive(serde::Serialize)]
+struct ConfigResponse {
+    has_pat: bool,
+    watched_repos: Vec<String>,
+    poll_interval_secs: u64,
+    theme: String,
+}
+
 #[tauri::command]
-fn get_config(state: tauri::State<'_, SharedState>) -> config::Config {
+fn get_config(state: tauri::State<'_, SharedState>) -> ConfigResponse {
     let s = state.lock().unwrap();
-    s.config.clone()
+    ConfigResponse {
+        has_pat: !s.github_pat.is_empty(),
+        watched_repos: s.config.watched_repos.clone(),
+        poll_interval_secs: s.config.poll_interval_secs,
+        theme: s.config.theme.clone(),
+    }
+}
+
+#[tauri::command]
+fn get_theme(state: tauri::State<'_, SharedState>) -> String {
+    let s = state.lock().unwrap();
+    s.config.theme.clone()
+}
+
+#[tauri::command]
+fn set_theme(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, SharedState>,
+    theme: String,
+) -> Result<(), String> {
+    {
+        let mut s = state.lock().unwrap();
+        s.config.theme = theme.clone();
+        s.config.save(&s.config_dir)?;
+    }
+    use tauri::Emitter;
+    app.emit("theme-changed", theme).map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -44,7 +80,7 @@ async fn get_repos(
 ) -> Result<Vec<github::GitHubRepo>, String> {
     let pat = {
         let s = state.lock().unwrap();
-        s.config.github_pat.clone()
+        s.github_pat.clone()
     };
 
     if pat.is_empty() {
@@ -164,6 +200,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             save_pat,
             get_config,
+            get_theme,
+            set_theme,
             get_repos,
             set_watched_repos,
             get_workflow_runs,
