@@ -31,6 +31,7 @@ Click the ghost in your menubar. A panel drops down showing your workflow runs g
 - macOS
 - Rust (stable)
 - Node.js 18+
+- [Tauri CLI v2](https://tauri.app/start/prerequisites/): `cargo install tauri-cli --version "^2.0"`
 - A [GitHub Personal Access Token](https://github.com/settings/tokens) with `repo` and `workflow` scopes
 
 ### Run in development
