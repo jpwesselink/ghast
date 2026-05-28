@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Icon } from "@iconify/react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelPayload, PanelWorkflowRun } from "./types";
 
 function NoiseCanvas({ opacity = 0.08 }: { opacity?: number }) {
@@ -85,37 +85,181 @@ function formatTimeAgo(iso: string): string {
   return `${Math.floor(diffH / 24)}d ago`;
 }
 
-function GameIcon({
-  name,
+function Glyph({
   color,
   pulse = false,
+  children,
 }: {
-  name: string;
   color: string;
   pulse?: boolean;
+  children: React.ReactNode;
 }) {
   return (
-    <Icon
-      icon={`game-icons:${name}`}
-      color={color}
+    <svg
+      viewBox="0 0 24 24"
       className={`bm-status-icon${pulse ? " bm-icon-pulse" : ""}`}
-      style={{ "--glow": color } as React.CSSProperties}
-    />
+      style={{ "--glow": color, color } as React.CSSProperties}
+    >
+      {children}
+    </svg>
   );
+}
+
+const STAR_PTS = (() => {
+  const pts: string[] = [];
+  for (let i = 0; i < 5; i++) {
+    const a = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+    pts.push(`${(12 + 8 * Math.cos(a)).toFixed(2)},${(12 + 8 * Math.sin(a)).toFixed(2)}`);
+  }
+  return pts.join(" ");
+})();
+
+const PentagramGlyph = (
+  <>
+    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.4" />
+    <polygon points={STAR_PTS} fill="none" stroke="currentColor" strokeWidth="1.4" />
+  </>
+);
+
+const SkullGlyph = (
+  <>
+    <path
+      d="M12 3C7.5 3 4.5 6 4.5 10.5c0 2.4 1 3.6 2 4.4V18h2v-1.5h2V18h3v-1.5h2V18h2v-3.1c1-.8 2-2 2-4.4C19.5 6 16.5 3 12 3z"
+      fill="currentColor"
+    />
+    <circle cx="9" cy="11" r="1.6" fill="#0a0303" />
+    <circle cx="15" cy="11" r="1.6" fill="#0a0303" />
+    <path d="M11.2 13.5h1.6v2h-1.6z" fill="#0a0303" />
+  </>
+);
+
+const EyeGlyph = (
+  <>
+    <path
+      d="M2.5 12C5 7.5 8.5 5.5 12 5.5s7 2 9.5 6.5c-2.5 4.5-6 6.5-9.5 6.5s-7-2-9.5-6.5z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <circle cx="12" cy="12" r="3.4" fill="currentColor" />
+    <circle cx="13" cy="11" r="0.9" fill="#0a0303" />
+  </>
+);
+
+const HourglassGlyph = (
+  <>
+    <path
+      d="M6 4h12M6 20h12M7 4l5 8-5 8M17 4l-5 8 5 8"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    <path d="M9 18l3-2 3 2v2H9z" fill="currentColor" />
+  </>
+);
+
+const TombstoneGlyph = (
+  <>
+    <path
+      d="M6 21V11a6 6 0 0 1 12 0v10z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M12 9v6M9.5 11.5h5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </>
+);
+
+const BrokenClockGlyph = (
+  <>
+    <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+    <path
+      d="M12 12V7M12 12l3.5 2"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M5 5l14 14"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </>
+);
+
+const WarningGlyph = (
+  <>
+    <path
+      d="M12 3.5L22 20.5H2z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+    <path d="M12 9.5v5.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    <circle cx="12" cy="17.8" r="1" fill="currentColor" />
+  </>
+);
+
+const CrossbonesGlyph = (
+  <>
+    <path
+      d="M5 5l14 14M19 5L5 19"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+    <circle cx="5" cy="5" r="1.6" fill="currentColor" />
+    <circle cx="19" cy="5" r="1.6" fill="currentColor" />
+    <circle cx="5" cy="19" r="1.6" fill="currentColor" />
+    <circle cx="19" cy="19" r="1.6" fill="currentColor" />
+  </>
+);
+
+function statusLabel(run: PanelWorkflowRun): string {
+  if (run.status === "in_progress") return "Running";
+  if (run.status === "queued") return "Queued";
+  if (run.status === "completed") {
+    switch (run.conclusion) {
+      case "success": return "Succeeded";
+      case "failure": return "Failed";
+      case "cancelled": return "Cancelled";
+      case "skipped": return "Skipped";
+      case "timed_out": return "Timed out";
+      case "action_required": return "Action required";
+      case "neutral": return "Neutral";
+      default: return "Completed";
+    }
+  }
+  return "Unknown";
 }
 
 function StatusIcon({ run }: { run: PanelWorkflowRun }) {
   if (run.status === "in_progress")
-    return <GameIcon name="eye-monster" color="#5577ee" pulse />;
+    return <Glyph color="#5577ee" pulse>{EyeGlyph}</Glyph>;
   if (run.status === "queued")
-    return <GameIcon name="skull-crossed-bones" color="#b8a020" />;
+    return <Glyph color="#b8a020">{HourglassGlyph}</Glyph>;
   if (run.status === "completed") {
     if (run.conclusion === "success")
-      return <GameIcon name="pentagram-rose" color="#55aa22" />;
+      return <Glyph color="#55aa22">{PentagramGlyph}</Glyph>;
     if (run.conclusion === "failure")
-      return <GameIcon name="baphomet" color="#cc2020" />;
+      return <Glyph color="#cc2020">{SkullGlyph}</Glyph>;
+    if (run.conclusion === "cancelled" || run.conclusion === "skipped")
+      return <Glyph color="#9a8a78">{TombstoneGlyph}</Glyph>;
+    if (run.conclusion === "timed_out")
+      return <Glyph color="#cc6622">{BrokenClockGlyph}</Glyph>;
+    if (run.conclusion === "action_required")
+      return <Glyph color="#cc8822">{WarningGlyph}</Glyph>;
   }
-  return <GameIcon name="skull-crossed-bones" color="#605848" />;
+  return <Glyph color="#9a8a78">{CrossbonesGlyph}</Glyph>;
 }
 
 function RunRow({ run }: { run: PanelWorkflowRun }) {
@@ -124,7 +268,14 @@ function RunRow({ run }: { run: PanelWorkflowRun }) {
       className="bm-run-item"
       onClick={() => invoke("open_url", { url: run.html_url })}
     >
-      <StatusIcon run={run} />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="bm-icon-trigger">
+            <StatusIcon run={run} />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
+      </Tooltip>
       <span className="bm-run-name">{run.workflow_name}</span>
       <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
     </div>
@@ -292,6 +443,8 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           gap: 10px;
           padding: 6px 8px;
           margin: 0 6px;
+          width: calc(100% - 12px);
+          box-sizing: border-box;
           border-radius: 5px;
           cursor: pointer;
           transition: background 0.15s;
@@ -307,6 +460,11 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           height: 16px;
           flex-shrink: 0;
           filter: drop-shadow(0 0 1px var(--glow));
+        }
+
+        .bm-icon-trigger {
+          display: inline-flex;
+          flex-shrink: 0;
         }
 
         .bm-icon-pulse {

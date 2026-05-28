@@ -1,5 +1,6 @@
-use crate::config::Config;
+use crate::config::{self, Config};
 use crate::github::WorkflowRun as ApiWorkflowRun;
+use crate::keychain;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -57,19 +58,6 @@ impl WorkflowRun {
         }
     }
 
-    pub fn status_icon(&self) -> &str {
-        match self.status {
-            RunStatus::Queued => "🟡",
-            RunStatus::InProgress => "🔵",
-            RunStatus::Completed => match &self.conclusion {
-                Some(RunConclusion::Success) => "🟢",
-                Some(RunConclusion::Failure) => "🔴",
-                Some(RunConclusion::Cancelled) => "⚪",
-                _ => "⚪",
-            },
-        }
-    }
-
     pub fn is_active(&self) -> bool {
         matches!(self.status, RunStatus::Queued | RunStatus::InProgress)
     }
@@ -122,6 +110,7 @@ pub struct PanelPayload {
 
 pub struct AppState {
     pub config: Config,
+    pub github_pat: String,
     pub runs: HashMap<String, Vec<WorkflowRun>>,
     pub auth_error: bool,
     pub config_dir: PathBuf,
@@ -130,9 +119,19 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(config_dir: PathBuf) -> Self {
+        if let Some(legacy) = config::take_legacy_pat(&config_dir) {
+            if let Err(e) = keychain::save_pat(&legacy) {
+                eprintln!("warning: failed to migrate PAT to keychain: {e}");
+            }
+        }
         let config = Config::load(&config_dir);
+        let github_pat = keychain::load_pat().unwrap_or_else(|e| {
+            eprintln!("warning: keychain unavailable: {e}");
+            None
+        }).unwrap_or_default();
         Self {
             config,
+            github_pat,
             runs: HashMap::new(),
             auth_error: false,
             config_dir,
@@ -162,7 +161,7 @@ impl AppState {
             repos,
             runs,
             auth_error: self.auth_error,
-            has_pat: !self.config.github_pat.is_empty(),
+            has_pat: !self.github_pat.is_empty(),
             badge_count: self.badge_count(),
         }
     }
@@ -186,7 +185,6 @@ mod tests {
 
     fn make_api_run(status: &str, conclusion: Option<&str>) -> ApiWorkflowRun {
         ApiWorkflowRun {
-            id: 1,
             name: "CI".to_string(),
             status: status.to_string(),
             conclusion: conclusion.map(String::from),
@@ -202,7 +200,6 @@ mod tests {
         assert_eq!(run.status, RunStatus::Completed);
         assert_eq!(run.conclusion, Some(RunConclusion::Success));
         assert_eq!(run.workflow_name, "CI");
-        assert_eq!(run.status_icon(), "🟢");
         assert!(!run.is_active());
     }
 
@@ -210,7 +207,8 @@ mod tests {
     fn test_from_api_completed_failure() {
         let api = make_api_run("completed", Some("failure"));
         let run = WorkflowRun::from_api("owner/repo", &api);
-        assert_eq!(run.status_icon(), "🔴");
+        assert_eq!(run.status, RunStatus::Completed);
+        assert_eq!(run.conclusion, Some(RunConclusion::Failure));
         assert!(!run.is_active());
     }
 
@@ -219,7 +217,6 @@ mod tests {
         let api = make_api_run("in_progress", None);
         let run = WorkflowRun::from_api("owner/repo", &api);
         assert_eq!(run.status, RunStatus::InProgress);
-        assert_eq!(run.status_icon(), "🔵");
         assert!(run.is_active());
     }
 
@@ -228,7 +225,6 @@ mod tests {
         let api = make_api_run("queued", None);
         let run = WorkflowRun::from_api("owner/repo", &api);
         assert_eq!(run.status, RunStatus::Queued);
-        assert_eq!(run.status_icon(), "🟡");
         assert!(run.is_active());
     }
 
@@ -236,14 +232,14 @@ mod tests {
     fn test_from_api_cancelled() {
         let api = make_api_run("completed", Some("cancelled"));
         let run = WorkflowRun::from_api("owner/repo", &api);
-        assert_eq!(run.status_icon(), "⚪");
+        assert_eq!(run.status, RunStatus::Completed);
+        assert_eq!(run.conclusion, Some(RunConclusion::Cancelled));
         assert!(!run.is_active());
     }
 
     #[test]
     fn test_from_api_fallback_name() {
         let api = ApiWorkflowRun {
-            id: 1,
             name: "Deploy".to_string(),
             status: "completed".to_string(),
             conclusion: Some("success".to_string()),

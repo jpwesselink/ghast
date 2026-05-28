@@ -1,5 +1,6 @@
 mod config;
 mod github;
+mod keychain;
 mod notify;
 mod panel;
 mod poller;
@@ -10,6 +11,7 @@ use github::GitHubClient;
 use state::{AppState, SharedState};
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
+use tauri_plugin_notification::NotificationExt;
 use tokio::sync::Notify;
 
 #[tauri::command]
@@ -20,11 +22,11 @@ async fn save_pat(
 ) -> Result<String, String> {
     let client = GitHubClient::new(&pat)?;
     let login = client.validate_pat().await?;
+    keychain::save_pat(&pat)?;
 
     {
         let mut s = state.lock().unwrap();
-        s.config.github_pat = pat;
-        s.config.save(&s.config_dir)?;
+        s.github_pat = pat;
         s.auth_error = false;
     }
 
@@ -32,10 +34,46 @@ async fn save_pat(
     Ok(login)
 }
 
+#[derive(serde::Serialize)]
+struct ConfigResponse {
+    has_pat: bool,
+    watched_repos: Vec<String>,
+    poll_interval_secs: u64,
+    theme: String,
+}
+
 #[tauri::command]
-fn get_config(state: tauri::State<'_, SharedState>) -> config::Config {
+fn get_config(state: tauri::State<'_, SharedState>) -> ConfigResponse {
     let s = state.lock().unwrap();
-    s.config.clone()
+    ConfigResponse {
+        has_pat: !s.github_pat.is_empty(),
+        watched_repos: s.config.watched_repos.clone(),
+        poll_interval_secs: s.config.poll_interval_secs,
+        theme: s.config.theme.clone(),
+    }
+}
+
+#[tauri::command]
+fn get_theme(state: tauri::State<'_, SharedState>) -> String {
+    let s = state.lock().unwrap();
+    s.config.theme.clone()
+}
+
+#[tauri::command]
+fn set_theme(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, SharedState>,
+    theme: String,
+) -> Result<(), String> {
+    {
+        let mut s = state.lock().unwrap();
+        s.config.theme = theme.clone();
+        s.config.save(&s.config_dir)?;
+    }
+    use tauri::Emitter;
+    app.emit("theme-changed", theme)
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -44,7 +82,7 @@ async fn get_repos(
 ) -> Result<Vec<github::GitHubRepo>, String> {
     let pat = {
         let s = state.lock().unwrap();
-        s.config.github_pat.clone()
+        s.github_pat.clone()
     };
 
     if pat.is_empty() {
@@ -97,6 +135,16 @@ fn open_url(url: String) {
 }
 
 #[tauri::command]
+fn show_notification(app: tauri::AppHandle, title: String, body: String) -> Result<(), String> {
+    app.notification()
+        .builder()
+        .title(title)
+        .body(body)
+        .show()
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn hide_panel(app: tauri::AppHandle) {
     use tauri::Manager;
     if let Some(window) = app.get_webview_window("panel") {
@@ -143,8 +191,7 @@ pub fn run() {
                 .app_config_dir()
                 .expect("failed to get config dir");
 
-            let shared_state: SharedState =
-                Arc::new(Mutex::new(AppState::new(config_dir)));
+            let shared_state: SharedState = Arc::new(Mutex::new(AppState::new(config_dir)));
             app.manage(shared_state.clone());
 
             let poll_trigger = Arc::new(Notify::new());
@@ -153,17 +200,15 @@ pub fn run() {
             let _tray_icon = tray::create_tray(app.handle())?;
             panel::setup_panel(app.handle());
 
-            poller::start_polling(
-                app.handle().clone(),
-                poll_trigger,
-                shared_state,
-            );
+            poller::start_polling(app.handle().clone(), poll_trigger, shared_state);
 
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             save_pat,
             get_config,
+            get_theme,
+            set_theme,
             get_repos,
             set_watched_repos,
             get_workflow_runs,
@@ -171,6 +216,7 @@ pub fn run() {
             open_about,
             quit_app,
             open_url,
+            show_notification,
             hide_panel,
             set_panel_width,
         ])

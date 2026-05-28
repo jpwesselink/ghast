@@ -35,7 +35,7 @@ pub fn start_polling(
 async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
     let (pat, repos) = {
         let s = state.lock().unwrap();
-        (s.config.github_pat.clone(), s.config.watched_repos.clone())
+        (s.github_pat.clone(), s.config.watched_repos.clone())
     };
 
     if pat.is_empty() || repos.is_empty() {

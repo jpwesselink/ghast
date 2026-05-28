@@ -107,6 +107,7 @@ body {
   gap: 8px;
   padding: 6px 8px;
   margin: 0 6px;
+  width: calc(100% - 12px);
   border: none;
   background: none;
   color: var(--text-primary);
@@ -185,4 +186,39 @@ body {
 .footer-item:hover {
   background: var(--bg-hover);
   color: var(--text-hover);
+}
+
+/* tooltip (radix) */
+.tooltip-content {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: 9999;
+  user-select: none;
+  animation: tooltip-in 120ms ease-out;
+}
+.tooltip-content--default {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: rgba(40, 40, 40, 0.95);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.tooltip-arrow--default { fill: rgba(40, 40, 40, 0.95); }
+
+.tooltip-content--blackmetal {
+  background: linear-gradient(180deg, #1a0808 0%, #050000 100%);
+  color: #ddc0a0;
+  border: 1px solid #4a1010;
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 10px rgba(120, 0, 0, 0.5);
+}
+.tooltip-arrow--blackmetal { fill: #1a0808; }
+
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
 }

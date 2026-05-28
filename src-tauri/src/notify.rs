@@ -1,5 +1,5 @@
 use crate::state::{RunConclusion, RunStatus, WorkflowRun};
-use tauri::AppHandle;
+use tauri::{AppHandle, Emitter};
 
 /// Returns workflow runs that transitioned from active (Queued/InProgress) to Completed.
 /// Returns empty if `old` is None (first poll for this repo — no baseline to diff against).
@@ -23,6 +23,12 @@ pub fn detect_completions(
         .collect()
 }
 
+#[derive(serde::Serialize, Clone)]
+pub struct CompletionEvent {
+    pub title: String,
+    pub body: String,
+}
+
 pub fn send_completion_notification(app: &AppHandle, run: &WorkflowRun) {
     let conclusion_label = match &run.conclusion {
         Some(RunConclusion::Success)        => "succeeded",
@@ -35,38 +41,10 @@ pub fn send_completion_notification(app: &AppHandle, run: &WorkflowRun) {
         None                                => "completed",
     };
 
-    let title = run.repo.clone();
-    let body  = format!("{} — {}", run.workflow_name, conclusion_label);
-
-    // Use our own bundle ID so the ghast icon appears on the left in both dev and
-    // production. The plugin hard-codes com.apple.Terminal in dev, which shows
-    // Terminal's icon instead. Tauri dev builds run as a real .app bundle so our
-    // icon is resolvable.
-    #[cfg(target_os = "macos")]
-    {
-        use notify_rust::Notification;
-
-        let app_id = app.config().identifier.clone();
-
-        tauri::async_runtime::spawn(async move {
-            let _ = notify_rust::set_application(&app_id);
-            let _ = Notification::new()
-                .summary(&title)
-                .body(&body)
-                .show();
-        });
-    }
-
-    #[cfg(not(target_os = "macos"))]
-    {
-        use tauri_plugin_notification::NotificationExt;
-        let _ = app
-            .notification()
-            .builder()
-            .title(title)
-            .body(body)
-            .show();
-    }
+    let _ = app.emit("workflow-completed", CompletionEvent {
+        title: run.repo.clone(),
+        body: format!("{} — {}", run.workflow_name, conclusion_label),
+    });
 }
 
 #[cfg(test)]
@@ -77,7 +55,6 @@ mod tests {
 
     fn api_run(id: u64, status: &str, conclusion: Option<&str>) -> ApiWorkflowRun {
         ApiWorkflowRun {
-            id,
             name: "CI".to_string(),
             status: status.to_string(),
             conclusion: conclusion.map(String::from),
