@@ -28,7 +28,6 @@ fn panel_position(rect: &Rect, panel_width: f64) -> (f64, f64) {
 /// Ask NSApplication to activate, which causes other apps' open menus to close.
 /// This works without changing the activation policy or requiring accessibility permissions.
 #[cfg(target_os = "macos")]
-#[allow(unexpected_cfgs)]
 fn activate_to_dismiss_other_menus() {
     use objc::runtime::{Object, YES};
     use objc::{class, msg_send, sel, sel_impl};
@@ -62,7 +61,6 @@ pub fn toggle_panel(app: &AppHandle, rect: Rect) {
     }
 }
 
-#[allow(unexpected_cfgs)]
 pub fn setup_panel(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(PANEL_LABEL) {
         #[cfg(target_os = "macos")]
