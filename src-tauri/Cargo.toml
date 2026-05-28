@@ -24,4 +24,3 @@ keyring = { version = "3", features = ["apple-native"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2"
-notify-rust = "4"

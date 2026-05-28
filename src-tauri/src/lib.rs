@@ -11,6 +11,7 @@ use github::GitHubClient;
 use state::{AppState, SharedState};
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
+use tauri_plugin_notification::NotificationExt;
 use tokio::sync::Notify;
 
 #[tauri::command]
@@ -70,7 +71,8 @@ fn set_theme(
         s.config.save(&s.config_dir)?;
     }
     use tauri::Emitter;
-    app.emit("theme-changed", theme).map_err(|e| e.to_string())?;
+    app.emit("theme-changed", theme)
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -133,6 +135,16 @@ fn open_url(url: String) {
 }
 
 #[tauri::command]
+fn show_notification(app: tauri::AppHandle, title: String, body: String) -> Result<(), String> {
+    app.notification()
+        .builder()
+        .title(title)
+        .body(body)
+        .show()
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn hide_panel(app: tauri::AppHandle) {
     use tauri::Manager;
     if let Some(window) = app.get_webview_window("panel") {
@@ -179,8 +191,7 @@ pub fn run() {
                 .app_config_dir()
                 .expect("failed to get config dir");
 
-            let shared_state: SharedState =
-                Arc::new(Mutex::new(AppState::new(config_dir)));
+            let shared_state: SharedState = Arc::new(Mutex::new(AppState::new(config_dir)));
             app.manage(shared_state.clone());
 
             let poll_trigger = Arc::new(Notify::new());
@@ -189,11 +200,7 @@ pub fn run() {
             let _tray_icon = tray::create_tray(app.handle())?;
             panel::setup_panel(app.handle());
 
-            poller::start_polling(
-                app.handle().clone(),
-                poll_trigger,
-                shared_state,
-            );
+            poller::start_polling(app.handle().clone(), poll_trigger, shared_state);
 
             Ok(())
         })
@@ -209,6 +216,7 @@ pub fn run() {
             open_about,
             quit_app,
             open_url,
+            show_notification,
             hide_panel,
             set_panel_width,
         ])

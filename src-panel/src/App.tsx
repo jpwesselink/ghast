@@ -36,6 +36,41 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let unlistenCompletion: (() => void) | undefined;
+
+    (async () => {
+      if (!("Notification" in window)) {
+        return;
+      }
+
+      const initialPermission = Notification.permission;
+
+      // The plugin's isPermissionGranted() hits a Rust stub that always returns
+      // Granted on desktop, so requestPermission() would never be called.
+      // Check the browser Notification API directly instead.
+      if (initialPermission === "default") {
+        await Notification.requestPermission();
+      }
+
+      if (Notification.permission === "granted") {
+        unlistenCompletion = await listen<{ title: string; body: string }>(
+          "workflow-completed",
+          async (event) => {
+            await invoke("show_notification", {
+              title: event.payload.title,
+              body: event.payload.body,
+            });
+          }
+        );
+      }
+    })();
+
+    return () => {
+      unlistenCompletion?.();
+    };
+  }, []);
+
+  useEffect(() => {
     const applyTheme = (t: string) => {
       const isBm = t === "blackmetal";
       setBlackMetal(isBm);

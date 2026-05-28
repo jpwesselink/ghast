@@ -58,19 +58,6 @@ impl WorkflowRun {
         }
     }
 
-    pub fn status_icon(&self) -> &str {
-        match self.status {
-            RunStatus::Queued => "🟡",
-            RunStatus::InProgress => "🔵",
-            RunStatus::Completed => match &self.conclusion {
-                Some(RunConclusion::Success) => "🟢",
-                Some(RunConclusion::Failure) => "🔴",
-                Some(RunConclusion::Cancelled) => "⚪",
-                _ => "⚪",
-            },
-        }
-    }
-
     pub fn is_active(&self) -> bool {
         matches!(self.status, RunStatus::Queued | RunStatus::InProgress)
     }
@@ -198,7 +185,6 @@ mod tests {
 
     fn make_api_run(status: &str, conclusion: Option<&str>) -> ApiWorkflowRun {
         ApiWorkflowRun {
-            id: 1,
             name: "CI".to_string(),
             status: status.to_string(),
             conclusion: conclusion.map(String::from),
@@ -214,7 +200,6 @@ mod tests {
         assert_eq!(run.status, RunStatus::Completed);
         assert_eq!(run.conclusion, Some(RunConclusion::Success));
         assert_eq!(run.workflow_name, "CI");
-        assert_eq!(run.status_icon(), "🟢");
         assert!(!run.is_active());
     }
 
@@ -222,7 +207,8 @@ mod tests {
     fn test_from_api_completed_failure() {
         let api = make_api_run("completed", Some("failure"));
         let run = WorkflowRun::from_api("owner/repo", &api);
-        assert_eq!(run.status_icon(), "🔴");
+        assert_eq!(run.status, RunStatus::Completed);
+        assert_eq!(run.conclusion, Some(RunConclusion::Failure));
         assert!(!run.is_active());
     }
 
@@ -231,7 +217,6 @@ mod tests {
         let api = make_api_run("in_progress", None);
         let run = WorkflowRun::from_api("owner/repo", &api);
         assert_eq!(run.status, RunStatus::InProgress);
-        assert_eq!(run.status_icon(), "🔵");
         assert!(run.is_active());
     }
 
@@ -240,7 +225,6 @@ mod tests {
         let api = make_api_run("queued", None);
         let run = WorkflowRun::from_api("owner/repo", &api);
         assert_eq!(run.status, RunStatus::Queued);
-        assert_eq!(run.status_icon(), "🟡");
         assert!(run.is_active());
     }
 
@@ -248,14 +232,14 @@ mod tests {
     fn test_from_api_cancelled() {
         let api = make_api_run("completed", Some("cancelled"));
         let run = WorkflowRun::from_api("owner/repo", &api);
-        assert_eq!(run.status_icon(), "⚪");
+        assert_eq!(run.status, RunStatus::Completed);
+        assert_eq!(run.conclusion, Some(RunConclusion::Cancelled));
         assert!(!run.is_active());
     }
 
     #[test]
     fn test_from_api_fallback_name() {
         let api = ApiWorkflowRun {
-            id: 1,
             name: "Deploy".to_string(),
             status: "completed".to_string(),
             conclusion: Some("success".to_string()),

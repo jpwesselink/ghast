@@ -1,23 +1,7 @@
 use crate::state::SharedState;
-use chrono::{DateTime, Utc};
 use tauri::image::Image;
 use tauri::tray::{TrayIcon, TrayIconBuilder};
 use tauri::AppHandle;
-
-pub fn format_time_ago(dt: DateTime<Utc>) -> String {
-    let now = Utc::now();
-    let diff = now - dt;
-
-    if diff.num_seconds() < 60 {
-        "just now".to_string()
-    } else if diff.num_minutes() < 60 {
-        format!("{}m ago", diff.num_minutes())
-    } else if diff.num_hours() < 24 {
-        format!("{}h ago", diff.num_hours())
-    } else {
-        format!("{}d ago", diff.num_days())
-    }
-}
 
 pub fn create_tray(app: &AppHandle) -> tauri::Result<TrayIcon> {
     let icon = Image::from_bytes(include_bytes!("../icons/32x32.png"))?;
@@ -111,32 +95,3 @@ pub fn update_tray_badge(
     Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use chrono::TimeDelta;
-
-    #[test]
-    fn test_format_time_ago_just_now() {
-        let dt = Utc::now() - TimeDelta::seconds(30);
-        assert_eq!(format_time_ago(dt), "just now");
-    }
-
-    #[test]
-    fn test_format_time_ago_minutes() {
-        let dt = Utc::now() - TimeDelta::minutes(5);
-        assert_eq!(format_time_ago(dt), "5m ago");
-    }
-
-    #[test]
-    fn test_format_time_ago_hours() {
-        let dt = Utc::now() - TimeDelta::hours(3);
-        assert_eq!(format_time_ago(dt), "3h ago");
-    }
-
-    #[test]
-    fn test_format_time_ago_days() {
-        let dt = Utc::now() - TimeDelta::days(2);
-        assert_eq!(format_time_ago(dt), "2d ago");
-    }
-}

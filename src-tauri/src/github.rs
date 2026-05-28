@@ -11,7 +11,6 @@ pub struct GitHubRepo {
 
 #[derive(Debug, Clone)]
 pub struct WorkflowRun {
-    pub id: u64,
     pub name: String,
     pub status: String,
     pub conclusion: Option<String>,
@@ -73,7 +72,6 @@ impl GitHubClient {
             .items
             .into_iter()
             .map(|r| WorkflowRun {
-                id: r.id.0,
                 name: r.name,
                 status: r.status.clone(),
                 conclusion: r.conclusion.clone(),
