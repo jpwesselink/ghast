@@ -1,4 +1,4 @@
-use crate::state::{RunConclusion, RunStatus, WorkflowRun};
+use crate::state::{PendingReview, RunConclusion, RunStatus, WorkflowRun};
 use tauri::{AppHandle, Emitter};
 
 /// Returns workflow runs that transitioned from active (Queued/InProgress) to Completed.
@@ -44,6 +44,24 @@ pub fn send_completion_notification(app: &AppHandle, run: &WorkflowRun) {
     let _ = app.emit("workflow-completed", CompletionEvent {
         title: run.repo.clone(),
         body: format!("{} — {}", run.workflow_name, conclusion_label),
+    });
+}
+
+/// Returns review requests in `new` that are not in `old` (by html_url).
+pub fn detect_new_review_requests(
+    old: &[PendingReview],
+    new: &[PendingReview],
+) -> Vec<PendingReview> {
+    new.iter()
+        .filter(|n| !old.iter().any(|o| o.html_url == n.html_url))
+        .cloned()
+        .collect()
+}
+
+pub fn send_review_notification(app: &AppHandle, review: &PendingReview) {
+    let _ = app.emit("workflow-completed", CompletionEvent {
+        title: format!("Review requested: {}", review.repo),
+        body: format!("#{} by @{} — {}", review.number, review.author, review.title),
     });
 }
 

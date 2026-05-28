@@ -133,6 +133,10 @@ body {
   flex-shrink: 0;
 }
 
+.review-dot {
+  background: rgb(155, 100, 220);
+}
+
 .run-name {
   flex: 1;
   overflow: hidden;

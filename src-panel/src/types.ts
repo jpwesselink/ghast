@@ -7,9 +7,19 @@ export interface PanelWorkflowRun {
   created_at: string;
 }
 
+export interface PanelPendingReview {
+  repo: string;
+  number: number;
+  title: string;
+  author: string;
+  html_url: string;
+  created_at: string;
+}
+
 export interface PanelPayload {
   repos: string[];
   runs: Record<string, PanelWorkflowRun[]>;
+  pending_reviews: PanelPendingReview[];
   auth_error: boolean;
   has_pat: boolean;
   badge_count: number;

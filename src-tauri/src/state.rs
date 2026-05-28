@@ -1,5 +1,5 @@
 use crate::config::{self, Config};
-use crate::github::WorkflowRun as ApiWorkflowRun;
+use crate::github::{ReviewRequest as ApiReviewRequest, WorkflowRun as ApiWorkflowRun};
 use crate::keychain;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
@@ -99,10 +99,57 @@ impl From<&WorkflowRun> for PanelWorkflowRun {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct PendingReview {
+    pub repo: String,
+    pub number: u64,
+    pub title: String,
+    pub author: String,
+    pub html_url: String,
+    pub created_at: DateTime<Utc>,
+}
+
+impl PendingReview {
+    pub fn from_api(api: &ApiReviewRequest) -> Self {
+        Self {
+            repo: api.repo.clone(),
+            number: api.number,
+            title: api.title.clone(),
+            author: api.author.clone(),
+            html_url: api.html_url.clone(),
+            created_at: api.created_at,
+        }
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct PanelPendingReview {
+    pub repo: String,
+    pub number: u64,
+    pub title: String,
+    pub author: String,
+    pub html_url: String,
+    pub created_at: String,
+}
+
+impl From<&PendingReview> for PanelPendingReview {
+    fn from(r: &PendingReview) -> Self {
+        Self {
+            repo: r.repo.clone(),
+            number: r.number,
+            title: r.title.clone(),
+            author: r.author.clone(),
+            html_url: r.html_url.clone(),
+            created_at: r.created_at.to_rfc3339(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct PanelPayload {
     pub repos: Vec<String>,
     pub runs: HashMap<String, Vec<PanelWorkflowRun>>,
+    pub pending_reviews: Vec<PanelPendingReview>,
     pub auth_error: bool,
     pub has_pat: bool,
     pub badge_count: usize,
@@ -112,9 +159,11 @@ pub struct AppState {
     pub config: Config,
     pub github_pat: String,
     pub runs: HashMap<String, Vec<WorkflowRun>>,
+    pub pending_reviews: Vec<PendingReview>,
     pub auth_error: bool,
     pub config_dir: PathBuf,
     pub first_poll: bool,
+    pub first_review_poll: bool,
 }
 
 impl AppState {
@@ -133,9 +182,11 @@ impl AppState {
             config,
             github_pat,
             runs: HashMap::new(),
+            pending_reviews: Vec::new(),
             auth_error: false,
             config_dir,
             first_poll: true,
+            first_review_poll: true,
         }
     }
 
@@ -157,9 +208,16 @@ impl AppState {
             })
             .collect();
 
+        let pending_reviews: Vec<PanelPendingReview> = {
+            let mut sorted: Vec<&PendingReview> = self.pending_reviews.iter().collect();
+            sorted.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+            sorted.iter().map(|r| PanelPendingReview::from(*r)).collect()
+        };
+
         PanelPayload {
             repos,
             runs,
+            pending_reviews,
             auth_error: self.auth_error,
             has_pat: !self.github_pat.is_empty(),
             badge_count: self.badge_count(),
@@ -167,11 +225,13 @@ impl AppState {
     }
 
     pub fn badge_count(&self) -> usize {
-        self.runs
+        let active_runs = self
+            .runs
             .values()
             .flat_map(|runs| runs.iter())
             .filter(|r| r.is_active())
-            .count()
+            .count();
+        active_runs + self.pending_reviews.len()
     }
 }
 

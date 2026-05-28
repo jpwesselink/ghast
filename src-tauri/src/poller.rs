@@ -1,7 +1,7 @@
 use crate::github::GitHubClient;
 use crate::notify;
 use crate::panel;
-use crate::state::{SharedState, WorkflowRun};
+use crate::state::{PendingReview, SharedState, WorkflowRun};
 use crate::tray::update_tray_badge;
 use std::sync::Arc;
 use std::time::Duration;
@@ -33,12 +33,16 @@ pub fn start_polling(
 }
 
 async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
-    let (pat, repos) = {
+    let (pat, repos, review_repos) = {
         let s = state.lock().unwrap();
-        (s.github_pat.clone(), s.config.watched_repos.clone())
+        (
+            s.github_pat.clone(),
+            s.config.watched_repos.clone(),
+            s.config.review_repos.clone(),
+        )
     };
 
-    if pat.is_empty() || repos.is_empty() {
+    if pat.is_empty() || (repos.is_empty() && review_repos.is_empty()) {
         rebuild(app, state);
         return;
     }
@@ -94,7 +98,52 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
         s.first_poll = false;
     }
 
+    poll_review_requests(app, state, &client, &review_repos).await;
+
     rebuild(app, state);
+}
+
+async fn poll_review_requests(
+    app: &tauri::AppHandle,
+    state: &SharedState,
+    client: &GitHubClient,
+    repos: &[String],
+) {
+    if repos.is_empty() {
+        let mut s = state.lock().unwrap();
+        s.pending_reviews.clear();
+        s.first_review_poll = false;
+        return;
+    }
+
+    let api_reviews = match client.get_review_requests(repos).await {
+        Ok(r) => r,
+        Err(e) if e == "auth_error" => {
+            let mut s = state.lock().unwrap();
+            s.auth_error = true;
+            return;
+        }
+        Err(_) => return, // network error — keep last known list
+    };
+
+    let new_reviews: Vec<PendingReview> =
+        api_reviews.iter().map(PendingReview::from_api).collect();
+
+    let to_notify: Vec<PendingReview> = {
+        let s = state.lock().unwrap();
+        if s.first_review_poll {
+            Vec::new()
+        } else {
+            notify::detect_new_review_requests(&s.pending_reviews, &new_reviews)
+        }
+    };
+    for review in &to_notify {
+        notify::send_review_notification(app, review);
+    }
+
+    let mut s = state.lock().unwrap();
+    s.pending_reviews = new_reviews;
+    s.first_review_poll = false;
 }
 
 fn rebuild(app: &tauri::AppHandle, state: &SharedState) {
