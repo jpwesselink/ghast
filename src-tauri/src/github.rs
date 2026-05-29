@@ -18,6 +18,16 @@ pub struct WorkflowRun {
     pub created_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone)]
+pub struct ReviewRequest {
+    pub repo: String,
+    pub number: u64,
+    pub title: String,
+    pub author: String,
+    pub html_url: String,
+    pub created_at: DateTime<Utc>,
+}
+
 pub struct GitHubClient {
     octo: Octocrab,
 }
@@ -81,6 +91,60 @@ impl GitHubClient {
             .collect();
 
         Ok(runs)
+    }
+
+    pub async fn get_review_requests(
+        &self,
+        repos: &[String],
+    ) -> Result<Vec<ReviewRequest>, String> {
+        if repos.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let repo_filter: String = repos
+            .iter()
+            .map(|r| format!("repo:{r}"))
+            .collect::<Vec<_>>()
+            .join(" ");
+        let query = format!("is:pr is:open review-requested:@me {repo_filter}");
+
+        let page = self
+            .octo
+            .search()
+            .issues_and_pull_requests(&query)
+            .per_page(50)
+            .send()
+            .await
+            .map_err(|e| {
+                let msg = e.to_string();
+                if msg.contains("401") {
+                    "auth_error".to_string()
+                } else {
+                    msg
+                }
+            })?;
+
+        let mut out = Vec::new();
+        for item in page.items {
+            let repo = item
+                .repository_url
+                .path_segments()
+                .and_then(|mut segs| {
+                    let owner = segs.next()?.to_string();
+                    let name = segs.next()?.to_string();
+                    Some(format!("{owner}/{name}"))
+                })
+                .unwrap_or_default();
+            out.push(ReviewRequest {
+                repo,
+                number: item.number,
+                title: item.title,
+                author: item.user.login,
+                html_url: item.html_url.to_string(),
+                created_at: item.created_at,
+            });
+        }
+        Ok(out)
     }
 
     pub async fn get_user_repos(&self) -> Result<Vec<GitHubRepo>, String> {

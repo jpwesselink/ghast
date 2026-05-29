@@ -6,6 +6,8 @@ use std::path::Path;
 pub struct Config {
     #[serde(default)]
     pub watched_repos: Vec<String>,
+    #[serde(default)]
+    pub review_repos: Vec<String>,
     #[serde(default = "default_poll_interval")]
     pub poll_interval_secs: u64,
     #[serde(default = "default_theme")]
@@ -24,6 +26,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             watched_repos: Vec::new(),
+            review_repos: Vec::new(),
             poll_interval_secs: 30,
             theme: default_theme(),
         }
@@ -69,6 +72,7 @@ mod tests {
     fn test_default_config() {
         let config = Config::default();
         assert!(config.watched_repos.is_empty());
+        assert!(config.review_repos.is_empty());
         assert_eq!(config.poll_interval_secs, 30);
     }
 
@@ -76,6 +80,7 @@ mod tests {
     fn test_serialize_deserialize() {
         let config = Config {
             watched_repos: vec!["owner/repo".to_string()],
+            review_repos: vec!["owner/other".to_string()],
             poll_interval_secs: 30,
             theme: "blackmetal".to_string(),
         };
@@ -89,6 +94,7 @@ mod tests {
         let json = r#"{}"#;
         let config: Config = serde_json::from_str(json).unwrap();
         assert!(config.watched_repos.is_empty());
+        assert!(config.review_repos.is_empty());
         assert_eq!(config.poll_interval_secs, 30);
         assert_eq!(config.theme, "normal");
     }
@@ -100,6 +106,7 @@ mod tests {
 
         let config = Config {
             watched_repos: vec!["owner/repo".to_string()],
+            review_repos: vec!["owner/other".to_string()],
             poll_interval_secs: 60,
             theme: "normal".to_string(),
         };

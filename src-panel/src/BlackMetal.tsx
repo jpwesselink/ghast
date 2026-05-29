@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
-import type { PanelPayload, PanelWorkflowRun } from "./types";
+import type { PanelPayload, PanelPendingReview, PanelWorkflowRun } from "./types";
 
 function NoiseCanvas({ opacity = 0.08 }: { opacity?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -260,6 +260,46 @@ function StatusIcon({ run }: { run: PanelWorkflowRun }) {
       return <Glyph color="#cc8822">{WarningGlyph}</Glyph>;
   }
   return <Glyph color="#9a8a78">{CrossbonesGlyph}</Glyph>;
+}
+
+const ScrollGlyph = (
+  <>
+    <path
+      d="M5 5h11a3 3 0 0 1 3 3v8a3 3 0 0 0 3 3H7a3 3 0 0 1-3-3V7a2 2 0 0 1 1-2z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M8 9h7M8 12h7M8 15h5"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    />
+  </>
+);
+
+function ReviewRow({ review }: { review: PanelPendingReview }) {
+  return (
+    <div
+      className="bm-run-item"
+      onClick={() => invoke("open_url", { url: review.html_url })}
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="bm-icon-trigger">
+            <Glyph color="#9b64dc">{ScrollGlyph}</Glyph>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent variant="blackmetal">
+          {`${review.repo} #${review.number} — @${review.author}`}
+        </TooltipContent>
+      </Tooltip>
+      <span className="bm-run-name">{review.title}</span>
+      <span className="bm-run-time">{formatTimeAgo(review.created_at)}</span>
+    </div>
+  );
 }
 
 function RunRow({ run }: { run: PanelWorkflowRun }) {
@@ -576,21 +616,32 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
               <div className="bm-message">The binding has failed... check Settings</div>
             ) : !data.has_pat ? (
               <div className="bm-message">No soul has been bound... open Settings</div>
-            ) : data.repos.length === 0 ? (
+            ) : data.repos.length === 0 && data.pending_reviews.length === 0 ? (
               <div className="bm-message">No repositories have been haunted</div>
             ) : (
-              data.repos.map((repo) => (
-                <div key={repo} className="bm-repo-group">
-                  <div className="bm-repo-header">{repo}</div>
-                  {data.runs[repo] ? (
-                    data.runs[repo].map((run) => (
-                      <RunRow key={run.html_url} run={run} />
-                    ))
-                  ) : (
-                    <div className="bm-message">summoning...</div>
-                  )}
-                </div>
-              ))
+              <>
+                {data.repos.map((repo) => (
+                  <div key={repo} className="bm-repo-group">
+                    <div className="bm-repo-header">{repo}</div>
+                    {data.runs[repo] ? (
+                      data.runs[repo].map((run) => (
+                        <RunRow key={run.html_url} run={run} />
+                      ))
+                    ) : (
+                      <div className="bm-message">summoning...</div>
+                    )}
+                  </div>
+                ))}
+
+                {data.pending_reviews.length > 0 && (
+                  <div className="bm-repo-group">
+                    <div className="bm-repo-header">Awaiting judgment</div>
+                    {data.pending_reviews.map((r) => (
+                      <ReviewRow key={r.html_url} review={r} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
 

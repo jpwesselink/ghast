@@ -12,17 +12,19 @@ export default function Settings() {
   const [bound, setBound] = useState(false);
   const [allRepos, setAllRepos] = useState<GitHubRepo[]>([]);
   const [watchedSet, setWatchedSet] = useState<Set<string>>(new Set());
+  const [reviewSet, setReviewSet] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [patStatus, setPatStatus] = useState("");
   const [patError, setPatError] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    invoke<{ has_pat: boolean; watched_repos: string[] }>("get_config").then((config) => {
+    invoke<{ has_pat: boolean; watched_repos: string[]; review_repos: string[] }>("get_config").then((config) => {
       if (config.has_pat) {
         setBound(true);
         setPatStatus("Connected");
         setWatchedSet(new Set(config.watched_repos));
+        setReviewSet(new Set(config.review_repos));
         loadRepos();
       }
     });
@@ -54,6 +56,18 @@ export default function Settings() {
       await invoke("set_watched_repos", { repos: Array.from(next) });
     } catch (e) {
       console.error("set_watched_repos failed", e);
+    }
+  };
+
+  const toggleReviewRepo = async (name: string) => {
+    const next = new Set(reviewSet);
+    if (next.has(name)) next.delete(name);
+    else next.add(name);
+    setReviewSet(next);
+    try {
+      await invoke("set_review_repos", { repos: Array.from(next) });
+    } catch (e) {
+      console.error("set_review_repos failed", e);
     }
   };
 
@@ -196,13 +210,34 @@ export default function Settings() {
           align-items: center;
           padding: 10px 12px;
           border-bottom: 1px solid var(--s-border);
-          cursor: pointer;
           transition: background 0.1s;
           gap: 10px;
         }
 
         .s-repo-item:last-child { border-bottom: none; }
         .s-repo-item:hover { background: var(--s-hover); }
+
+        .s-repo-col {
+          width: 60px;
+          flex-shrink: 0;
+          display: flex;
+          justify-content: center;
+          cursor: pointer;
+        }
+
+        .s-col-headers {
+          display: flex;
+          padding: 6px 12px;
+          gap: 10px;
+          color: var(--s-secondary);
+          font-size: 10px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          border-bottom: 1px solid var(--s-border);
+        }
+        .s-col-headers .s-col-spacer { flex: 1; }
+        .s-col-headers .s-col-h { width: 60px; text-align: center; flex-shrink: 0; }
 
         .s-checkbox {
           width: 16px;
@@ -306,20 +341,30 @@ export default function Settings() {
               <div className="s-empty">
                 {bound ? "Loading repositories..." : "Connect your GitHub token to see repositories"}
               </div>
-            ) : filtered.length === 0 ? (
-              <div className="s-empty">No matches</div>
             ) : (
-              filtered.map((repo) => (
-                <div
-                  key={repo.full_name}
-                  className="s-repo-item"
-                  onClick={() => toggleRepo(repo.full_name)}
-                >
-                  <div className={`s-checkbox ${watchedSet.has(repo.full_name) ? "checked" : ""}`} />
-                  <span className="s-repo-name">{repo.full_name}</span>
-                  {repo.private && <span className="s-badge">private</span>}
+              <>
+                <div className="s-col-headers">
+                  <span className="s-col-spacer">Repository</span>
+                  <span className="s-col-h">Workflows</span>
+                  <span className="s-col-h">Reviews</span>
                 </div>
-              ))
+                {filtered.length === 0 ? (
+                  <div className="s-empty">No matches</div>
+                ) : (
+                  filtered.map((repo) => (
+                    <div key={repo.full_name} className="s-repo-item">
+                      <span className="s-repo-name">{repo.full_name}</span>
+                      {repo.private && <span className="s-badge">private</span>}
+                      <div className="s-repo-col" onClick={() => toggleRepo(repo.full_name)}>
+                        <div className={`s-checkbox ${watchedSet.has(repo.full_name) ? "checked" : ""}`} />
+                      </div>
+                      <div className="s-repo-col" onClick={() => toggleReviewRepo(repo.full_name)}>
+                        <div className={`s-checkbox ${reviewSet.has(repo.full_name) ? "checked" : ""}`} />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </>
             )}
           </div>
         </div>

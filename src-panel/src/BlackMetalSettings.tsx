@@ -92,6 +92,7 @@ export default function BlackMetalSettings() {
   const [boundLogin, setBoundLogin] = useState("");
   const [allRepos, setAllRepos] = useState<GitHubRepo[]>([]);
   const [watchedSet, setWatchedSet] = useState<Set<string>>(new Set());
+  const [reviewSet, setReviewSet] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [showToken, setShowToken] = useState(false);
   const [flickerClass, setFlickerClass] = useState("");
@@ -99,11 +100,12 @@ export default function BlackMetalSettings() {
   const [patError, setPatError] = useState(false);
 
   useEffect(() => {
-    invoke<{ has_pat: boolean; watched_repos: string[] }>("get_config").then((config) => {
+    invoke<{ has_pat: boolean; watched_repos: string[]; review_repos: string[] }>("get_config").then((config) => {
       if (config.has_pat) {
         setBound(true);
         setPatStatus("Soul bound");
         setWatchedSet(new Set(config.watched_repos));
+        setReviewSet(new Set(config.review_repos));
         loadRepos();
       }
     });
@@ -132,6 +134,18 @@ export default function BlackMetalSettings() {
       await invoke("set_watched_repos", { repos: Array.from(next) });
     } catch (e) {
       console.error("set_watched_repos failed", e);
+    }
+  };
+
+  const toggleReviewRepo = async (name: string) => {
+    const next = new Set(reviewSet);
+    if (next.has(name)) next.delete(name);
+    else next.add(name);
+    setReviewSet(next);
+    try {
+      await invoke("set_review_repos", { repos: Array.from(next) });
+    } catch (e) {
+      console.error("set_review_repos failed", e);
     }
   };
 
@@ -378,7 +392,6 @@ export default function BlackMetalSettings() {
           align-items: center;
           padding: 14px 16px;
           border-bottom: 1px solid #221816;
-          cursor: pointer;
           transition: background 0.2s;
           animation: fadeSlideIn 0.3s ease-out both;
         }
@@ -386,12 +399,35 @@ export default function BlackMetalSettings() {
         .bms-repo-item:hover { background: #1a1210; }
         .bms-repo-item:last-child { border-bottom: none; }
 
+        .bms-repo-col {
+          width: 80px;
+          flex-shrink: 0;
+          display: flex;
+          justify-content: center;
+          cursor: pointer;
+        }
+
+        .bms-col-headers {
+          display: flex;
+          align-items: center;
+          padding: 10px 16px;
+          gap: 14px;
+          color: #6a5a48;
+          font-size: 10px;
+          font-family: 'IM Fell English SC', serif;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          border-bottom: 1px solid #221816;
+          background: #0e0a08;
+        }
+        .bms-col-headers .bms-col-spacer { flex: 1; }
+        .bms-col-headers .bms-col-h { width: 80px; text-align: center; flex-shrink: 0; }
+
         .bms-checkbox {
           width: 18px;
           height: 18px;
           border: 1px solid #4a2828;
           background: #0a0604;
-          margin-right: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -642,21 +678,34 @@ export default function BlackMetalSettings() {
               <div className="bms-empty">
                 {bound ? "Summoning repositories..." : "Bind your soul to reveal the repositories"}
               </div>
-            ) : filtered.length === 0 ? (
-              <div className="bms-empty">No souls found</div>
             ) : (
-              filtered.map((repo, i) => (
-                <div
-                  key={repo.full_name}
-                  className="bms-repo-item"
-                  onClick={() => toggleRepo(repo.full_name)}
-                  style={{ animationDelay: `${i * 0.04}s` }}
-                >
-                  <div className={`bms-checkbox ${watchedSet.has(repo.full_name) ? "checked" : ""}`} />
-                  <span className="bms-repo-name">{repo.full_name}</span>
-                  {repo.private && <span className="bms-badge">private</span>}
+              <>
+                <div className="bms-col-headers">
+                  <span className="bms-col-spacer">Repository</span>
+                  <span className="bms-col-h">Workflows</span>
+                  <span className="bms-col-h">Reviews</span>
                 </div>
-              ))
+                {filtered.length === 0 ? (
+                  <div className="bms-empty">No souls found</div>
+                ) : (
+                  filtered.map((repo, i) => (
+                    <div
+                      key={repo.full_name}
+                      className="bms-repo-item"
+                      style={{ animationDelay: `${i * 0.04}s` }}
+                    >
+                      <span className="bms-repo-name">{repo.full_name}</span>
+                      {repo.private && <span className="bms-badge">private</span>}
+                      <div className="bms-repo-col" onClick={() => toggleRepo(repo.full_name)}>
+                        <div className={`bms-checkbox ${watchedSet.has(repo.full_name) ? "checked" : ""}`} />
+                      </div>
+                      <div className="bms-repo-col" onClick={() => toggleReviewRepo(repo.full_name)}>
+                        <div className={`bms-checkbox ${reviewSet.has(repo.full_name) ? "checked" : ""}`} />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </>
             )}
           </div>
 
