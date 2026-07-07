@@ -12,8 +12,8 @@ type Section = "account" | "repositories" | "appearance" | "general";
 const FONT_SIZES: { label: string; value: number }[] = [
   { label: "Meek", value: 0.9 },
   { label: "Mortal", value: 1.0 },
-  { label: "Grand", value: 1.15 },
-  { label: "Colossal", value: 1.3 },
+  { label: "Demonic", value: 1.15 },
+  { label: "Monstrous", value: 1.3 },
 ];
 
 const NAV: { id: Section; label: string }[] = [

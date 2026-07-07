@@ -1,5 +1,6 @@
+use crate::state::SharedState;
 use std::sync::Mutex;
-use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, Rect};
+use tauri::{AppHandle, Emitter, LogicalSize, Manager, PhysicalPosition, Rect};
 
 const DEFAULT_PANEL_WIDTH: f64 = 280.0;
 const PANEL_LABEL: &str = "panel";
@@ -48,6 +49,17 @@ pub fn toggle_panel(app: &AppHandle, rect: Rect) {
         if window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         } else {
+            // Restore the user's panel size before anchoring, if one is stored.
+            if let Some(state) = app.try_state::<SharedState>() {
+                let stored = {
+                    let s = state.lock().unwrap();
+                    (s.config.panel_width, s.config.panel_height)
+                };
+                if let (Some(w), Some(h)) = stored {
+                    let _ = window.set_size(LogicalSize::new(w, h));
+                }
+            }
+
             // Tray rect on macOS is reported in physical pixels. Compute
             // everything in physical pixels so set_position lines up.
             let scale = window.scale_factor().unwrap_or(1.0);
@@ -107,13 +119,30 @@ pub fn setup_panel(app: &AppHandle) {
         window.on_window_event(move |event| {
             match event {
                 tauri::WindowEvent::Focused(false) => {
+                    // Persist the panel size once, on close, not per resize tick.
+                    if let Some(state) = app_handle.try_state::<SharedState>() {
+                        let s = state.lock().unwrap();
+                        if s.config.panel_width.is_some() {
+                            let _ = s.config.save(&s.config_dir);
+                        }
+                    }
                     let _ = win.hide();
                 }
-                // Keep the panel centered under the tray icon while resizing.
+                // Keep the panel centered under the tray icon while resizing,
+                // and remember the size in memory.
                 tauri::WindowEvent::Resized(size) => {
                     if !win.is_visible().unwrap_or(false) {
                         return;
                     }
+
+                    let scale = win.scale_factor().unwrap_or(1.0);
+                    if let Some(state) = app_handle.try_state::<SharedState>() {
+                        let logical = size.to_logical::<f64>(scale);
+                        let mut s = state.lock().unwrap();
+                        s.config.panel_width = Some(logical.width);
+                        s.config.panel_height = Some(logical.height);
+                    }
+
                     let Some(anchor) = app_handle.try_state::<PanelAnchor>() else {
                         return;
                     };

@@ -28,6 +28,7 @@ export default function App() {
   );
   const [buffer, setBuffer] = useState("");
   const [focusExpandRuns, setFocusExpandRuns] = useState(5);
+  const [hasStoredSize, setHasStoredSize] = useState<boolean | null>(null);
 
   useEffect(() => {
     const apply = (p: UiPrefs) => {
@@ -38,7 +39,12 @@ export default function App() {
       setFocusExpandRuns(p.focus_expand_runs);
     };
 
-    invoke<UiPrefs & { has_pat: boolean }>("get_config").then(apply);
+    invoke<UiPrefs & { has_pat: boolean; panel_width: number | null }>(
+      "get_config"
+    ).then((config) => {
+      apply(config);
+      setHasStoredSize(config.panel_width != null);
+    });
 
     const unlisten = listen<UiPrefs>("ui-prefs-changed", (event) => {
       apply(event.payload);
@@ -145,8 +151,10 @@ export default function App() {
 
   useEffect(() => {
     if (isSettings) return;
+    // Theme default only applies until the user has resized the panel.
+    if (hasStoredSize !== false) return;
     invoke("set_panel_width", { width: blackMetal ? 360 : 280 });
-  }, [blackMetal]);
+  }, [blackMetal, hasStoredSize]);
 
   let content: ReactElement | null = null;
   if (isAbout) {

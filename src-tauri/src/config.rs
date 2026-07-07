@@ -18,6 +18,11 @@ pub struct Config {
     pub font_scale: f64,
     #[serde(default = "default_focus_expand_runs")]
     pub focus_expand_runs: u32,
+    /// Panel size in logical px, set once the user resizes the panel.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub panel_width: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub panel_height: Option<f64>,
 }
 
 fn default_poll_interval() -> u64 {
@@ -46,6 +51,8 @@ impl Default for Config {
             theme: default_theme(),
             font_scale: 1.0,
             focus_expand_runs: 5,
+            panel_width: None,
+            panel_height: None,
         }
     }
 }
@@ -104,6 +111,8 @@ mod tests {
             theme: "blackmetal".to_string(),
             font_scale: 1.15,
             focus_expand_runs: 3,
+            panel_width: Some(320.0),
+            panel_height: Some(480.0),
         };
         let json = serde_json::to_string(&config).unwrap();
         let loaded: Config = serde_json::from_str(&json).unwrap();
@@ -136,6 +145,8 @@ mod tests {
             theme: "normal".to_string(),
             font_scale: 1.0,
             focus_expand_runs: 5,
+            panel_width: None,
+            panel_height: None,
         };
         config.save(&dir).unwrap();
 

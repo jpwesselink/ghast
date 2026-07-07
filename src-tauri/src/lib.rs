@@ -44,6 +44,7 @@ struct ConfigResponse {
     theme: String,
     font_scale: f64,
     focus_expand_runs: u32,
+    panel_width: Option<f64>,
 }
 
 #[tauri::command]
@@ -58,6 +59,7 @@ fn get_config(state: tauri::State<'_, SharedState>) -> ConfigResponse {
         theme: s.config.theme.clone(),
         font_scale: s.config.font_scale,
         focus_expand_runs: s.config.focus_expand_runs,
+        panel_width: s.config.panel_width,
     }
 }
 
