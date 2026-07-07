@@ -280,14 +280,43 @@ impl AppState {
         }
     }
 
-    pub fn badge_count(&self) -> usize {
-        let active_runs = self
-            .runs
+    pub fn active_run_count(&self) -> usize {
+        self.runs
             .values()
             .flat_map(|runs| runs.iter())
             .filter(|r| r.is_active())
-            .count();
-        active_runs + self.pending_reviews.len()
+            .count()
+    }
+
+    pub fn badge_count(&self) -> usize {
+        self.active_run_count() + self.pending_reviews.len()
+    }
+
+    /// True when any repo's latest run of a workflow ended badly.
+    pub fn has_failing(&self) -> bool {
+        self.runs.values().any(|runs| {
+            let mut latest: HashMap<&str, &WorkflowRun> = HashMap::new();
+            for r in runs {
+                latest
+                    .entry(r.workflow_name.as_str())
+                    .and_modify(|cur| {
+                        if r.created_at > cur.created_at {
+                            *cur = r;
+                        }
+                    })
+                    .or_insert(r);
+            }
+            latest.values().any(|r| {
+                matches!(
+                    r.conclusion,
+                    Some(
+                        RunConclusion::Failure
+                            | RunConclusion::TimedOut
+                            | RunConclusion::ActionRequired
+                    )
+                )
+            })
+        })
     }
 }
 

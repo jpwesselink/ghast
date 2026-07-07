@@ -81,16 +81,56 @@ pub fn open_about_window(app: &AppHandle) {
     }
 }
 
+fn base_icon() -> tauri::Result<Image<'static>> {
+    Image::from_bytes(include_bytes!("../icons/32x32.png"))
+}
+
+/// The ghost, seeing red: every opaque pixel of the template icon tinted.
+fn failing_icon() -> tauri::Result<Image<'static>> {
+    let base = base_icon()?;
+    let mut rgba = base.rgba().to_vec();
+    for px in rgba.chunks_exact_mut(4) {
+        if px[3] > 0 {
+            px[0] = 204;
+            px[1] = 24;
+            px[2] = 24;
+        }
+    }
+    Ok(Image::new_owned(rgba, base.width(), base.height()))
+}
+
 pub fn update_tray_badge(
     tray: &TrayIcon,
     state: &SharedState,
 ) -> tauri::Result<()> {
-    let state = state.lock().unwrap();
-    let count = state.badge_count();
-    if count > 0 {
-        tray.set_title(Some(&count.to_string()))?;
+    let (active, reviews, mentions, failing) = {
+        let s = state.lock().unwrap();
+        (
+            s.active_run_count(),
+            s.pending_reviews.len(),
+            s.mentions.len(),
+            s.has_failing(),
+        )
+    };
+
+    let mut parts: Vec<String> = Vec::new();
+    if active > 0 {
+        parts.push(format!("⟳{active}"));
+    }
+    if reviews > 0 {
+        parts.push(format!("◉{reviews}"));
+    }
+    if mentions > 0 {
+        parts.push(format!("@{mentions}"));
+    }
+    tray.set_title(Some(parts.join(" ")))?;
+
+    if failing {
+        tray.set_icon(Some(failing_icon()?))?;
+        tray.set_icon_as_template(false)?;
     } else {
-        tray.set_title(Some(""))?;
+        tray.set_icon(Some(base_icon()?))?;
+        tray.set_icon_as_template(true)?;
     }
     Ok(())
 }
