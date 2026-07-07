@@ -412,11 +412,22 @@ function BmHistoryStrip({ runs }: { runs: PanelWorkflowRun[] }) {
 }
 
 function BmFocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
+  const expanded = useExpandedRuns().includes(run.run_id);
   return (
+    <>
     <div
       className="bm-run-item"
       onClick={() => invoke("open_url", { url: run.html_url })}
     >
+      <span
+        className={`bm-run-chevron${expanded ? " open" : ""}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleRunExpanded(run.run_id);
+        }}
+      >
+        ›
+      </span>
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="bm-icon-trigger">
@@ -437,6 +448,8 @@ function BmFocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
       </span>
       <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
     </div>
+    {expanded && <JobSteps run={run} variant="blackmetal" />}
+    </>
   );
 }
 

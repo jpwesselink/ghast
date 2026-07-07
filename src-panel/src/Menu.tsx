@@ -4,6 +4,8 @@ import RunItem from "./RunItem";
 import ReviewItem from "./ReviewItem";
 import MentionItem from "./MentionItem";
 import Ghost from "./Ghost";
+import JobSteps from "./JobSteps";
+import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
 import type { PanelPayload, PanelWorkflowRun } from "./types";
 import {
   BuildsView,
@@ -49,11 +51,22 @@ function HistoryStrip({ runs }: { runs: PanelWorkflowRun[] }) {
 }
 
 function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
+  const expanded = useExpandedRuns().includes(run.run_id);
   return (
+    <>
     <button
       className="run-item"
       onClick={() => invoke("open_url", { url: run.html_url })}
     >
+      <span
+        className={`run-chevron${expanded ? " open" : ""}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleRunExpanded(run.run_id);
+        }}
+      >
+        ›
+      </span>
       <span
         className={`run-dot${run.status !== "completed" ? " dot-pulse" : ""}`}
         style={{
@@ -77,6 +90,8 @@ function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
       </span>
       <span className="run-time">{formatTimeAgo(run.created_at)}</span>
     </button>
+    {expanded && <JobSteps run={run} variant="clean" />}
+    </>
   );
 }
 
