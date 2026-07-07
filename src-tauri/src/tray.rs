@@ -85,18 +85,72 @@ fn base_icon() -> tauri::Result<Image<'static>> {
     Image::from_bytes(include_bytes!("../icons/32x32.png"))
 }
 
-/// The ghost, seeing red: every opaque pixel of the template icon tinted.
+#[cfg(target_os = "macos")]
+fn menu_bar_is_dark() -> bool {
+    use objc::runtime::Object;
+    use objc::{class, msg_send, sel, sel_impl};
+    unsafe {
+        let app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
+        let appearance: *mut Object = msg_send![app, effectiveAppearance];
+        if appearance.is_null() {
+            return true;
+        }
+        let name: *mut Object = msg_send![appearance, name];
+        if name.is_null() {
+            return true;
+        }
+        let utf8: *const std::os::raw::c_char = msg_send![name, UTF8String];
+        std::ffi::CStr::from_ptr(utf8)
+            .to_string_lossy()
+            .contains("Dark")
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn menu_bar_is_dark() -> bool {
+    true
+}
+
+/// The ghost, haunted: solid body with glowing red eyes. The eye holes sit
+/// at (42,40) and (62,40) with r=7 in the icon's 100-unit viewBox (ghost.svg).
 fn failing_icon() -> tauri::Result<Image<'static>> {
     let base = base_icon()?;
+    let (w, h) = (base.width(), base.height());
     let mut rgba = base.rgba().to_vec();
+
+    let body: [u8; 3] = if menu_bar_is_dark() {
+        [235, 235, 240]
+    } else {
+        [28, 28, 32]
+    };
     for px in rgba.chunks_exact_mut(4) {
         if px[3] > 0 {
-            px[0] = 204;
-            px[1] = 24;
-            px[2] = 24;
+            px[0] = body[0];
+            px[1] = body[1];
+            px[2] = body[2];
         }
     }
-    Ok(Image::new_owned(rgba, base.width(), base.height()))
+
+    let s = w as f64 / 100.0;
+    let eyes = [(42.0 * s, 40.0 * (h as f64 / 100.0)), (62.0 * s, 40.0 * (h as f64 / 100.0))];
+    let r = 7.0 * s;
+    for y in 0..h {
+        for x in 0..w {
+            let (fx, fy) = (x as f64 + 0.5, y as f64 + 0.5);
+            if eyes
+                .iter()
+                .any(|(ex, ey)| (fx - ex).powi(2) + (fy - ey).powi(2) <= r * r)
+            {
+                let i = ((y * w + x) * 4) as usize;
+                rgba[i] = 224;
+                rgba[i + 1] = 28;
+                rgba[i + 2] = 28;
+                rgba[i + 3] = 255;
+            }
+        }
+    }
+
+    Ok(Image::new_owned(rgba, w, h))
 }
 
 pub fn update_tray_badge(
