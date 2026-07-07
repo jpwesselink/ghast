@@ -41,6 +41,7 @@ pub fn open_settings_window(app: &AppHandle) {
         )
         .title("ghast Settings")
         .resizable(true)
+        .min_inner_size(600.0, 420.0)
         .build();
 
         if let Some(win) = app.get_webview_window("settings") {
