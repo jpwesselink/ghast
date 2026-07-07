@@ -762,7 +762,9 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           border: 1px solid #3a2a1a;
           color: #8a7e6e;
           flex-shrink: 0;
-          max-width: 110px;
+          width: 96px;
+          box-sizing: border-box;
+          text-align: center;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -915,6 +917,9 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           color: #8a7e6e;
           flex-shrink: 0;
           font-style: italic;
+          min-width: 62px;
+          text-align: right;
+          font-variant-numeric: tabular-nums;
         }
 
         .bm-message {
