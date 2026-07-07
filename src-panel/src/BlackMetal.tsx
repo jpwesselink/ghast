@@ -546,6 +546,7 @@ function BmFocusView({
 
 function BmTimelineView({ data }: { data: PanelPayload }) {
   const entries = timelineEntries(data.runs);
+  const expandedRuns = useExpandedRuns();
   if (entries.length === 0) {
     return <div className="bm-message">No repositories have been haunted</div>;
   }
@@ -574,6 +575,15 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
               onClick={() => invoke("open_url", { url: run.html_url })}
             >
               <span className="bm-tl-time">{timeLabel(run.created_at)}</span>
+              <span
+                className={`bm-run-chevron${expandedRuns.includes(run.run_id) ? " open" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleRunExpanded(run.run_id);
+                }}
+              >
+                ›
+              </span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="bm-icon-trigger">
@@ -593,6 +603,9 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
                 {chipLabel(repo)}
               </span>
             </div>
+            {expandedRuns.includes(run.run_id) && (
+              <JobSteps run={run} variant="blackmetal" />
+            )}
           </div>
         );
       })}

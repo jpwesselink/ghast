@@ -188,6 +188,7 @@ function FocusView({
 
 function TimelineView({ data }: { data: PanelPayload }) {
   const entries = timelineEntries(data.runs);
+  const expandedRuns = useExpandedRuns();
   if (entries.length === 0) {
     return <div className="menu-message">No repos watched - check Settings</div>;
   }
@@ -217,6 +218,15 @@ function TimelineView({ data }: { data: PanelPayload }) {
             >
               <span className="tl-time">{timeLabel(run.created_at)}</span>
               <span
+                className={`run-chevron${expandedRuns.includes(run.run_id) ? " open" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleRunExpanded(run.run_id);
+                }}
+              >
+                ›
+              </span>
+              <span
                 className={`run-dot${run.status !== "completed" ? " dot-pulse" : ""}`}
                 style={{
                   backgroundColor:
@@ -242,6 +252,9 @@ function TimelineView({ data }: { data: PanelPayload }) {
                 {chipLabel(repo)}
               </span>
             </button>
+            {expandedRuns.includes(run.run_id) && (
+              <JobSteps run={run} variant="clean" />
+            )}
           </div>
         );
       })}
