@@ -57,6 +57,42 @@ pub fn subject_html_url(api_url: &str) -> Option<String> {
     Some(format!("https://github.com/{owner}/{repo}/{kind}/{id}"))
 }
 
+/// Anchor fragment for a notification's latest comment API URL, e.g.
+/// `.../issues/comments/42` -> `#issuecomment-42`,
+/// `.../pulls/comments/42` -> `#discussion_r42` (PR review comment),
+/// `.../comments/42` -> `#commitcomment-42`.
+fn comment_anchor(comment_api_url: &str) -> Option<String> {
+    let rest = comment_api_url.strip_prefix("https://api.github.com/repos/")?;
+    let mut segs = rest.split('/');
+    let _owner = segs.next()?;
+    let _repo = segs.next()?;
+    match (segs.next()?, segs.next()?) {
+        ("issues", "comments") => Some(format!("#issuecomment-{}", segs.next()?)),
+        ("pulls", "comments") => Some(format!("#discussion_r{}", segs.next()?)),
+        ("comments", id) => Some(format!("#commitcomment-{id}")),
+        _ => None,
+    }
+}
+
+/// Browser URL for a mention: the subject page, deep-linked to the latest
+/// comment when the notification points at one.
+pub fn mention_html_url(
+    subject_url: Option<&str>,
+    latest_comment_url: Option<&str>,
+    repo: &str,
+) -> String {
+    let base = subject_url.and_then(subject_html_url);
+    let anchored = match (&base, latest_comment_url) {
+        (Some(base), Some(comment)) if Some(comment) != subject_url => {
+            comment_anchor(comment).map(|a| format!("{base}{a}"))
+        }
+        _ => None,
+    };
+    anchored
+        .or(base)
+        .unwrap_or_else(|| format!("https://github.com/{repo}"))
+}
+
 pub struct GitHubClient {
     octo: Octocrab,
 }
@@ -208,12 +244,13 @@ impl GitHubClient {
             if !repos.contains(&repo) {
                 continue;
             }
-            let html_url = n
-                .subject
-                .url
-                .as_ref()
-                .and_then(|u| subject_html_url(u.as_str()))
-                .unwrap_or_else(|| format!("https://github.com/{repo}"));
+            let subject_url = n.subject.url.as_ref().map(|u| u.to_string());
+            let latest_comment_url = n.subject.latest_comment_url.as_ref().map(|u| u.to_string());
+            let html_url = mention_html_url(
+                subject_url.as_deref(),
+                latest_comment_url.as_deref(),
+                &repo,
+            );
             out.push(Mention {
                 repo,
                 title: n.subject.title,
@@ -310,5 +347,73 @@ mod tests {
     #[test]
     fn test_subject_html_url_not_api() {
         assert_eq!(subject_html_url("https://github.com/o/r/issues/12"), None);
+    }
+
+    #[test]
+    fn test_mention_url_issue_comment_anchor() {
+        assert_eq!(
+            mention_html_url(
+                Some("https://api.github.com/repos/o/r/issues/12"),
+                Some("https://api.github.com/repos/o/r/issues/comments/9001"),
+                "o/r"
+            ),
+            "https://github.com/o/r/issues/12#issuecomment-9001"
+        );
+    }
+
+    #[test]
+    fn test_mention_url_pr_review_comment_anchor() {
+        assert_eq!(
+            mention_html_url(
+                Some("https://api.github.com/repos/o/r/pulls/7"),
+                Some("https://api.github.com/repos/o/r/pulls/comments/55"),
+                "o/r"
+            ),
+            "https://github.com/o/r/pull/7#discussion_r55"
+        );
+    }
+
+    #[test]
+    fn test_mention_url_commit_comment_anchor() {
+        assert_eq!(
+            mention_html_url(
+                Some("https://api.github.com/repos/o/r/commits/abc123"),
+                Some("https://api.github.com/repos/o/r/comments/77"),
+                "o/r"
+            ),
+            "https://github.com/o/r/commit/abc123#commitcomment-77"
+        );
+    }
+
+    #[test]
+    fn test_mention_url_no_comment_falls_back_to_subject() {
+        assert_eq!(
+            mention_html_url(
+                Some("https://api.github.com/repos/o/r/issues/12"),
+                None,
+                "o/r"
+            ),
+            "https://github.com/o/r/issues/12"
+        );
+    }
+
+    #[test]
+    fn test_mention_url_comment_same_as_subject_no_anchor() {
+        assert_eq!(
+            mention_html_url(
+                Some("https://api.github.com/repos/o/r/issues/12"),
+                Some("https://api.github.com/repos/o/r/issues/12"),
+                "o/r"
+            ),
+            "https://github.com/o/r/issues/12"
+        );
+    }
+
+    #[test]
+    fn test_mention_url_no_subject_falls_back_to_repo() {
+        assert_eq!(
+            mention_html_url(None, None, "o/r"),
+            "https://github.com/o/r"
+        );
     }
 }
