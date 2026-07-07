@@ -1,7 +1,13 @@
+use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, Rect};
 
 const DEFAULT_PANEL_WIDTH: f64 = 280.0;
 const PANEL_LABEL: &str = "panel";
+
+/// Tray anchor in physical pixels: (center x of the tray icon, panel top y).
+/// Remembered when the panel opens so resizes can stay centered under the icon.
+#[derive(Default)]
+pub struct PanelAnchor(Mutex<Option<(f64, f64)>>);
 
 fn rect_position(rect: &Rect) -> (f64, f64) {
     match &rect.position {
@@ -50,6 +56,13 @@ pub fn toggle_panel(app: &AppHandle, rect: Rect) {
                 .map(|s| s.width as f64)
                 .unwrap_or(DEFAULT_PANEL_WIDTH * scale);
             let (x, y) = panel_position(&rect, panel_width_physical);
+
+            if let Some(anchor) = app.try_state::<PanelAnchor>() {
+                let (px, _) = rect_position(&rect);
+                let (sw, _) = rect_size(&rect);
+                *anchor.0.lock().unwrap() = Some((px + sw / 2.0, y));
+            }
+
             let _ = window.set_position(PhysicalPosition::new(x, y));
 
             #[cfg(target_os = "macos")]
@@ -90,9 +103,27 @@ pub fn setup_panel(app: &AppHandle) {
         }
 
         let win = window.clone();
+        let app_handle = app.clone();
         window.on_window_event(move |event| {
-            if let tauri::WindowEvent::Focused(false) = event {
-                let _ = win.hide();
+            match event {
+                tauri::WindowEvent::Focused(false) => {
+                    let _ = win.hide();
+                }
+                // Keep the panel centered under the tray icon while resizing.
+                tauri::WindowEvent::Resized(size) => {
+                    if !win.is_visible().unwrap_or(false) {
+                        return;
+                    }
+                    let Some(anchor) = app_handle.try_state::<PanelAnchor>() else {
+                        return;
+                    };
+                    let Some((center_x, top_y)) = *anchor.0.lock().unwrap() else {
+                        return;
+                    };
+                    let x = center_x - size.width as f64 / 2.0;
+                    let _ = win.set_position(PhysicalPosition::new(x, top_y));
+                }
+                _ => {}
             }
         });
         let _ = window.hide();

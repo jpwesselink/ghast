@@ -233,6 +233,7 @@ pub fn run() {
             let poll_trigger = Arc::new(Notify::new());
             app.manage(poll_trigger.clone());
 
+            app.manage(panel::PanelAnchor::default());
             let _tray_icon = tray::create_tray(app.handle())?;
             panel::setup_panel(app.handle());
 
