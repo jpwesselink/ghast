@@ -864,6 +864,7 @@ export default function BlackMetal({
         .bm-pager-head {
           display: flex;
           align-items: center;
+          justify-content: center;
           padding: 2px 8px;
           position: relative;
         }
@@ -886,7 +887,8 @@ export default function BlackMetal({
         }
 
         .bm-pg-title {
-          flex: 1;
+          flex: none;
+          min-width: 120px;
           display: inline-flex;
           align-items: center;
           justify-content: center;

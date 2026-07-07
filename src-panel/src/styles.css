@@ -471,6 +471,7 @@ body {
 .pager-head {
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 2px 6px;
   position: relative;
 }
@@ -493,7 +494,8 @@ body {
 }
 
 .pg-title {
-  flex: 1;
+  flex: none;
+  min-width: 110px;
   border: none;
   background: transparent;
   color: var(--text-primary);
