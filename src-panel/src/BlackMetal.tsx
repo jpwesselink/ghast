@@ -274,24 +274,6 @@ function StatusIcon({ run }: { run: PanelWorkflowRun }) {
   return <Glyph color="#9a8a78">{CrossbonesGlyph}</Glyph>;
 }
 
-const ScrollGlyph = (
-  <>
-    <path
-      d="M5 5h11a3 3 0 0 1 3 3v8a3 3 0 0 0 3 3H7a3 3 0 0 1-3-3V7a2 2 0 0 1 1-2z"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M8 9h7M8 12h7M8 15h5"
-      stroke="currentColor"
-      strokeWidth="1.3"
-      strokeLinecap="round"
-    />
-  </>
-);
-
 const WhisperGlyph = (
   <>
     <path
@@ -329,6 +311,14 @@ function MentionRow({ mention }: { mention: PanelMention }) {
   );
 }
 
+const PullRequestGlyph = (
+  <path
+    d="M2 4.33a3 3 0 1 1 4 2.83v7.01a3.001 3.001 0 1 1-2 0V7.16a3 3 0 0 1-2-2.83Zm7.57-.24 3.19-3.19a.33.33 0 0 1 .57.24V3.3h1.34A3.33 3.33 0 0 1 18 6.63v7.54a3.001 3.001 0 1 1-2 0V6.63c0-.74-.6-1.33-1.33-1.33h-1.34v2.2a.33.33 0 0 1-.57.23L9.57 4.56a.33.33 0 0 1 0-.47Z"
+    fill="currentColor"
+    transform="translate(2 1.5) scale(1.0)"
+  />
+);
+
 function ReviewRow({ review }: { review: PanelPendingReview }) {
   return (
     <div
@@ -338,11 +328,13 @@ function ReviewRow({ review }: { review: PanelPendingReview }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="bm-icon-trigger">
-            <Glyph color="#9b64dc">{ScrollGlyph}</Glyph>
+            <Glyph color={review.draft ? "#9a8a78" : "#55aa22"}>
+              {PullRequestGlyph}
+            </Glyph>
           </span>
         </TooltipTrigger>
         <TooltipContent variant="blackmetal">
-          {`${review.repo} #${review.number} — @${review.author}`}
+          {`${review.repo} #${review.number} — @${review.author}${review.draft ? " (draft)" : ""}`}
         </TooltipContent>
       </Tooltip>
       <span className="bm-run-name">{review.title}</span>
@@ -586,10 +578,6 @@ export default function BlackMetal({
     saveBuildsView(v);
   };
 
-  const cycleView = (d: number) => {
-    const idx = BM_VIEWS.indexOf(view);
-    switchView(BM_VIEWS[(idx + d + BM_VIEWS.length) % BM_VIEWS.length]);
-  };
 
   useEffect(() => {
     setFlickerClass("screen-flicker");
@@ -911,6 +899,7 @@ export default function BlackMetal({
         .bm-pager-strip {
           display: flex;
           width: 300%;
+          flex: 0 0 300%;
           transition: transform 240ms cubic-bezier(0.25, 0.8, 0.3, 1);
           align-items: stretch;
         }
@@ -1268,22 +1257,16 @@ export default function BlackMetal({
           </div>
 
           {tab === "builds" && ready && (
-            <div className="bm-view-pager">
-              <button
-                className="bm-pg-arrow bm-pg-arrow-sm"
-                onClick={() => cycleView(-1)}
-                aria-label="Previous view"
-              >
-                ‹
-              </button>
-              <span className="bm-view-pager-label">{view}</span>
-              <button
-                className="bm-pg-arrow bm-pg-arrow-sm"
-                onClick={() => cycleView(1)}
-                aria-label="Next view"
-              >
-                ›
-              </button>
+            <div className="bm-view-switch">
+              {BM_VIEWS.map((v) => (
+                <button
+                  key={v}
+                  className={`bm-view-btn${view === v ? " active" : ""}`}
+                  onClick={() => switchView(v)}
+                >
+                  {v}
+                </button>
+              ))}
             </div>
           )}
 

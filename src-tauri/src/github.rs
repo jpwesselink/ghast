@@ -26,6 +26,7 @@ pub struct ReviewRequest {
     pub author: String,
     pub html_url: String,
     pub created_at: DateTime<Utc>,
+    pub draft: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -190,6 +191,18 @@ impl GitHubClient {
                 }
             })?;
 
+        // The search results don't carry a draft flag, so ask which of these
+        // are drafts in a second, narrower search.
+        let draft_urls: std::collections::HashSet<String> = self
+            .octo
+            .search()
+            .issues_and_pull_requests(&format!("{query} draft:true"))
+            .per_page(50)
+            .send()
+            .await
+            .map(|p| p.items.into_iter().map(|i| i.html_url.to_string()).collect())
+            .unwrap_or_default();
+
         let mut out = Vec::new();
         for item in page.items {
             let repo = item
@@ -201,12 +214,14 @@ impl GitHubClient {
                     Some(format!("{owner}/{name}"))
                 })
                 .unwrap_or_default();
+            let html_url = item.html_url.to_string();
             out.push(ReviewRequest {
                 repo,
                 number: item.number,
                 title: item.title,
                 author: item.user.login,
-                html_url: item.html_url.to_string(),
+                draft: draft_urls.contains(&html_url),
+                html_url,
                 created_at: item.created_at,
             });
         }

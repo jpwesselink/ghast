@@ -14,6 +14,7 @@ export interface PanelPendingReview {
   author: string;
   html_url: string;
   created_at: string;
+  draft: boolean;
 }
 
 export interface PanelMention {

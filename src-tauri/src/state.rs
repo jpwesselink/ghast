@@ -109,6 +109,7 @@ pub struct PendingReview {
     pub author: String,
     pub html_url: String,
     pub created_at: DateTime<Utc>,
+    pub draft: bool,
 }
 
 impl PendingReview {
@@ -120,6 +121,7 @@ impl PendingReview {
             author: api.author.clone(),
             html_url: api.html_url.clone(),
             created_at: api.created_at,
+            draft: api.draft,
         }
     }
 }
@@ -132,6 +134,7 @@ pub struct PanelPendingReview {
     pub author: String,
     pub html_url: String,
     pub created_at: String,
+    pub draft: bool,
 }
 
 impl From<&PendingReview> for PanelPendingReview {
@@ -143,6 +146,7 @@ impl From<&PendingReview> for PanelPendingReview {
             author: r.author.clone(),
             html_url: r.html_url.clone(),
             created_at: r.created_at.to_rfc3339(),
+            draft: r.draft,
         }
     }
 }
