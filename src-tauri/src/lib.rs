@@ -183,6 +183,37 @@ fn get_workflow_runs(state: tauri::State<'_, SharedState>) -> state::PanelPayloa
     s.panel_payload()
 }
 
+/// System accent color (NSColor.controlAccentColor) as a hex string.
+/// The CSS `AccentColor` keyword resolves to stock blue inside WKWebView,
+/// so the frontend asks for the real value instead.
+#[tauri::command]
+fn get_accent_color() -> Option<String> {
+    #[cfg(target_os = "macos")]
+    {
+        use objc::runtime::Object;
+        use objc::{class, msg_send, sel, sel_impl};
+        unsafe {
+            let color: *mut Object = msg_send![class!(NSColor), controlAccentColor];
+            let srgb: *mut Object = msg_send![class!(NSColorSpace), sRGBColorSpace];
+            let color: *mut Object = msg_send![color, colorUsingColorSpace: srgb];
+            if color.is_null() {
+                return None;
+            }
+            let r: f64 = msg_send![color, redComponent];
+            let g: f64 = msg_send![color, greenComponent];
+            let b: f64 = msg_send![color, blueComponent];
+            return Some(format!(
+                "#{:02x}{:02x}{:02x}",
+                (r * 255.0).round() as u8,
+                (g * 255.0).round() as u8,
+                (b * 255.0).round() as u8
+            ));
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    None
+}
+
 #[tauri::command]
 fn open_settings(app: tauri::AppHandle) {
     tray::open_settings_window(&app);
@@ -284,6 +315,7 @@ pub fn run() {
             set_review_repos,
             set_mention_repos,
             set_ui_prefs,
+            get_accent_color,
             get_workflow_runs,
             open_settings,
             open_about,

@@ -46,6 +46,14 @@ export default function App() {
       setHasStoredSize(config.panel_width != null);
     });
 
+    // WKWebView renders the CSS AccentColor keyword as stock blue, so pull
+    // the real system accent from AppKit instead.
+    invoke<string | null>("get_accent_color").then((hex) => {
+      if (hex) {
+        document.documentElement.style.setProperty("--accent-system", hex);
+      }
+    });
+
     const unlisten = listen<UiPrefs>("ui-prefs-changed", (event) => {
       apply(event.payload);
     });
