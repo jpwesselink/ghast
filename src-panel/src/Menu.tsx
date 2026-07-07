@@ -241,6 +241,11 @@ export default function Menu({
     saveBuildsView(v);
   };
 
+  const cycleView = (d: number) => {
+    const idx = VIEWS.findIndex((v) => v.id === view);
+    switchView(VIEWS[(idx + d + VIEWS.length) % VIEWS.length].id);
+  };
+
   const activeRunCount = Object.values(data.runs)
     .flat()
     .filter((r) => r.status === "queued" || r.status === "in_progress").length;
@@ -273,16 +278,24 @@ export default function Menu({
       </div>
       <div className="menu-separator" />
       {tab === "builds" && ready && (
-        <div className="view-switch">
-          {VIEWS.map((v) => (
-            <button
-              key={v.id}
-              className={`view-btn${view === v.id ? " active" : ""}`}
-              onClick={() => switchView(v.id)}
-            >
-              {v.label}
-            </button>
-          ))}
+        <div className="view-pager">
+          <button
+            className="pg-arrow pg-arrow-sm"
+            onClick={() => cycleView(-1)}
+            aria-label="Previous view"
+          >
+            ‹
+          </button>
+          <span className="view-pager-label">
+            {VIEWS.find((v) => v.id === view)?.label}
+          </span>
+          <button
+            className="pg-arrow pg-arrow-sm"
+            onClick={() => cycleView(1)}
+            aria-label="Next view"
+          >
+            ›
+          </button>
         </div>
       )}
       {!ready ? (

@@ -541,6 +541,7 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
 type BmTab = "builds" | "reviews" | "comments";
 
 const BM_TABS: BmTab[] = ["builds", "reviews", "comments"];
+const BM_VIEWS: BuildsView[] = ["repos", "focus", "timeline"];
 const BM_TAB_LABELS: Record<BmTab, string> = {
   builds: "Builds",
   reviews: "Reviews",
@@ -561,6 +562,11 @@ export default function BlackMetal({
   const switchView = (v: BuildsView) => {
     setView(v);
     saveBuildsView(v);
+  };
+
+  const cycleView = (d: number) => {
+    const idx = BM_VIEWS.indexOf(view);
+    switchView(BM_VIEWS[(idx + d + BM_VIEWS.length) % BM_VIEWS.length]);
   };
 
   useEffect(() => {
@@ -894,6 +900,29 @@ export default function BlackMetal({
           .bm-pager-strip { transition: none; }
         }
 
+        .bm-view-pager {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 2px;
+          padding: 2px 10px 0;
+        }
+
+        .bm-pg-arrow-sm {
+          font-size: 15px;
+          padding: 0 9px 2px;
+        }
+
+        .bm-view-pager-label {
+          color: #8a7e6e;
+          font-family: 'IM Fell English SC', serif;
+          font-size: calc(10px * var(--font-scale, 1));
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          min-width: 84px;
+          text-align: center;
+        }
+
         .bm-view-switch {
           display: flex;
           gap: 4px;
@@ -1198,16 +1227,22 @@ export default function BlackMetal({
           </div>
 
           {tab === "builds" && ready && (
-            <div className="bm-view-switch">
-              {(["repos", "focus", "timeline"] as BuildsView[]).map((v) => (
-                <button
-                  key={v}
-                  className={`bm-view-btn${view === v ? " active" : ""}`}
-                  onClick={() => switchView(v)}
-                >
-                  {v}
-                </button>
-              ))}
+            <div className="bm-view-pager">
+              <button
+                className="bm-pg-arrow bm-pg-arrow-sm"
+                onClick={() => cycleView(-1)}
+                aria-label="Previous view"
+              >
+                ‹
+              </button>
+              <span className="bm-view-pager-label">{view}</span>
+              <button
+                className="bm-pg-arrow bm-pg-arrow-sm"
+                onClick={() => cycleView(1)}
+                aria-label="Next view"
+              >
+                ›
+              </button>
             </div>
           )}
 

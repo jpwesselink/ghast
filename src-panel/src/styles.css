@@ -650,3 +650,25 @@ body {
   -webkit-user-select: none;
   user-select: none;
 }
+
+/* builds view mini pager */
+.view-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 8px 4px;
+}
+
+.pg-arrow-sm {
+  font-size: 1em;
+  padding: 0 8px 2px;
+}
+
+.view-pager-label {
+  color: var(--text-secondary);
+  font-size: 0.82em;
+  font-weight: 600;
+  min-width: 74px;
+  text-align: center;
+}
