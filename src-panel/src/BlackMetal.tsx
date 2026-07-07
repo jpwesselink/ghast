@@ -5,6 +5,7 @@ import type { PanelMention, PanelPayload, PanelPendingReview, PanelWorkflowRun }
 import {
   BuildsView,
   bucketRepos,
+  chipLabel,
   dayLabel,
   isBad,
   loadBuildsView,
@@ -405,7 +406,7 @@ function BmFocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
         <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
       </Tooltip>
       <span className="bm-run-name">{run.workflow_name}</span>
-      <span className="bm-chip">{repo.split("/")[1] ?? repo}</span>
+      <span className="bm-chip">{chipLabel(repo)}</span>
       <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
     </div>
   );
@@ -515,7 +516,7 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
                 <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
               </Tooltip>
               <span className="bm-run-name">{run.workflow_name}</span>
-              <span className="bm-chip">{repo.split("/")[1] ?? repo}</span>
+              <span className="bm-chip">{chipLabel(repo)}</span>
             </div>
           </div>
         );
@@ -526,6 +527,13 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
 
 type BmTab = "builds" | "reviews" | "comments";
 
+const BM_TABS: BmTab[] = ["builds", "reviews", "comments"];
+const BM_TAB_LABELS: Record<BmTab, string> = {
+  builds: "Builds",
+  reviews: "Reviews",
+  comments: "Comments",
+};
+
 export default function BlackMetal({
   data,
   focusExpandRuns,
@@ -534,7 +542,7 @@ export default function BlackMetal({
   focusExpandRuns: number;
 }) {
   const [flickerClass, setFlickerClass] = useState("");
-  const [tab, setTab] = useState<BmTab>("builds");
+  const [tabIdx, setTabIdx] = useState(0);
   const [view, setView] = useState<BuildsView>(loadBuildsView);
 
   const switchView = (v: BuildsView) => {
@@ -550,8 +558,18 @@ export default function BlackMetal({
   const activeRunCount = Object.values(data.runs)
     .flat()
     .filter((r) => r.status === "queued" || r.status === "in_progress").length;
-  const reviewCount = data.pending_reviews.length;
-  const mentionCount = data.mentions.length;
+  const counts: Record<BmTab, number> = {
+    builds: activeRunCount,
+    reviews: data.pending_reviews.length,
+    comments: data.mentions.length,
+  };
+  const tab = BM_TABS[tabIdx];
+
+  const goto = (i: number) => {
+    setTabIdx((i + BM_TABS.length) % BM_TABS.length);
+  };
+
+  const ready = !data.auth_error && data.has_pat;
 
   return (
     <>
@@ -635,6 +653,9 @@ export default function BlackMetal({
           .bm-tab.active { color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
           .bm-tab-badge { background: #e0c8a8 !important; border-color: #b09070 !important; color: #2a1a10 !important; }
           .bm-tab.active .bm-tab-badge { background: #8b0000 !important; border-color: #8b0000 !important; color: #f0e8d8 !important; }
+          .bm-pg-title { color: #1a0808 !important; }
+          .bm-pg-arrow { color: #6a5a48 !important; }
+          .bm-pg-arrow:hover { color: #8b0000 !important; }
           .bm-view-btn { color: #8a7a68 !important; }
           .bm-view-btn:hover { color: #2a1a10 !important; }
           .bm-view-btn.active { color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
@@ -768,6 +789,67 @@ export default function BlackMetal({
           background: #4a1010;
           border-color: #8b0000;
           color: #ede6d8;
+        }
+
+        .bm-pager-head {
+          display: flex;
+          align-items: center;
+          padding: 2px 8px;
+          position: relative;
+        }
+
+        .bm-pg-arrow {
+          border: none;
+          background: transparent;
+          color: #8a7e6e;
+          font-family: 'IM Fell English', serif;
+          font-size: 20px;
+          line-height: 1;
+          padding: 0 12px 3px;
+          cursor: pointer;
+          transition: color 0.2s, text-shadow 0.2s;
+        }
+
+        .bm-pg-arrow:hover {
+          color: #dd3030;
+          text-shadow: 0 0 8px rgba(180, 20, 20, 0.5);
+        }
+
+        .bm-pg-title {
+          flex: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          font-family: 'IM Fell English SC', serif;
+          font-size: calc(13px * var(--font-scale, 1));
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: #ede6d8;
+          text-shadow: 0 0 6px rgba(180, 20, 20, 0.4);
+        }
+
+        .bm-pager-clip {
+          overflow: hidden;
+          min-height: 0;
+          flex: 1;
+          display: flex;
+        }
+
+        .bm-pager-strip {
+          display: flex;
+          width: 300%;
+          transition: transform 240ms cubic-bezier(0.25, 0.8, 0.3, 1);
+          align-items: stretch;
+        }
+
+        .bm-pager-page {
+          width: 33.3333%;
+          flex-shrink: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .bm-pager-strip { transition: none; }
         }
 
         .bm-view-switch {
@@ -1060,31 +1142,20 @@ export default function BlackMetal({
           </div>
           <div className="bm-subtitle">The GitHub Actions Ghost</div>
 
-          <div className="bm-tabs">
-            <button
-              className={`bm-tab${tab === "builds" ? " active" : ""}`}
-              onClick={() => setTab("builds")}
-            >
-              <span>Builds</span>
-              {activeRunCount > 0 && <span className="bm-tab-badge">{activeRunCount}</span>}
+          <div className="bm-pager-head">
+            <button className="bm-pg-arrow" onClick={() => goto(tabIdx - 1)} aria-label="Previous section">
+              ‹
             </button>
-            <button
-              className={`bm-tab${tab === "reviews" ? " active" : ""}`}
-              onClick={() => setTab("reviews")}
-            >
-              <span>Reviews</span>
-              {reviewCount > 0 && <span className="bm-tab-badge">{reviewCount}</span>}
-            </button>
-            <button
-              className={`bm-tab${tab === "comments" ? " active" : ""}`}
-              onClick={() => setTab("comments")}
-            >
-              <span>Comments</span>
-              {mentionCount > 0 && <span className="bm-tab-badge">{mentionCount}</span>}
+            <div className="bm-pg-title">
+              {BM_TAB_LABELS[tab]}
+              {counts[tab] > 0 && <span className="bm-tab-badge">{counts[tab]}</span>}
+            </div>
+            <button className="bm-pg-arrow" onClick={() => goto(tabIdx + 1)} aria-label="Next section">
+              ›
             </button>
           </div>
 
-          {tab === "builds" && !data.auth_error && data.has_pat && (
+          {tab === "builds" && ready && (
             <div className="bm-view-switch">
               {(["repos", "focus", "timeline"] as BuildsView[]).map((v) => (
                 <button
@@ -1098,48 +1169,63 @@ export default function BlackMetal({
             </div>
           )}
 
-          <div className="bm-content">
-            {data.auth_error ? (
-              <div className="bm-message">The binding has failed... check Settings</div>
-            ) : !data.has_pat ? (
-              <div className="bm-message">No soul has been bound... open Settings</div>
-            ) : tab === "builds" ? (
-              view === "focus" ? (
-                <BmFocusView data={data} expandRuns={focusExpandRuns} />
-              ) : view === "timeline" ? (
-                <BmTimelineView data={data} />
-              ) : data.repos.length === 0 ? (
-                <div className="bm-message">No repositories have been haunted</div>
+          {!ready ? (
+            <div className="bm-content">
+              {data.auth_error ? (
+                <div className="bm-message">The binding has failed... check Settings</div>
               ) : (
-                data.repos.map((repo) => (
-                  <div key={repo} className="bm-repo-group">
-                    <div className="bm-repo-header">{repo}</div>
-                    {data.runs[repo] ? (
-                      data.runs[repo].map((run) => (
-                        <RunRow key={run.html_url} run={run} />
-                      ))
-                    ) : (
-                      <div className="bm-message">summoning...</div>
-                    )}
-                  </div>
-                ))
-              )
-            ) : tab === "reviews" ? (
-              data.pending_reviews.length === 0 ? (
-                <div className="bm-message">No souls awaiting judgment</div>
-              ) : (
-                data.pending_reviews.map((r) => (
-                  <ReviewRow key={r.html_url} review={r} />
-                ))
-              )
-            ) : data.mentions.length === 0 ? (
-              <div className="bm-message">The whispers have fallen silent</div>
-            ) : (
-              data.mentions.map((m) => (
-                <MentionRow key={m.html_url} mention={m} />
-              ))
-            )}
-          </div>
+                <div className="bm-message">No soul has been bound... open Settings</div>
+              )}
+            </div>
+          ) : (
+            <div className="bm-pager-clip">
+              <div
+                className="bm-pager-strip"
+                style={{ transform: `translateX(-${tabIdx * 33.3333}%)` }}
+              >
+                <div className="bm-pager-page bm-content">
+                  {view === "focus" ? (
+                    <BmFocusView data={data} expandRuns={focusExpandRuns} />
+                  ) : view === "timeline" ? (
+                    <BmTimelineView data={data} />
+                  ) : data.repos.length === 0 ? (
+                    <div className="bm-message">No repositories have been haunted</div>
+                  ) : (
+                    data.repos.map((repo) => (
+                      <div key={repo} className="bm-repo-group">
+                        <div className="bm-repo-header">{repo}</div>
+                        {data.runs[repo] ? (
+                          data.runs[repo].map((run) => (
+                            <RunRow key={run.html_url} run={run} />
+                          ))
+                        ) : (
+                          <div className="bm-message">summoning...</div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="bm-pager-page bm-content">
+                  {data.pending_reviews.length === 0 ? (
+                    <div className="bm-message">No souls awaiting judgment</div>
+                  ) : (
+                    data.pending_reviews.map((r) => (
+                      <ReviewRow key={r.html_url} review={r} />
+                    ))
+                  )}
+                </div>
+                <div className="bm-pager-page bm-content">
+                  {data.mentions.length === 0 ? (
+                    <div className="bm-message">The whispers have fallen silent</div>
+                  ) : (
+                    data.mentions.map((m) => (
+                      <MentionRow key={m.html_url} mention={m} />
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bm-divider" />
           <div className="bm-footer">

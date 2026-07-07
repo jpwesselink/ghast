@@ -7,6 +7,7 @@ import type { PanelPayload, PanelWorkflowRun } from "./types";
 import {
   BuildsView,
   bucketRepos,
+  chipLabel,
   dayLabel,
   formatTimeAgo,
   isBad,
@@ -53,7 +54,7 @@ function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
         }}
       />
       <span className="run-name">{run.workflow_name}</span>
-      <span className="repo-chip">{repo.split("/")[1] ?? repo}</span>
+      <span className="repo-chip">{chipLabel(repo)}</span>
       <span className="run-time">{formatTimeAgo(run.created_at)}</span>
     </button>
   );
@@ -168,7 +169,7 @@ function TimelineView({ data }: { data: PanelPayload }) {
                 }}
               />
               <span className="run-name">{run.workflow_name}</span>
-              <span className="repo-chip">{repo.split("/")[1] ?? repo}</span>
+              <span className="repo-chip">{chipLabel(repo)}</span>
             </button>
           </div>
         );
@@ -203,6 +204,13 @@ const VIEWS: { id: BuildsView; label: string }[] = [
   { id: "timeline", label: "Timeline" },
 ];
 
+const TABS: Tab[] = ["builds", "reviews", "comments"];
+const TAB_LABELS: Record<Tab, string> = {
+  builds: "Builds",
+  reviews: "Reviews",
+  comments: "Comments",
+};
+
 export default function Menu({
   data,
   focusExpandRuns,
@@ -210,7 +218,7 @@ export default function Menu({
   data: PanelPayload;
   focusExpandRuns: number;
 }) {
-  const [tab, setTab] = useState<Tab>("builds");
+  const [tabIdx, setTabIdx] = useState(0);
   const [view, setView] = useState<BuildsView>(loadBuildsView);
   const handleSettings = () => invoke("open_settings");
   const handleQuit = () => invoke("quit_app");
@@ -223,36 +231,35 @@ export default function Menu({
   const activeRunCount = Object.values(data.runs)
     .flat()
     .filter((r) => r.status === "queued" || r.status === "in_progress").length;
-  const reviewCount = data.pending_reviews.length;
-  const mentionCount = data.mentions.length;
+  const counts: Record<Tab, number> = {
+    builds: activeRunCount,
+    reviews: data.pending_reviews.length,
+    comments: data.mentions.length,
+  };
+  const tab = TABS[tabIdx];
+
+  const goto = (i: number) => {
+    setTabIdx((i + TABS.length) % TABS.length);
+  };
+
+  const ready = !data.auth_error && data.has_pat;
 
   return (
     <div className="menu">
-      <div className="menu-tabs">
-        <button
-          className={`menu-tab${tab === "builds" ? " active" : ""}`}
-          onClick={() => setTab("builds")}
-        >
-          Builds
-          {activeRunCount > 0 && <span className="menu-tab-badge">{activeRunCount}</span>}
+      <div className="pager-head">
+        <button className="pg-arrow" onClick={() => goto(tabIdx - 1)} aria-label="Previous section">
+          ‹
         </button>
-        <button
-          className={`menu-tab${tab === "reviews" ? " active" : ""}`}
-          onClick={() => setTab("reviews")}
-        >
-          Reviews
-          {reviewCount > 0 && <span className="menu-tab-badge">{reviewCount}</span>}
-        </button>
-        <button
-          className={`menu-tab${tab === "comments" ? " active" : ""}`}
-          onClick={() => setTab("comments")}
-        >
-          Comments
-          {mentionCount > 0 && <span className="menu-tab-badge">{mentionCount}</span>}
+        <div className="pg-title">
+          {TAB_LABELS[tab]}
+          {counts[tab] > 0 && <span className="menu-tab-badge">{counts[tab]}</span>}
+        </div>
+        <button className="pg-arrow" onClick={() => goto(tabIdx + 1)} aria-label="Next section">
+          ›
         </button>
       </div>
       <div className="menu-separator" />
-      {tab === "builds" && !data.auth_error && data.has_pat && (
+      {tab === "builds" && ready && (
         <div className="view-switch">
           {VIEWS.map((v) => (
             <button
@@ -265,35 +272,50 @@ export default function Menu({
           ))}
         </div>
       )}
-      <div className="menu-content">
-        {data.auth_error ? (
-          <div className="menu-message">Auth error - check Settings</div>
-        ) : !data.has_pat ? (
-          <div className="menu-message">Open Settings to connect GitHub</div>
-        ) : tab === "builds" ? (
-          view === "repos" ? (
-            <ReposView data={data} />
-          ) : view === "focus" ? (
-            <FocusView data={data} expandRuns={focusExpandRuns} />
+      {!ready ? (
+        <div className="menu-content">
+          {data.auth_error ? (
+            <div className="menu-message">Auth error - check Settings</div>
           ) : (
-            <TimelineView data={data} />
-          )
-        ) : tab === "reviews" ? (
-          data.pending_reviews.length === 0 ? (
-            <div className="menu-message">No pending reviews</div>
-          ) : (
-            data.pending_reviews.map((r) => (
-              <ReviewItem key={r.html_url} review={r} />
-            ))
-          )
-        ) : data.mentions.length === 0 ? (
-          <div className="menu-message">No unread mentions</div>
-        ) : (
-          data.mentions.map((m) => (
-            <MentionItem key={m.html_url} mention={m} />
-          ))
-        )}
-      </div>
+            <div className="menu-message">Open Settings to connect GitHub</div>
+          )}
+        </div>
+      ) : (
+        <div className="pager-clip">
+          <div
+            className="pager-strip"
+            style={{ transform: `translateX(-${tabIdx * 33.3333}%)` }}
+          >
+            <div className="pager-page menu-content">
+              {view === "repos" ? (
+                <ReposView data={data} />
+              ) : view === "focus" ? (
+                <FocusView data={data} expandRuns={focusExpandRuns} />
+              ) : (
+                <TimelineView data={data} />
+              )}
+            </div>
+            <div className="pager-page menu-content">
+              {data.pending_reviews.length === 0 ? (
+                <div className="menu-message">No pending reviews</div>
+              ) : (
+                data.pending_reviews.map((r) => (
+                  <ReviewItem key={r.html_url} review={r} />
+                ))
+              )}
+            </div>
+            <div className="pager-page menu-content">
+              {data.mentions.length === 0 ? (
+                <div className="menu-message">No unread mentions</div>
+              ) : (
+                data.mentions.map((m) => (
+                  <MentionItem key={m.html_url} mention={m} />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="menu-separator" />
       <div className="menu-footer">
         <button className="footer-item" onClick={() => invoke("open_about")}>

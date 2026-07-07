@@ -117,6 +117,21 @@ export function timeLabel(iso: string): string {
   });
 }
 
+/// Chip label for a repo: short name, and when too long, drop leading
+/// dash-segments so the distinctive tail stays visible ("…video-workflow"
+/// instead of "pathe-home…").
+export function chipLabel(repo: string, max = 15): string {
+  const name = repo.split("/")[1] ?? repo;
+  if (name.length <= max) return name;
+  const segs = name.split("-");
+  while (segs.length > 1 && segs.join("-").length > max - 1) {
+    segs.shift();
+  }
+  let tail = segs.join("-");
+  if (tail.length > max - 1) tail = tail.slice(-(max - 1));
+  return `…${tail}`;
+}
+
 export function formatTimeAgo(iso: string): string {
   const diffS = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (diffS < 60) return "just now";
