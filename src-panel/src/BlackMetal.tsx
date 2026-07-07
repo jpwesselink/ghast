@@ -887,7 +887,7 @@ export default function BlackMetal({
           border: 1px solid #3a2a1a;
           color: #8a7e6e;
           flex-shrink: 0;
-          width: 96px;
+          width: calc(100px * var(--font-scale, 1));
           box-sizing: border-box;
           text-align: center;
           overflow: hidden;
@@ -1042,7 +1042,7 @@ export default function BlackMetal({
           color: #8a7e6e;
           flex-shrink: 0;
           font-style: italic;
-          min-width: 62px;
+          min-width: calc(62px * var(--font-scale, 1));
           text-align: right;
           font-variant-numeric: tabular-nums;
         }
