@@ -359,13 +359,22 @@ function RunRow({ run }: { run: PanelWorkflowRun }) {
   );
 }
 
+type BmTab = "builds" | "reviews" | "comments";
+
 export default function BlackMetal({ data }: { data: PanelPayload }) {
   const [flickerClass, setFlickerClass] = useState("");
+  const [tab, setTab] = useState<BmTab>("builds");
 
   useEffect(() => {
     setFlickerClass("screen-flicker");
     setTimeout(() => setFlickerClass(""), 600);
   }, []);
+
+  const activeRunCount = Object.values(data.runs)
+    .flat()
+    .filter((r) => r.status === "queued" || r.status === "in_progress").length;
+  const reviewCount = data.pending_reviews.length;
+  const mentionCount = data.mentions.length;
 
   return (
     <>
@@ -443,6 +452,12 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           .bm-content::-webkit-scrollbar-track { background: #e8dcc8 !important; }
           .bm-content::-webkit-scrollbar-thumb { background: #b09070 !important; }
           .bm-scratch { background: rgba(80, 50, 20, 0.04) !important; }
+          .bm-tabs { border-bottom-color: #c0a090 !important; }
+          .bm-tab { color: #6a5a48 !important; }
+          .bm-tab:hover { color: #2a1a10 !important; background: rgba(139, 0, 0, 0.08) !important; }
+          .bm-tab.active { color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
+          .bm-tab-badge { background: #e0c8a8 !important; border-color: #b09070 !important; color: #2a1a10 !important; }
+          .bm-tab.active .bm-tab-badge { background: #8b0000 !important; border-color: #8b0000 !important; color: #f0e8d8 !important; }
         }
 
         .bm-inner {
@@ -480,6 +495,65 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           height: 1px;
           background: linear-gradient(to right, transparent, #5a3030, transparent);
           margin: 0;
+        }
+
+        .bm-tabs {
+          display: flex;
+          gap: 4px;
+          padding: 6px 8px 0;
+          margin-bottom: 6px;
+          border-bottom: 1px solid #221816;
+        }
+
+        .bm-tab {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 6px 10px;
+          border: none;
+          background: transparent;
+          color: #6a5a48;
+          font-family: 'IM Fell English SC', serif;
+          font-size: 12px;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: color 0.15s, background 0.15s;
+          border-bottom: 2px solid transparent;
+          margin-bottom: -1px;
+        }
+
+        .bm-tab:hover { color: #b8a890; background: rgba(80, 0, 0, 0.1); }
+
+        .bm-tab.active {
+          color: #e0d8c8;
+          border-bottom-color: #8b0000;
+          text-shadow: 0 0 6px rgba(180, 20, 20, 0.4);
+        }
+
+        .bm-tab-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 18px;
+          height: 16px;
+          padding: 0 5px;
+          border-radius: 8px;
+          background: #2a1010;
+          border: 1px solid #4a1818;
+          color: #ddc0a0;
+          font-family: 'IM Fell English', serif;
+          font-style: italic;
+          font-size: 11px;
+          letter-spacing: 0;
+        }
+
+        .bm-tab.active .bm-tab-badge {
+          background: #4a1010;
+          border-color: #8b0000;
+          color: #ede6d8;
         }
 
         .bm-content {
@@ -646,20 +720,41 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
             <DrippingText>Ghast</DrippingText>
           </div>
           <div className="bm-subtitle">The GitHub Actions Ghost</div>
-          <div className="bm-divider" />
+
+          <div className="bm-tabs">
+            <button
+              className={`bm-tab${tab === "builds" ? " active" : ""}`}
+              onClick={() => setTab("builds")}
+            >
+              <span>Builds</span>
+              {activeRunCount > 0 && <span className="bm-tab-badge">{activeRunCount}</span>}
+            </button>
+            <button
+              className={`bm-tab${tab === "reviews" ? " active" : ""}`}
+              onClick={() => setTab("reviews")}
+            >
+              <span>Reviews</span>
+              {reviewCount > 0 && <span className="bm-tab-badge">{reviewCount}</span>}
+            </button>
+            <button
+              className={`bm-tab${tab === "comments" ? " active" : ""}`}
+              onClick={() => setTab("comments")}
+            >
+              <span>Comments</span>
+              {mentionCount > 0 && <span className="bm-tab-badge">{mentionCount}</span>}
+            </button>
+          </div>
 
           <div className="bm-content">
             {data.auth_error ? (
               <div className="bm-message">The binding has failed... check Settings</div>
             ) : !data.has_pat ? (
               <div className="bm-message">No soul has been bound... open Settings</div>
-            ) : data.repos.length === 0 &&
-              data.pending_reviews.length === 0 &&
-              data.mentions.length === 0 ? (
-              <div className="bm-message">No repositories have been haunted</div>
-            ) : (
-              <>
-                {data.repos.map((repo) => (
+            ) : tab === "builds" ? (
+              data.repos.length === 0 ? (
+                <div className="bm-message">No repositories have been haunted</div>
+              ) : (
+                data.repos.map((repo) => (
                   <div key={repo} className="bm-repo-group">
                     <div className="bm-repo-header">{repo}</div>
                     {data.runs[repo] ? (
@@ -670,26 +765,22 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
                       <div className="bm-message">summoning...</div>
                     )}
                   </div>
-                ))}
-
-                {data.pending_reviews.length > 0 && (
-                  <div className="bm-repo-group">
-                    <div className="bm-repo-header">Awaiting judgment</div>
-                    {data.pending_reviews.map((r) => (
-                      <ReviewRow key={r.html_url} review={r} />
-                    ))}
-                  </div>
-                )}
-
-                {data.mentions.length > 0 && (
-                  <div className="bm-repo-group">
-                    <div className="bm-repo-header">Whispers of the damned</div>
-                    {data.mentions.map((m) => (
-                      <MentionRow key={m.html_url} mention={m} />
-                    ))}
-                  </div>
-                )}
-              </>
+                ))
+              )
+            ) : tab === "reviews" ? (
+              data.pending_reviews.length === 0 ? (
+                <div className="bm-message">No souls awaiting judgment</div>
+              ) : (
+                data.pending_reviews.map((r) => (
+                  <ReviewRow key={r.html_url} review={r} />
+                ))
+              )
+            ) : data.mentions.length === 0 ? (
+              <div className="bm-message">The whispers have fallen silent</div>
+            ) : (
+              data.mentions.map((m) => (
+                <MentionRow key={m.html_url} mention={m} />
+              ))
             )}
           </div>
 

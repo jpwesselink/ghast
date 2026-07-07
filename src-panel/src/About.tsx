@@ -58,35 +58,45 @@ function Ghost({
   const milkRx = 3.2 * eyeMilkScale;
   const milkRy = 4.4 * eyeMilkScale;
   const svgRef = useRef<SVGSVGElement>(null);
-  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
+  const [leftOff, setLeftOff] = useState({ x: 0, y: 0 });
+  const [rightOff, setRightOff] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const MAX_SHIFT = 2.5; // viewBox units; keeps pupils inside the eye outline
     const onMove = (e: MouseEvent) => {
       const svg = svgRef.current;
       if (!svg) return;
       const rect = svg.getBoundingClientRect();
-      // midpoint between the eyes, in screen coords (eyes sit at y=45 in a 100-unit viewBox)
-      const cx = rect.left + rect.width * 0.5;
-      const cy = rect.top + rect.height * 0.45;
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      const dist = Math.hypot(dx, dy);
-      if (dist < 1) {
-        setEyeOffset({ x: 0, y: 0 });
-        return;
+      const sx = rect.width / 100;
+      const sy = rect.height / 100;
+
+      // Eye-socket centers, in viewBox coords (40,45) and (60,45).
+      // Translate them to screen-space so we can aim at the cursor.
+      const eyes: Array<[number, number, (o: { x: number; y: number }) => void]> = [
+        [rect.left + 40 * sx, rect.top + 45 * sy, setLeftOff],
+        [rect.left + 60 * sx, rect.top + 45 * sy, setRightOff],
+      ];
+
+      const maxX = 1.4;
+      const maxY = 1.8;
+      const saturationPx = 220; // distance at which the pupil reaches its max deflection
+
+      for (const [ex, ey, set] of eyes) {
+        const dx = e.clientX - ex;
+        const dy = e.clientY - ey;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 1) {
+          set({ x: 0, y: 0 });
+          continue;
+        }
+        const factor = Math.min(1, dist / saturationPx);
+        set({
+          x: (dx / dist) * maxX * factor,
+          y: (dy / dist) * maxY * factor,
+        });
       }
-      // full deflection once the cursor is ~60px away
-      const f = (Math.min(1, dist / 60) * MAX_SHIFT) / dist;
-      setEyeOffset({ x: dx * f, y: dy * f });
     };
-    const onLeave = () => setEyeOffset({ x: 0, y: 0 });
-    window.addEventListener("mousemove", onMove);
-    document.documentElement.addEventListener("mouseleave", onLeave);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      document.documentElement.removeEventListener("mouseleave", onLeave);
-    };
+    document.addEventListener("mousemove", onMove);
+    return () => document.removeEventListener("mousemove", onMove);
   }, []);
 
   return (
@@ -110,16 +120,15 @@ function Ghost({
         opacity={bodyOpacity}
         style={glow ? { filter: `drop-shadow(0 0 18px ${glow}) drop-shadow(0 0 36px ${glow})` } : undefined}
       />
-      <g
-        style={{
-          transform: `translate(${eyeOffset.x}px, ${eyeOffset.y}px)`,
-          transition: "transform 80ms ease-out",
-        }}
-      >
+      <g>
         <ellipse cx="40" cy="45" rx="5" ry="7" fill="#000" opacity="0.85" />
-        <ellipse cx="40" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
+        <g transform={`translate(${leftOff.x} ${leftOff.y})`}>
+          <ellipse cx="40" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
+        </g>
         <ellipse cx="60" cy="45" rx="5" ry="7" fill="#000" opacity="0.85" />
-        <ellipse cx="60" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
+        <g transform={`translate(${rightOff.x} ${rightOff.y})`}>
+          <ellipse cx="60" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
+        </g>
       </g>
     </svg>
   );

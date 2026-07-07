@@ -83,6 +83,59 @@ body {
   color: var(--text-primary);
 }
 
+.menu-tabs {
+  display: flex;
+  padding: 6px 6px 0;
+  gap: 4px;
+}
+
+.menu-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.92em;
+  font-weight: 500;
+  cursor: default;
+  border-radius: 5px;
+  transition: background 0.1s, color 0.1s;
+}
+
+.menu-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.menu-tab.active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.menu-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.25);
+  color: var(--text-primary);
+  font-size: 0.78em;
+  font-weight: 600;
+}
+
+.menu-tab.active .menu-tab-badge {
+  background: rgba(127, 127, 127, 0.4);
+}
+
 .repo-group + .repo-group {
   border-top: 0.5px solid var(--separator);
   margin-top: 6px;
