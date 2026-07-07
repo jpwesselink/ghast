@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex};
 #[derive(Debug, Clone, PartialEq)]
 pub enum RunStatus {
     Queued,
+    Waiting,
     InProgress,
     Completed,
 }
@@ -47,6 +48,8 @@ impl WorkflowRun {
             status: match api_run.status.as_str() {
                 "in_progress" => RunStatus::InProgress,
                 "completed" => RunStatus::Completed,
+                // deployment-protection gate: a human has to approve
+                "waiting" | "action_required" => RunStatus::Waiting,
                 _ => RunStatus::Queued,
             },
             conclusion: api_run.conclusion.as_deref().map(|c| match c {
@@ -65,7 +68,10 @@ impl WorkflowRun {
     }
 
     pub fn is_active(&self) -> bool {
-        matches!(self.status, RunStatus::Queued | RunStatus::InProgress)
+        matches!(
+            self.status,
+            RunStatus::Queued | RunStatus::Waiting | RunStatus::InProgress
+        )
     }
 }
 
@@ -89,6 +95,7 @@ impl From<&WorkflowRun> for PanelWorkflowRun {
             workflow_name: run.workflow_name.clone(),
             status: match run.status {
                 RunStatus::Queued => "queued",
+                RunStatus::Waiting => "waiting",
                 RunStatus::InProgress => "in_progress",
                 RunStatus::Completed => "completed",
             }

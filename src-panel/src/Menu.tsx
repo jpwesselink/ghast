@@ -27,6 +27,7 @@ function openRepoUrl(repo: string) {
 }
 
 function histClass(run: PanelWorkflowRun): string {
+  if (run.status === "waiting") return "hist-wait";
   if (run.status !== "completed") return "hist-run";
   if (run.conclusion === "success") return "hist-ok";
   if (isBad(run)) return "hist-fail";
@@ -57,7 +58,11 @@ function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
         className={`run-dot${run.status !== "completed" ? " dot-pulse" : ""}`}
         style={{
           backgroundColor:
-            run.status !== "completed" ? "rgb(0, 122, 255)" : "rgb(255, 59, 48)",
+            run.status === "waiting"
+              ? "rgb(255, 149, 0)"
+              : run.status !== "completed"
+                ? "rgb(0, 122, 255)"
+                : "rgb(255, 59, 48)",
         }}
       />
       <span className="run-name">{run.workflow_name}</span>
@@ -83,7 +88,7 @@ function FocusView({
   expandRuns: number;
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const { failing, running, quiet } = bucketRepos(data.repos, data.runs);
+  const { failing, waiting, running, quiet } = bucketRepos(data.repos, data.runs);
 
   const toggle = (repo: string) => {
     const next = new Set(expanded);
@@ -92,7 +97,12 @@ function FocusView({
     setExpanded(next);
   };
 
-  if (failing.length === 0 && running.length === 0 && quiet.length === 0) {
+  if (
+    failing.length === 0 &&
+    waiting.length === 0 &&
+    running.length === 0 &&
+    quiet.length === 0
+  ) {
     return (
       <div className="calm-ghost">
         <Ghost size={56} bodyColor="var(--ghost-body)" eyeMilkColor="#ffffff" eyeMilkScale={0.8} />
@@ -103,7 +113,7 @@ function FocusView({
 
   return (
     <>
-      {failing.length === 0 && running.length === 0 && (
+      {failing.length === 0 && waiting.length === 0 && running.length === 0 && (
         <div className="calm-ghost">
           <Ghost size={56} bodyColor="var(--ghost-body)" eyeMilkColor="#ffffff" eyeMilkScale={0.8} />
           <div className="calm-line">Nothing haunts you</div>
@@ -114,6 +124,15 @@ function FocusView({
         <div className="repo-group">
           <div className="repo-header sect-fail">Failing</div>
           {failing.map(({ repo, run }) => (
+            <FocusRunRow key={run.html_url} repo={repo} run={run} />
+          ))}
+        </div>
+      )}
+
+      {waiting.length > 0 && (
+        <div className="repo-group">
+          <div className="repo-header sect-wait">Needs approval</div>
+          {waiting.map(({ repo, run }) => (
             <FocusRunRow key={run.html_url} repo={repo} run={run} />
           ))}
         </div>
@@ -186,9 +205,11 @@ function TimelineView({ data }: { data: PanelPayload }) {
                 className={`run-dot${run.status !== "completed" ? " dot-pulse" : ""}`}
                 style={{
                   backgroundColor:
-                    run.status !== "completed"
-                      ? "rgb(0, 122, 255)"
-                      : run.conclusion === "success"
+                    run.status === "waiting"
+                      ? "rgb(255, 149, 0)"
+                      : run.status !== "completed"
+                        ? "rgb(0, 122, 255)"
+                        : run.conclusion === "success"
                         ? "rgb(52, 199, 89)"
                         : isBad(run)
                           ? "rgb(255, 59, 48)"

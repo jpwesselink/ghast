@@ -2,7 +2,7 @@ export interface PanelWorkflowRun {
   run_id: number;
   repo: string;
   workflow_name: string;
-  status: "queued" | "in_progress" | "completed";
+  status: "queued" | "waiting" | "in_progress" | "completed";
   conclusion: string | null;
   html_url: string;
   created_at: string;

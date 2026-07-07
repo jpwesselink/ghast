@@ -774,3 +774,12 @@ body {
   background: rgba(127, 127, 127, 0.14);
   color: var(--text-primary);
 }
+
+/* waiting-for-approval state */
+.sect-wait {
+  color: rgb(255, 149, 0) !important;
+}
+
+.hist .hist-wait {
+  background: rgb(255, 149, 0);
+}

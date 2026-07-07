@@ -22,6 +22,7 @@ function formatTimeAgo(iso: string): string {
 function statusLabel(run: PanelWorkflowRun): string {
   if (run.status === "in_progress") return "Running";
   if (run.status === "queued") return "Queued";
+  if (run.status === "waiting") return "Waiting for approval";
   if (run.status === "completed") {
     switch (run.conclusion) {
       case "success": return "Succeeded";
@@ -41,6 +42,8 @@ function dotColor(run: PanelWorkflowRun): string {
   switch (run.status) {
     case "queued":
       return "rgb(255, 204, 0)";
+    case "waiting":
+      return "rgb(255, 149, 0)";
     case "in_progress":
       return "rgb(0, 122, 255)";
     case "completed":

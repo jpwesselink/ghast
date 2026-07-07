@@ -48,6 +48,7 @@ export interface QuietRepo {
 
 export interface RepoBuckets {
   failing: RepoRun[];
+  waiting: RepoRun[];
   running: RepoRun[];
   quiet: QuietRepo[];
 }
@@ -57,6 +58,7 @@ export function bucketRepos(
   runsByRepo: Record<string, PanelWorkflowRun[]>
 ): RepoBuckets {
   const failing: RepoRun[] = [];
+  const waiting: RepoRun[] = [];
   const running: RepoRun[] = [];
   const quiet: QuietRepo[] = [];
 
@@ -66,7 +68,10 @@ export function bucketRepos(
 
     let calm = true;
     for (const run of latestPerWorkflow(runs)) {
-      if (isActive(run)) {
+      if (run.status === "waiting") {
+        waiting.push({ repo, run });
+        calm = false;
+      } else if (isActive(run)) {
         running.push({ repo, run });
         calm = false;
       } else if (isBad(run)) {
@@ -84,10 +89,11 @@ export function bucketRepos(
   const newestFirst = (a: RepoRun, b: RepoRun) =>
     b.run.created_at.localeCompare(a.run.created_at);
   failing.sort(newestFirst);
+  waiting.sort(newestFirst);
   running.sort(newestFirst);
   quiet.sort((a, b) => b.latest.created_at.localeCompare(a.latest.created_at));
 
-  return { failing, running, quiet };
+  return { failing, waiting, running, quiet };
 }
 
 export function timelineEntries(

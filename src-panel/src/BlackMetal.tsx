@@ -241,6 +241,7 @@ const CrossbonesGlyph = (
 function statusLabel(run: PanelWorkflowRun): string {
   if (run.status === "in_progress") return "Running";
   if (run.status === "queued") return "Queued";
+  if (run.status === "waiting") return "Awaiting the seal";
   if (run.status === "completed") {
     switch (run.conclusion) {
       case "success": return "Succeeded";
@@ -261,6 +262,8 @@ function StatusIcon({ run }: { run: PanelWorkflowRun }) {
     return <Glyph color="#5577ee" pulse>{EyeGlyph}</Glyph>;
   if (run.status === "queued")
     return <Glyph color="#b8a020">{HourglassGlyph}</Glyph>;
+  if (run.status === "waiting")
+    return <Glyph color="#cc8822" pulse>{HourglassGlyph}</Glyph>;
   if (run.status === "completed") {
     if (run.conclusion === "success")
       return <Glyph color="#55aa22">{PentagramGlyph}</Glyph>;
@@ -387,6 +390,7 @@ function openRepoUrl(repo: string) {
 }
 
 function bmHistClass(run: PanelWorkflowRun): string {
+  if (run.status === "waiting") return "bm-hist-wait";
   if (run.status !== "completed") return "bm-hist-run";
   if (run.conclusion === "success") return "bm-hist-ok";
   if (isBad(run)) return "bm-hist-fail";
@@ -444,7 +448,7 @@ function BmFocusView({
   expandRuns: number;
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const { failing, running, quiet } = bucketRepos(data.repos, data.runs);
+  const { failing, waiting, running, quiet } = bucketRepos(data.repos, data.runs);
 
   const toggle = (repo: string) => {
     const next = new Set(expanded);
@@ -453,7 +457,12 @@ function BmFocusView({
     setExpanded(next);
   };
 
-  if (failing.length === 0 && running.length === 0 && quiet.length === 0) {
+  if (
+    failing.length === 0 &&
+    waiting.length === 0 &&
+    running.length === 0 &&
+    quiet.length === 0
+  ) {
     return (
       <div className="bm-calm">
         <Ghost size={56} bodyOpacity={0.85} eyeMilkColor="#e6e0d2" eyeMilkScale={1.1} glow="#aa1010" />
@@ -464,7 +473,7 @@ function BmFocusView({
 
   return (
     <>
-      {failing.length === 0 && running.length === 0 && (
+      {failing.length === 0 && waiting.length === 0 && running.length === 0 && (
         <div className="bm-calm">
           <Ghost size={56} bodyOpacity={0.85} eyeMilkColor="#e6e0d2" eyeMilkScale={1.1} glow="#aa1010" />
           <div className="bm-calm-line">All souls at rest</div>
@@ -475,6 +484,15 @@ function BmFocusView({
         <div className="bm-repo-group">
           <div className="bm-repo-header bm-sect">The damned</div>
           {failing.map(({ repo, run }) => (
+            <BmFocusRunRow key={run.html_url} repo={repo} run={run} />
+          ))}
+        </div>
+      )}
+
+      {waiting.length > 0 && (
+        <div className="bm-repo-group">
+          <div className="bm-repo-header bm-sect-wait">Awaiting the seal</div>
+          {waiting.map(({ repo, run }) => (
             <BmFocusRunRow key={run.html_url} repo={repo} run={run} />
           ))}
         </div>
@@ -1094,6 +1112,7 @@ export default function BlackMetal({
         }
 
         .bm-sect-run { color: #5577ee !important; }
+        .bm-sect-wait { color: #cc8822 !important; }
         .bm-sect-quiet { color: #6a7a48 !important; }
 
         .bm-quiet-row .bm-run-name { color: #9a8e7e; }
@@ -1123,6 +1142,7 @@ export default function BlackMetal({
         .bm-hist .bm-hist-fail { background: #cc2020; }
         .bm-hist .bm-hist-skip { background: #9a8a78; opacity: 0.6; }
         .bm-hist .bm-hist-run { background: #5577ee; }
+        .bm-hist .bm-hist-wait { background: #cc8822; }
         .bm-hist .bm-hist-dim { opacity: 0.4; }
 
         .bm-tl-time {
