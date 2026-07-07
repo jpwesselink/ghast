@@ -5,8 +5,10 @@ import type { PanelMention, PanelPayload, PanelPendingReview, PanelWorkflowRun }
 import Ghost from "./Ghost";
 import {
   RunJob,
+  duration,
   fetchRunJobs,
   jobIsBad,
+  stepUrl,
   toggleRunExpanded,
   useExpandedRuns,
 } from "./runJobs";
@@ -396,15 +398,25 @@ function BmJobList({ run }: { run: PanelWorkflowRun }) {
                 {mark.glyph}
               </span>
               <span className="bm-run-name">{job.name}</span>
+              <span className="bm-step-duration">
+                {duration(job.started_at, job.completed_at)}
+              </span>
             </div>
             {job.steps.map((step) => {
               const sm = bmStepMark(step);
               return (
-                <div className="bm-step-row" key={step.number}>
+                <div
+                  className="bm-step-row bm-step-link"
+                  key={step.number}
+                  onClick={() => invoke("open_url", { url: stepUrl(job, step) })}
+                >
                   <span className="bm-step-mark" style={{ color: sm.color }}>
                     {sm.glyph}
                   </span>
                   <span className="bm-run-name">{step.name}</span>
+                  <span className="bm-step-duration">
+                    {duration(step.started_at, step.completed_at)}
+                  </span>
                 </div>
               );
             })}
@@ -970,6 +982,23 @@ export default function BlackMetal({
           width: 12px;
           text-align: center;
           flex-shrink: 0;
+        }
+
+        .bm-step-duration {
+          color: #6a5f50;
+          font-size: calc(11px * var(--font-scale, 1));
+          font-style: italic;
+          flex-shrink: 0;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .bm-step-link {
+          cursor: pointer;
+        }
+
+        .bm-step-link:hover {
+          background: #2a1a18;
+          color: #e0d8c8;
         }
 
         .bm-job-note {

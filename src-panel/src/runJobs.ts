@@ -6,6 +6,8 @@ export interface RunStep {
   status: string;
   conclusion: string | null;
   number: number;
+  started_at: string | null;
+  completed_at: string | null;
 }
 
 export interface RunJob {
@@ -13,7 +15,26 @@ export interface RunJob {
   status: string;
   conclusion: string | null;
   html_url: string;
+  started_at: string | null;
+  completed_at: string | null;
   steps: RunStep[];
+}
+
+/// "1h 4m", "4m 12s", "12s"; still-running entries measure against now.
+export function duration(startedAt: string | null, completedAt: string | null): string {
+  if (!startedAt) return "";
+  const start = new Date(startedAt).getTime();
+  const end = completedAt ? new Date(completedAt).getTime() : Date.now();
+  const s = Math.max(0, Math.round((end - start) / 1000));
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ${s % 60}s`;
+  return `${Math.floor(m / 60)}h ${m % 60}m`;
+}
+
+/// GitHub job page anchor that scrolls to a step's log section.
+export function stepUrl(job: RunJob, step: RunStep): string {
+  return `${job.html_url}#step:${step.number}:1`;
 }
 
 const jobCache = new Map<number, RunJob[]>();

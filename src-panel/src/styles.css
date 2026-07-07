@@ -762,3 +762,15 @@ body {
   font-size: 0.85em;
   font-style: italic;
 }
+
+.step-duration {
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.step-row:hover {
+  background: rgba(127, 127, 127, 0.14);
+  color: var(--text-primary);
+}

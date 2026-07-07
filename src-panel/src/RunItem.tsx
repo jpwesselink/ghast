@@ -4,8 +4,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelWorkflowRun } from "./types";
 import {
   RunJob,
+  duration,
   fetchRunJobs,
   jobIsBad,
+  stepUrl,
   toggleRunExpanded,
   useExpandedRuns,
 } from "./runJobs";
@@ -110,16 +112,26 @@ function JobList({ run }: { run: PanelWorkflowRun }) {
                 {mark.glyph}
               </span>
               <span className="run-name">{job.name}</span>
+              <span className="step-duration">
+                {duration(job.started_at, job.completed_at)}
+              </span>
             </button>
             {job.steps.map((step) => {
               const sm = stepMark(step);
               return (
-                <div className="step-row" key={step.number}>
+                <button
+                  className="step-row"
+                  key={step.number}
+                  onClick={() => invoke("open_url", { url: stepUrl(job, step) })}
+                >
                   <span className="step-mark" style={{ color: sm.color }}>
                     {sm.glyph}
                   </span>
                   <span className="run-name">{step.name}</span>
-                </div>
+                  <span className="step-duration">
+                    {duration(step.started_at, step.completed_at)}
+                  </span>
+                </button>
               );
             })}
           </div>

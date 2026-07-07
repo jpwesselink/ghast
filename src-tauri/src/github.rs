@@ -25,6 +25,8 @@ pub struct RunStep {
     pub status: String,
     pub conclusion: Option<String>,
     pub number: i64,
+    pub started_at: Option<String>,
+    pub completed_at: Option<String>,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -33,6 +35,8 @@ pub struct RunJob {
     pub status: String,
     pub conclusion: Option<String>,
     pub html_url: String,
+    pub started_at: Option<String>,
+    pub completed_at: Option<String>,
     pub steps: Vec<RunStep>,
 }
 
@@ -334,6 +338,8 @@ impl GitHubClient {
                 status: enum_str(&j.status),
                 conclusion: j.conclusion.as_ref().map(enum_str),
                 html_url: j.html_url.to_string(),
+                started_at: Some(j.started_at.to_rfc3339()),
+                completed_at: j.completed_at.map(|t| t.to_rfc3339()),
                 steps: j
                     .steps
                     .into_iter()
@@ -342,6 +348,8 @@ impl GitHubClient {
                         status: enum_str(&s.status),
                         conclusion: s.conclusion.as_ref().map(enum_str),
                         number: s.number,
+                        started_at: s.started_at.map(|t| t.to_rfc3339()),
+                        completed_at: s.completed_at.map(|t| t.to_rfc3339()),
                     })
                     .collect(),
             })
