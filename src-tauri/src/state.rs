@@ -35,6 +35,7 @@ pub struct WorkflowRun {
     pub conclusion: Option<RunConclusion>,
     pub html_url: String,
     pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl WorkflowRun {
@@ -59,6 +60,7 @@ impl WorkflowRun {
             }),
             html_url: api_run.html_url.clone(),
             created_at: api_run.created_at,
+            updated_at: api_run.updated_at,
         }
     }
 
@@ -76,6 +78,7 @@ pub struct PanelWorkflowRun {
     pub conclusion: Option<String>,
     pub html_url: String,
     pub created_at: String,
+    pub updated_at: String,
 }
 
 impl From<&WorkflowRun> for PanelWorkflowRun {
@@ -101,6 +104,7 @@ impl From<&WorkflowRun> for PanelWorkflowRun {
             }.to_string()),
             html_url: run.html_url.clone(),
             created_at: run.created_at.to_rfc3339(),
+            updated_at: run.updated_at.to_rfc3339(),
         }
     }
 }
@@ -344,6 +348,7 @@ mod tests {
             conclusion: conclusion.map(String::from),
             html_url: "https://github.com/o/r/actions/runs/1".to_string(),
             created_at: Utc::now(),
+            updated_at: Utc::now(),
         }
     }
 
@@ -400,6 +405,7 @@ mod tests {
             conclusion: Some("success".to_string()),
             html_url: "https://github.com/o/r/actions/runs/1".to_string(),
             created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
         let run = WorkflowRun::from_api("owner/repo", &api);
         assert_eq!(run.workflow_name, "Deploy");

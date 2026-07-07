@@ -98,6 +98,7 @@ mod tests {
             conclusion: conclusion.map(String::from),
             html_url: format!("https://github.com/o/r/actions/runs/{}", id),
             created_at: Utc::now(),
+            updated_at: Utc::now(),
         }
     }
 

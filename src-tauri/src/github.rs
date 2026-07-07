@@ -17,6 +17,7 @@ pub struct WorkflowRun {
     pub conclusion: Option<String>,
     pub html_url: String,
     pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -184,6 +185,7 @@ impl GitHubClient {
                 conclusion: r.conclusion.clone(),
                 html_url: r.html_url.to_string(),
                 created_at: r.created_at,
+                updated_at: r.updated_at,
             })
             .collect();
 

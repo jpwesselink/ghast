@@ -3,15 +3,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelMention, PanelPayload, PanelPendingReview, PanelWorkflowRun } from "./types";
 import Ghost from "./Ghost";
-import {
-  RunJob,
-  duration,
-  fetchRunJobs,
-  jobIsBad,
-  stepUrl,
-  toggleRunExpanded,
-  useExpandedRuns,
-} from "./runJobs";
+import JobSteps, { WorkflowDuration } from "./JobSteps";
+import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
 import {
   BuildsView,
   bucketRepos,
@@ -352,81 +345,6 @@ function ReviewRow({ review }: { review: PanelPendingReview }) {
   );
 }
 
-function bmStepMark(s: { status: string; conclusion: string | null }): {
-  glyph: string;
-  color: string;
-} {
-  if (s.status !== "completed" && s.status !== "failed")
-    return s.status === "in_progress"
-      ? { glyph: "◌", color: "#5577ee" }
-      : { glyph: "·", color: "#9a8a78" };
-  if (s.conclusion === "success") return { glyph: "†", color: "#55aa22" };
-  if (jobIsBad(s as RunJob)) return { glyph: "✕", color: "#cc2020" };
-  return { glyph: "–", color: "#9a8a78" };
-}
-
-function BmJobList({ run }: { run: PanelWorkflowRun }) {
-  const [jobs, setJobs] = useState<RunJob[] | null>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let alive = true;
-    setError("");
-    fetchRunJobs(run.repo, run.run_id, run.status === "completed")
-      .then((j) => alive && setJobs(j))
-      .catch((e) => alive && setError(String(e)));
-    return () => {
-      alive = false;
-    };
-  }, [run.repo, run.run_id, run.status, run.conclusion, run.created_at]);
-
-  if (error) return <div className="bm-job-note">the summoning failed: {error}</div>;
-  if (!jobs) return <div className="bm-job-note">divining the rites...</div>;
-  if (jobs.length === 0) return <div className="bm-job-note">no rites recorded</div>;
-
-  return (
-    <div className="bm-job-list">
-      {jobs.map((job) => {
-        const mark = bmStepMark(job);
-        return (
-          <div key={job.html_url}>
-            <div
-              className="bm-job-row"
-              onClick={() => invoke("open_url", { url: job.html_url })}
-            >
-              <span className="bm-step-mark" style={{ color: mark.color }}>
-                {mark.glyph}
-              </span>
-              <span className="bm-run-name">{job.name}</span>
-              <span className="bm-step-duration">
-                {duration(job.started_at, job.completed_at)}
-              </span>
-            </div>
-            {job.steps.map((step) => {
-              const sm = bmStepMark(step);
-              return (
-                <div
-                  className="bm-step-row bm-step-link"
-                  key={step.number}
-                  onClick={() => invoke("open_url", { url: stepUrl(job, step) })}
-                >
-                  <span className="bm-step-mark" style={{ color: sm.color }}>
-                    {sm.glyph}
-                  </span>
-                  <span className="bm-run-name">{step.name}</span>
-                  <span className="bm-step-duration">
-                    {duration(step.started_at, step.completed_at)}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 function RunRow({ run }: { run: PanelWorkflowRun }) {
   const expanded = useExpandedRuns().includes(run.run_id);
 
@@ -454,9 +372,10 @@ function RunRow({ run }: { run: PanelWorkflowRun }) {
           <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
         </Tooltip>
         <span className="bm-run-name">{run.workflow_name}</span>
+        <WorkflowDuration run={run} className="bm-step-duration" />
         <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
       </div>
-      {expanded && <BmJobList run={run} />}
+      {expanded && <JobSteps run={run} variant="blackmetal" />}
     </>
   );
 }
@@ -957,6 +876,11 @@ export default function BlackMetal({
 
         .bm-job-row,
         .bm-step-row {
+          border: none;
+          background: none;
+          width: calc(100% - 12px);
+          font-family: inherit;
+          text-align: left;
           display: flex;
           align-items: center;
           gap: 9px;

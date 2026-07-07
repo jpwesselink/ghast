@@ -1,16 +1,8 @@
-import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelWorkflowRun } from "./types";
-import {
-  RunJob,
-  duration,
-  fetchRunJobs,
-  jobIsBad,
-  stepUrl,
-  toggleRunExpanded,
-  useExpandedRuns,
-} from "./runJobs";
+import JobSteps, { WorkflowDuration } from "./JobSteps";
+import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
 
 function formatTimeAgo(iso: string): string {
   const dt = new Date(iso);
@@ -65,82 +57,6 @@ function dotColor(run: PanelWorkflowRun): string {
   }
 }
 
-function stepMark(s: { status: string; conclusion: string | null }): {
-  glyph: string;
-  color: string;
-} {
-  if (s.status !== "completed" && s.status !== "failed")
-    return s.status === "in_progress"
-      ? { glyph: "◌", color: "rgb(0, 122, 255)" }
-      : { glyph: "·", color: "rgb(142, 142, 147)" };
-  if (s.conclusion === "success") return { glyph: "✓", color: "rgb(52, 199, 89)" };
-  if (jobIsBad(s as RunJob)) return { glyph: "✕", color: "rgb(255, 59, 48)" };
-  return { glyph: "–", color: "rgb(142, 142, 147)" };
-}
-
-function JobList({ run }: { run: PanelWorkflowRun }) {
-  const [jobs, setJobs] = useState<RunJob[] | null>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let alive = true;
-    setError("");
-    fetchRunJobs(run.repo, run.run_id, run.status === "completed")
-      .then((j) => alive && setJobs(j))
-      .catch((e) => alive && setError(String(e)));
-    return () => {
-      alive = false;
-    };
-    // re-fetch while the run is still moving
-  }, [run.repo, run.run_id, run.status, run.conclusion, run.created_at]);
-
-  if (error) return <div className="job-note">jobs unavailable: {error}</div>;
-  if (!jobs) return <div className="job-note">fetching jobs...</div>;
-  if (jobs.length === 0) return <div className="job-note">no jobs reported</div>;
-
-  return (
-    <div className="job-list">
-      {jobs.map((job) => {
-        const mark = stepMark(job);
-        return (
-          <div key={job.html_url}>
-            <button
-              className="job-row"
-              onClick={() => invoke("open_url", { url: job.html_url })}
-            >
-              <span className="step-mark" style={{ color: mark.color }}>
-                {mark.glyph}
-              </span>
-              <span className="run-name">{job.name}</span>
-              <span className="step-duration">
-                {duration(job.started_at, job.completed_at)}
-              </span>
-            </button>
-            {job.steps.map((step) => {
-              const sm = stepMark(step);
-              return (
-                <button
-                  className="step-row"
-                  key={step.number}
-                  onClick={() => invoke("open_url", { url: stepUrl(job, step) })}
-                >
-                  <span className="step-mark" style={{ color: sm.color }}>
-                    {sm.glyph}
-                  </span>
-                  <span className="run-name">{step.name}</span>
-                  <span className="step-duration">
-                    {duration(step.started_at, step.completed_at)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export default function RunItem({ run }: { run: PanelWorkflowRun }) {
   const expanded = useExpandedRuns().includes(run.run_id);
 
@@ -167,9 +83,10 @@ export default function RunItem({ run }: { run: PanelWorkflowRun }) {
           <TooltipContent>{statusLabel(run)}</TooltipContent>
         </Tooltip>
         <span className="run-name">{run.workflow_name}</span>
+        <WorkflowDuration run={run} className="step-duration" />
         <span className="run-time">{formatTimeAgo(run.created_at)}</span>
       </button>
-      {expanded && <JobList run={run} />}
+      {expanded && <JobSteps run={run} variant="clean" />}
     </>
   );
 }

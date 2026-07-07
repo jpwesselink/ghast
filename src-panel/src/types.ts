@@ -6,6 +6,7 @@ export interface PanelWorkflowRun {
   conclusion: string | null;
   html_url: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface PanelPendingReview {
