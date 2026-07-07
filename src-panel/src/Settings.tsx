@@ -42,6 +42,7 @@ export default function Settings() {
   const [connecting, setConnecting] = useState(false);
   const [fontScale, setFontScale] = useState(1.0);
   const [expandRuns, setExpandRuns] = useState(5);
+  const [runsPerRepo, setRunsPerRepo] = useState(5);
 
   useEffect(() => {
     invoke<{
@@ -52,9 +53,11 @@ export default function Settings() {
       theme: string;
       font_scale: number;
       focus_expand_runs: number;
+      runs_per_repo: number;
     }>("get_config").then((config) => {
       setFontScale(config.font_scale);
       setExpandRuns(config.focus_expand_runs);
+      setRunsPerRepo(config.runs_per_repo);
       if (config.has_pat) {
         setBound(true);
         setPatStatus("Connected");
@@ -124,9 +127,13 @@ export default function Settings() {
     }
   };
 
-  const saveUiPrefs = async (scale: number, runs: number) => {
+  const saveUiPrefs = async (scale: number, runs: number, perRepo: number) => {
     try {
-      await invoke("set_ui_prefs", { fontScale: scale, focusExpandRuns: runs });
+      await invoke("set_ui_prefs", {
+        fontScale: scale,
+        focusExpandRuns: runs,
+        runsPerRepo: perRepo,
+      });
     } catch (e) {
       console.error("set_ui_prefs failed", e);
     }
@@ -134,12 +141,17 @@ export default function Settings() {
 
   const pickFontScale = (v: number) => {
     setFontScale(v);
-    saveUiPrefs(v, expandRuns);
+    saveUiPrefs(v, expandRuns, runsPerRepo);
   };
 
   const pickExpandRuns = (v: number) => {
     setExpandRuns(v);
-    saveUiPrefs(fontScale, v);
+    saveUiPrefs(fontScale, v, runsPerRepo);
+  };
+
+  const pickRunsPerRepo = (v: number) => {
+    setRunsPerRepo(v);
+    saveUiPrefs(fontScale, expandRuns, v);
   };
 
   return (
@@ -571,6 +583,25 @@ export default function Settings() {
             <>
               <div className="s-pane-title">General</div>
               <div className="s-group">
+                <div className="s-row">
+                  <span className="s-row-label">
+                    Builds per repo
+                    <span className="s-row-hint">
+                      How many recent runs to fetch and show per repo in the Repos view
+                    </span>
+                  </span>
+                  <div className="s-seg">
+                    {[1, 2, 3, 5, 10].map((n) => (
+                      <button
+                        key={n}
+                        className={runsPerRepo === n ? "active" : ""}
+                        onClick={() => pickRunsPerRepo(n)}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="s-row">
                   <span className="s-row-label">
                     Runs per quiet repo

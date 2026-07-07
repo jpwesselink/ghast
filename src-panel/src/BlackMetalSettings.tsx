@@ -95,6 +95,7 @@ export default function BlackMetalSettings() {
   const [theme, setTheme] = useState("blackmetal");
   const [fontScale, setFontScale] = useState(1.0);
   const [expandRuns, setExpandRuns] = useState(5);
+  const [runsPerRepo, setRunsPerRepo] = useState(5);
 
   useEffect(() => {
     invoke<{
@@ -105,10 +106,12 @@ export default function BlackMetalSettings() {
       theme: string;
       font_scale: number;
       focus_expand_runs: number;
+      runs_per_repo: number;
     }>("get_config").then((config) => {
       setTheme(config.theme === "blackmetal" ? "blackmetal" : "normal");
       setFontScale(config.font_scale);
       setExpandRuns(config.focus_expand_runs);
+      setRunsPerRepo(config.runs_per_repo);
       if (config.has_pat) {
         setBound(true);
         setPatStatus("Soul bound");
@@ -180,9 +183,13 @@ export default function BlackMetalSettings() {
     }
   };
 
-  const saveUiPrefs = async (scale: number, runs: number) => {
+  const saveUiPrefs = async (scale: number, runs: number, perRepo: number) => {
     try {
-      await invoke("set_ui_prefs", { fontScale: scale, focusExpandRuns: runs });
+      await invoke("set_ui_prefs", {
+        fontScale: scale,
+        focusExpandRuns: runs,
+        runsPerRepo: perRepo,
+      });
     } catch (e) {
       console.error("set_ui_prefs failed", e);
     }
@@ -190,12 +197,17 @@ export default function BlackMetalSettings() {
 
   const pickFontScale = (v: number) => {
     setFontScale(v);
-    saveUiPrefs(v, expandRuns);
+    saveUiPrefs(v, expandRuns, runsPerRepo);
   };
 
   const pickExpandRuns = (v: number) => {
     setExpandRuns(v);
-    saveUiPrefs(fontScale, v);
+    saveUiPrefs(fontScale, v, runsPerRepo);
+  };
+
+  const pickRunsPerRepo = (v: number) => {
+    setRunsPerRepo(v);
+    saveUiPrefs(fontScale, expandRuns, v);
   };
 
   const pickTheme = async (t: string) => {
@@ -774,6 +786,25 @@ export default function BlackMetalSettings() {
             <>
               <div className="bms-pane-title">Rites</div>
               <div className="bms-group">
+                <div className="bms-row">
+                  <span className="bms-row-label">
+                    Souls per haunting
+                    <span className="bms-row-hint">
+                      Recent runs summoned per repository in the Repos view
+                    </span>
+                  </span>
+                  <div className="bms-seg">
+                    {[1, 2, 3, 5, 10].map((n) => (
+                      <button
+                        key={n}
+                        className={runsPerRepo === n ? "active" : ""}
+                        onClick={() => pickRunsPerRepo(n)}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="bms-row">
                   <span className="bms-row-label">
                     Corpses per crypt

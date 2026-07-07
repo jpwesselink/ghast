@@ -126,12 +126,13 @@ impl GitHubClient {
         &self,
         owner: &str,
         repo: &str,
+        per_page: u8,
     ) -> Result<Vec<WorkflowRun>, String> {
         let page = self
             .octo
             .workflows(owner, repo)
             .list_all_runs()
-            .per_page(5)
+            .per_page(per_page)
             .send()
             .await
             .map_err(|e| {

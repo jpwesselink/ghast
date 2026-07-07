@@ -44,6 +44,7 @@ struct ConfigResponse {
     theme: String,
     font_scale: f64,
     focus_expand_runs: u32,
+    runs_per_repo: u32,
     panel_width: Option<f64>,
 }
 
@@ -59,6 +60,7 @@ fn get_config(state: tauri::State<'_, SharedState>) -> ConfigResponse {
         theme: s.config.theme.clone(),
         font_scale: s.config.font_scale,
         focus_expand_runs: s.config.focus_expand_runs,
+        runs_per_repo: s.config.runs_per_repo,
         panel_width: s.config.panel_width,
     }
 }
@@ -73,16 +75,25 @@ struct UiPrefs {
 fn set_ui_prefs(
     app: tauri::AppHandle,
     state: tauri::State<'_, SharedState>,
+    trigger: tauri::State<'_, Arc<Notify>>,
     font_scale: f64,
     focus_expand_runs: u32,
+    runs_per_repo: u32,
 ) -> Result<(), String> {
     let font_scale = font_scale.clamp(0.7, 2.0);
     let focus_expand_runs = focus_expand_runs.clamp(1, 5);
-    {
+    let runs_per_repo = runs_per_repo.clamp(1, 10);
+    let refetch = {
         let mut s = state.lock().unwrap();
+        let refetch = s.config.runs_per_repo != runs_per_repo;
         s.config.font_scale = font_scale;
         s.config.focus_expand_runs = focus_expand_runs;
+        s.config.runs_per_repo = runs_per_repo;
         s.config.save(&s.config_dir)?;
+        refetch
+    };
+    if refetch {
+        trigger.notify_one();
     }
     use tauri::Emitter;
     app.emit("ui-prefs-changed", UiPrefs { font_scale, focus_expand_runs })

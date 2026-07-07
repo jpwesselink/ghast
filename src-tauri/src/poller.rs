@@ -33,13 +33,14 @@ pub fn start_polling(
 }
 
 async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
-    let (pat, repos, review_repos, mention_repos) = {
+    let (pat, repos, review_repos, mention_repos, runs_per_repo) = {
         let s = state.lock().unwrap();
         (
             s.github_pat.clone(),
             s.config.watched_repos.clone(),
             s.config.review_repos.clone(),
             s.config.mention_repos.clone(),
+            s.config.runs_per_repo.clamp(1, 10) as u8,
         )
     };
 
@@ -65,7 +66,7 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
         }
         let (owner, name) = (parts[0], parts[1]);
 
-        match client.get_workflow_runs(owner, name).await {
+        match client.get_workflow_runs(owner, name, runs_per_repo).await {
             Ok(api_runs) => {
                 let runs: Vec<WorkflowRun> = api_runs
                     .iter()
