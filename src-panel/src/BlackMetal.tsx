@@ -654,6 +654,34 @@ export default function BlackMetal({
           min-height: 0;
         }
 
+        @keyframes bmBloodFall {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(120px); }
+        }
+
+        .bm-rain {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 96px;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .bm-blood-drop {
+          position: absolute;
+          top: -24px;
+          border-radius: 0 0 1px 1px;
+          background: linear-gradient(to bottom, transparent 0%, #6b0000 30%, #8b0000 60%, transparent 100%);
+          animation: bmBloodFall linear infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .bm-blood-drop { animation: none; opacity: 0 !important; }
+        }
+
         .bm-title {
           font-family: 'UnifrakturMaguntia', cursive;
           font-size: calc(56px * var(--font-scale, 1));
@@ -663,6 +691,8 @@ export default function BlackMetal({
           margin-bottom: 2px;
           animation: candleGlow 4s ease-in-out infinite;
           line-height: 1;
+          position: relative;
+          z-index: 1;
         }
 
         .bm-subtitle {
@@ -1009,6 +1039,22 @@ export default function BlackMetal({
         </div>
 
         <div className="bm-inner">
+          <div className="bm-rain">
+            {Array.from({ length: 24 }).map((_, i) => (
+              <div
+                key={i}
+                className="bm-blood-drop"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  width: 1 + Math.random() * 2,
+                  height: 10 + Math.random() * 22,
+                  opacity: 0.1 + Math.random() * 0.2,
+                  animationDelay: `${Math.random() * 4}s`,
+                  animationDuration: `${1.6 + Math.random() * 2.6}s`,
+                }}
+              />
+            ))}
+          </div>
           <div className="bm-title">
             <DrippingText>Ghast</DrippingText>
           </div>
