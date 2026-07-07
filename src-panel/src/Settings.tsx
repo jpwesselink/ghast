@@ -171,6 +171,7 @@ export default function Settings() {
           --s-card: #ffffff;
           --s-hover: #e3e3e8;
           --s-accent: #0064e0;
+          --s-accent: AccentColor;
           --s-error: #ff3b30;
           --s-success: #34c759;
         }
@@ -186,6 +187,7 @@ export default function Settings() {
             --s-card: #29292c;
             --s-hover: #333336;
             --s-accent: #0a84ff;
+            --s-accent: AccentColor;
             --s-error: #ff453a;
             --s-success: #30d158;
           }
