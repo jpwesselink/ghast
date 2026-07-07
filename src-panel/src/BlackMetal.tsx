@@ -366,37 +366,17 @@ function bmStepMark(s: { status: string; conclusion: string | null }): {
 function BmJobList({ run }: { run: PanelWorkflowRun }) {
   const [jobs, setJobs] = useState<RunJob[] | null>(null);
   const [error, setError] = useState("");
-  const [openJobs, setOpenJobs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let alive = true;
     setError("");
     fetchRunJobs(run.repo, run.run_id, run.status === "completed")
-      .then((j) => {
-        if (!alive) return;
-        setJobs(j);
-        setOpenJobs(
-          new Set(
-            j
-              .filter((job) => jobIsBad(job) || job.status === "in_progress")
-              .map((job) => job.html_url)
-          )
-        );
-      })
+      .then((j) => alive && setJobs(j))
       .catch((e) => alive && setError(String(e)));
     return () => {
       alive = false;
     };
   }, [run.repo, run.run_id, run.status, run.conclusion, run.created_at]);
-
-  const toggleJob = (url: string) => {
-    setOpenJobs((prev) => {
-      const next = new Set(prev);
-      if (next.has(url)) next.delete(url);
-      else next.add(url);
-      return next;
-    });
-  };
 
   if (error) return <div className="bm-job-note">the summoning failed: {error}</div>;
   if (!jobs) return <div className="bm-job-note">divining the rites...</div>;
@@ -406,39 +386,28 @@ function BmJobList({ run }: { run: PanelWorkflowRun }) {
     <div className="bm-job-list">
       {jobs.map((job) => {
         const mark = bmStepMark(job);
-        const open = openJobs.has(job.html_url);
         return (
           <div key={job.html_url}>
             <div
               className="bm-job-row"
               onClick={() => invoke("open_url", { url: job.html_url })}
             >
-              <span
-                className={`bm-run-chevron${open ? " open" : ""}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleJob(job.html_url);
-                }}
-              >
-                ›
-              </span>
               <span className="bm-step-mark" style={{ color: mark.color }}>
                 {mark.glyph}
               </span>
               <span className="bm-run-name">{job.name}</span>
             </div>
-            {open &&
-              job.steps.map((step) => {
-                const sm = bmStepMark(step);
-                return (
-                  <div className="bm-step-row" key={step.number}>
-                    <span className="bm-step-mark" style={{ color: sm.color }}>
-                      {sm.glyph}
-                    </span>
-                    <span className="bm-run-name">{step.name}</span>
-                  </div>
-                );
-              })}
+            {job.steps.map((step) => {
+              const sm = bmStepMark(step);
+              return (
+                <div className="bm-step-row" key={step.number}>
+                  <span className="bm-step-mark" style={{ color: sm.color }}>
+                    {sm.glyph}
+                  </span>
+                  <span className="bm-run-name">{step.name}</span>
+                </div>
+              );
+            })}
           </div>
         );
       })}
