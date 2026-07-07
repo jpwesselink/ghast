@@ -1,5 +1,7 @@
 use crate::config::{self, Config};
-use crate::github::{ReviewRequest as ApiReviewRequest, WorkflowRun as ApiWorkflowRun};
+use crate::github::{
+    Mention as ApiMention, ReviewRequest as ApiReviewRequest, WorkflowRun as ApiWorkflowRun,
+};
 use crate::keychain;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
@@ -145,11 +147,54 @@ impl From<&PendingReview> for PanelPendingReview {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Mention {
+    pub repo: String,
+    pub title: String,
+    pub subject_type: String,
+    pub html_url: String,
+    pub updated_at: DateTime<Utc>,
+}
+
+impl Mention {
+    pub fn from_api(api: &ApiMention) -> Self {
+        Self {
+            repo: api.repo.clone(),
+            title: api.title.clone(),
+            subject_type: api.subject_type.clone(),
+            html_url: api.html_url.clone(),
+            updated_at: api.updated_at,
+        }
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct PanelMention {
+    pub repo: String,
+    pub title: String,
+    pub subject_type: String,
+    pub html_url: String,
+    pub updated_at: String,
+}
+
+impl From<&Mention> for PanelMention {
+    fn from(m: &Mention) -> Self {
+        Self {
+            repo: m.repo.clone(),
+            title: m.title.clone(),
+            subject_type: m.subject_type.clone(),
+            html_url: m.html_url.clone(),
+            updated_at: m.updated_at.to_rfc3339(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct PanelPayload {
     pub repos: Vec<String>,
     pub runs: HashMap<String, Vec<PanelWorkflowRun>>,
     pub pending_reviews: Vec<PanelPendingReview>,
+    pub mentions: Vec<PanelMention>,
     pub auth_error: bool,
     pub has_pat: bool,
     pub badge_count: usize,
@@ -160,10 +205,12 @@ pub struct AppState {
     pub github_pat: String,
     pub runs: HashMap<String, Vec<WorkflowRun>>,
     pub pending_reviews: Vec<PendingReview>,
+    pub mentions: Vec<Mention>,
     pub auth_error: bool,
     pub config_dir: PathBuf,
     pub first_poll: bool,
     pub first_review_poll: bool,
+    pub first_mention_poll: bool,
 }
 
 impl AppState {
@@ -183,10 +230,12 @@ impl AppState {
             github_pat,
             runs: HashMap::new(),
             pending_reviews: Vec::new(),
+            mentions: Vec::new(),
             auth_error: false,
             config_dir,
             first_poll: true,
             first_review_poll: true,
+            first_mention_poll: true,
         }
     }
 
@@ -214,10 +263,17 @@ impl AppState {
             sorted.iter().map(|r| PanelPendingReview::from(*r)).collect()
         };
 
+        let mentions: Vec<PanelMention> = {
+            let mut sorted: Vec<&Mention> = self.mentions.iter().collect();
+            sorted.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+            sorted.iter().map(|m| PanelMention::from(*m)).collect()
+        };
+
         PanelPayload {
             repos,
             runs,
             pending_reviews,
+            mentions,
             auth_error: self.auth_error,
             has_pat: !self.github_pat.is_empty(),
             badge_count: self.badge_count(),

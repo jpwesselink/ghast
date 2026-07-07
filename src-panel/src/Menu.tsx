@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import RunItem from "./RunItem";
 import ReviewItem from "./ReviewItem";
+import MentionItem from "./MentionItem";
 import type { PanelPayload } from "./types";
 
 export default function Menu({ data }: { data: PanelPayload }) {
@@ -16,7 +17,9 @@ export default function Menu({ data }: { data: PanelPayload }) {
           <div className="menu-message">Auth error - check Settings</div>
         ) : !data.has_pat ? (
           <div className="menu-message">Open Settings to connect GitHub</div>
-        ) : data.repos.length === 0 && data.pending_reviews.length === 0 ? (
+        ) : data.repos.length === 0 &&
+          data.pending_reviews.length === 0 &&
+          data.mentions.length === 0 ? (
           <div className="menu-message">No repos watched - check Settings</div>
         ) : (
           <>
@@ -38,6 +41,15 @@ export default function Menu({ data }: { data: PanelPayload }) {
                 <div className="repo-header">Pending reviews</div>
                 {data.pending_reviews.map((r) => (
                   <ReviewItem key={r.html_url} review={r} />
+                ))}
+              </div>
+            )}
+
+            {data.mentions.length > 0 && (
+              <div className="repo-group">
+                <div className="repo-header">Mentions</div>
+                {data.mentions.map((m) => (
+                  <MentionItem key={m.html_url} mention={m} />
                 ))}
               </div>
             )}

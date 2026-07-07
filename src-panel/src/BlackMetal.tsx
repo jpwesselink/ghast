@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
-import type { PanelPayload, PanelPendingReview, PanelWorkflowRun } from "./types";
+import type { PanelMention, PanelPayload, PanelPendingReview, PanelWorkflowRun } from "./types";
 
 function NoiseCanvas({ opacity = 0.08 }: { opacity?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -279,6 +279,43 @@ const ScrollGlyph = (
     />
   </>
 );
+
+const WhisperGlyph = (
+  <>
+    <path
+      d="M4 5h16v11H9l-5 4z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+    <circle cx="8.5" cy="10.5" r="1" fill="currentColor" />
+    <circle cx="12" cy="10.5" r="1" fill="currentColor" />
+    <circle cx="15.5" cy="10.5" r="1" fill="currentColor" />
+  </>
+);
+
+function MentionRow({ mention }: { mention: PanelMention }) {
+  return (
+    <div
+      className="bm-run-item"
+      onClick={() => invoke("open_url", { url: mention.html_url })}
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="bm-icon-trigger">
+            <Glyph color="#4696dc">{WhisperGlyph}</Glyph>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent variant="blackmetal">
+          {`${mention.repo} — ${mention.subject_type}`}
+        </TooltipContent>
+      </Tooltip>
+      <span className="bm-run-name">{mention.title}</span>
+      <span className="bm-run-time">{formatTimeAgo(mention.updated_at)}</span>
+    </div>
+  );
+}
 
 function ReviewRow({ review }: { review: PanelPendingReview }) {
   return (
@@ -616,7 +653,9 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
               <div className="bm-message">The binding has failed... check Settings</div>
             ) : !data.has_pat ? (
               <div className="bm-message">No soul has been bound... open Settings</div>
-            ) : data.repos.length === 0 && data.pending_reviews.length === 0 ? (
+            ) : data.repos.length === 0 &&
+              data.pending_reviews.length === 0 &&
+              data.mentions.length === 0 ? (
               <div className="bm-message">No repositories have been haunted</div>
             ) : (
               <>
@@ -638,6 +677,15 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
                     <div className="bm-repo-header">Awaiting judgment</div>
                     {data.pending_reviews.map((r) => (
                       <ReviewRow key={r.html_url} review={r} />
+                    ))}
+                  </div>
+                )}
+
+                {data.mentions.length > 0 && (
+                  <div className="bm-repo-group">
+                    <div className="bm-repo-header">Whispers of the damned</div>
+                    {data.mentions.map((m) => (
+                      <MentionRow key={m.html_url} mention={m} />
                     ))}
                   </div>
                 )}

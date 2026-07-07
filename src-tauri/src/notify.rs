@@ -1,4 +1,4 @@
-use crate::state::{PendingReview, RunConclusion, RunStatus, WorkflowRun};
+use crate::state::{Mention, PendingReview, RunConclusion, RunStatus, WorkflowRun};
 use tauri::{AppHandle, Emitter};
 
 /// Returns workflow runs that transitioned from active (Queued/InProgress) to Completed.
@@ -62,6 +62,25 @@ pub fn send_review_notification(app: &AppHandle, review: &PendingReview) {
     let _ = app.emit("workflow-completed", CompletionEvent {
         title: format!("Review requested: {}", review.repo),
         body: format!("#{} by @{} — {}", review.number, review.author, review.title),
+    });
+}
+
+/// Returns mentions in `new` that are not in `old`, or whose thread was
+/// updated since (a fresh mention on an already-known thread).
+pub fn detect_new_mentions(old: &[Mention], new: &[Mention]) -> Vec<Mention> {
+    new.iter()
+        .filter(|n| {
+            !old.iter()
+                .any(|o| o.html_url == n.html_url && o.updated_at >= n.updated_at)
+        })
+        .cloned()
+        .collect()
+}
+
+pub fn send_mention_notification(app: &AppHandle, mention: &Mention) {
+    let _ = app.emit("workflow-completed", CompletionEvent {
+        title: format!("New mention in {}", mention.repo),
+        body: mention.title.clone(),
     });
 }
 
@@ -146,5 +165,42 @@ mod tests {
         let new = vec![run(1, "completed", Some("success"))];
         let result = detect_completions(Some(&old), &new);
         assert!(result.is_empty());
+    }
+
+    fn mention(url: &str, updated_secs: i64) -> Mention {
+        Mention {
+            repo: "o/r".to_string(),
+            title: "Some issue".to_string(),
+            subject_type: "Issue".to_string(),
+            html_url: url.to_string(),
+            updated_at: chrono::DateTime::from_timestamp(updated_secs, 0).unwrap(),
+        }
+    }
+
+    #[test]
+    fn test_detect_new_mentions_fresh_thread() {
+        let old = vec![mention("https://github.com/o/r/issues/1", 100)];
+        let new = vec![
+            mention("https://github.com/o/r/issues/1", 100),
+            mention("https://github.com/o/r/issues/2", 200),
+        ];
+        let result = detect_new_mentions(&old, &new);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].html_url, "https://github.com/o/r/issues/2");
+    }
+
+    #[test]
+    fn test_detect_new_mentions_updated_thread() {
+        let old = vec![mention("https://github.com/o/r/issues/1", 100)];
+        let new = vec![mention("https://github.com/o/r/issues/1", 300)];
+        let result = detect_new_mentions(&old, &new);
+        assert_eq!(result.len(), 1);
+    }
+
+    #[test]
+    fn test_detect_new_mentions_unchanged() {
+        let old = vec![mention("https://github.com/o/r/issues/1", 100)];
+        let new = vec![mention("https://github.com/o/r/issues/1", 100)];
+        assert!(detect_new_mentions(&old, &new).is_empty());
     }
 }

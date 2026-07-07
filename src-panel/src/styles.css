@@ -137,6 +137,10 @@ body {
   background: rgb(155, 100, 220);
 }
 
+.mention-dot {
+  background: rgb(70, 150, 220);
+}
+
 .run-name {
   flex: 1;
   overflow: hidden;

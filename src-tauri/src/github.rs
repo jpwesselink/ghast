@@ -28,6 +28,35 @@ pub struct ReviewRequest {
     pub created_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone)]
+pub struct Mention {
+    pub repo: String,
+    pub title: String,
+    pub subject_type: String,
+    pub html_url: String,
+    pub updated_at: DateTime<Utc>,
+}
+
+/// Rewrites a notification subject API URL to its browser URL, e.g.
+/// `https://api.github.com/repos/o/r/pulls/7` -> `https://github.com/o/r/pull/7`.
+pub fn subject_html_url(api_url: &str) -> Option<String> {
+    let rest = api_url.strip_prefix("https://api.github.com/repos/")?;
+    let mut segs = rest.splitn(4, '/');
+    let owner = segs.next()?;
+    let repo = segs.next()?;
+    let kind = match segs.next()? {
+        "issues" => "issues",
+        "pulls" => "pull",
+        "commits" => "commit",
+        _ => return None,
+    };
+    let id = segs.next()?;
+    if owner.is_empty() || repo.is_empty() || id.is_empty() {
+        return None;
+    }
+    Some(format!("https://github.com/{owner}/{repo}/{kind}/{id}"))
+}
+
 pub struct GitHubClient {
     octo: Octocrab,
 }
@@ -147,6 +176,55 @@ impl GitHubClient {
         Ok(out)
     }
 
+    pub async fn get_mentions(&self, repos: &[String]) -> Result<Vec<Mention>, String> {
+        if repos.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        // Unread notification threads only; threads are never marked read here.
+        let page = self
+            .octo
+            .activity()
+            .notifications()
+            .list()
+            .per_page(50)
+            .send()
+            .await
+            .map_err(|e| {
+                let msg = e.to_string();
+                if msg.contains("401") {
+                    "auth_error".to_string()
+                } else {
+                    msg
+                }
+            })?;
+
+        let mut out = Vec::new();
+        for n in page.items {
+            if n.reason != "mention" {
+                continue;
+            }
+            let repo = n.repository.full_name.clone().unwrap_or_default();
+            if !repos.contains(&repo) {
+                continue;
+            }
+            let html_url = n
+                .subject
+                .url
+                .as_ref()
+                .and_then(|u| subject_html_url(u.as_str()))
+                .unwrap_or_else(|| format!("https://github.com/{repo}"));
+            out.push(Mention {
+                repo,
+                title: n.subject.title,
+                subject_type: n.subject.r#type,
+                html_url,
+                updated_at: n.updated_at,
+            });
+        }
+        Ok(out)
+    }
+
     pub async fn get_user_repos(&self) -> Result<Vec<GitHubRepo>, String> {
         let mut all_repos = Vec::new();
         let mut page = 1u8;
@@ -190,5 +268,47 @@ impl GitHubClient {
         }
 
         Ok(all_repos)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_subject_html_url_issue() {
+        assert_eq!(
+            subject_html_url("https://api.github.com/repos/o/r/issues/12"),
+            Some("https://github.com/o/r/issues/12".to_string())
+        );
+    }
+
+    #[test]
+    fn test_subject_html_url_pull() {
+        assert_eq!(
+            subject_html_url("https://api.github.com/repos/o/r/pulls/7"),
+            Some("https://github.com/o/r/pull/7".to_string())
+        );
+    }
+
+    #[test]
+    fn test_subject_html_url_commit() {
+        assert_eq!(
+            subject_html_url("https://api.github.com/repos/o/r/commits/abc123"),
+            Some("https://github.com/o/r/commit/abc123".to_string())
+        );
+    }
+
+    #[test]
+    fn test_subject_html_url_unknown_kind() {
+        assert_eq!(
+            subject_html_url("https://api.github.com/repos/o/r/releases/5"),
+            None
+        );
+    }
+
+    #[test]
+    fn test_subject_html_url_not_api() {
+        assert_eq!(subject_html_url("https://github.com/o/r/issues/12"), None);
     }
 }

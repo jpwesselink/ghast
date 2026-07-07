@@ -39,6 +39,7 @@ struct ConfigResponse {
     has_pat: bool,
     watched_repos: Vec<String>,
     review_repos: Vec<String>,
+    mention_repos: Vec<String>,
     poll_interval_secs: u64,
     theme: String,
 }
@@ -50,6 +51,7 @@ fn get_config(state: tauri::State<'_, SharedState>) -> ConfigResponse {
         has_pat: !s.github_pat.is_empty(),
         watched_repos: s.config.watched_repos.clone(),
         review_repos: s.config.review_repos.clone(),
+        mention_repos: s.config.mention_repos.clone(),
         poll_interval_secs: s.config.poll_interval_secs,
         theme: s.config.theme.clone(),
     }
@@ -120,6 +122,22 @@ fn set_review_repos(
         let mut s = state.lock().unwrap();
         s.config.review_repos = repos;
         s.first_review_poll = true; // reset baseline to avoid spurious notifications on next poll
+        s.config.save(&s.config_dir)?;
+    }
+    trigger.notify_one();
+    Ok(())
+}
+
+#[tauri::command]
+fn set_mention_repos(
+    state: tauri::State<'_, SharedState>,
+    trigger: tauri::State<'_, Arc<Notify>>,
+    repos: Vec<String>,
+) -> Result<(), String> {
+    {
+        let mut s = state.lock().unwrap();
+        s.config.mention_repos = repos;
+        s.first_mention_poll = true; // reset baseline to avoid spurious notifications on next poll
         s.config.save(&s.config_dir)?;
     }
     trigger.notify_one();
@@ -230,6 +248,7 @@ pub fn run() {
             get_repos,
             set_watched_repos,
             set_review_repos,
+            set_mention_repos,
             get_workflow_runs,
             open_settings,
             open_about,

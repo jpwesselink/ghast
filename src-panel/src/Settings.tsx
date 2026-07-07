@@ -13,18 +13,20 @@ export default function Settings() {
   const [allRepos, setAllRepos] = useState<GitHubRepo[]>([]);
   const [watchedSet, setWatchedSet] = useState<Set<string>>(new Set());
   const [reviewSet, setReviewSet] = useState<Set<string>>(new Set());
+  const [mentionSet, setMentionSet] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [patStatus, setPatStatus] = useState("");
   const [patError, setPatError] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    invoke<{ has_pat: boolean; watched_repos: string[]; review_repos: string[] }>("get_config").then((config) => {
+    invoke<{ has_pat: boolean; watched_repos: string[]; review_repos: string[]; mention_repos: string[] }>("get_config").then((config) => {
       if (config.has_pat) {
         setBound(true);
         setPatStatus("Connected");
         setWatchedSet(new Set(config.watched_repos));
         setReviewSet(new Set(config.review_repos));
+        setMentionSet(new Set(config.mention_repos));
         loadRepos();
       }
     });
@@ -68,6 +70,18 @@ export default function Settings() {
       await invoke("set_review_repos", { repos: Array.from(next) });
     } catch (e) {
       console.error("set_review_repos failed", e);
+    }
+  };
+
+  const toggleMentionRepo = async (name: string) => {
+    const next = new Set(mentionSet);
+    if (next.has(name)) next.delete(name);
+    else next.add(name);
+    setMentionSet(next);
+    try {
+      await invoke("set_mention_repos", { repos: Array.from(next) });
+    } catch (e) {
+      console.error("set_mention_repos failed", e);
     }
   };
 
@@ -347,6 +361,7 @@ export default function Settings() {
                   <span className="s-col-spacer">Repository</span>
                   <span className="s-col-h">Workflows</span>
                   <span className="s-col-h">Reviews</span>
+                  <span className="s-col-h">Mentions</span>
                 </div>
                 {filtered.length === 0 ? (
                   <div className="s-empty">No matches</div>
@@ -360,6 +375,9 @@ export default function Settings() {
                       </div>
                       <div className="s-repo-col" onClick={() => toggleReviewRepo(repo.full_name)}>
                         <div className={`s-checkbox ${reviewSet.has(repo.full_name) ? "checked" : ""}`} />
+                      </div>
+                      <div className="s-repo-col" onClick={() => toggleMentionRepo(repo.full_name)}>
+                        <div className={`s-checkbox ${mentionSet.has(repo.full_name) ? "checked" : ""}`} />
                       </div>
                     </div>
                   ))

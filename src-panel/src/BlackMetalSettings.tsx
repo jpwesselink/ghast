@@ -93,6 +93,7 @@ export default function BlackMetalSettings() {
   const [allRepos, setAllRepos] = useState<GitHubRepo[]>([]);
   const [watchedSet, setWatchedSet] = useState<Set<string>>(new Set());
   const [reviewSet, setReviewSet] = useState<Set<string>>(new Set());
+  const [mentionSet, setMentionSet] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [showToken, setShowToken] = useState(false);
   const [flickerClass, setFlickerClass] = useState("");
@@ -100,12 +101,13 @@ export default function BlackMetalSettings() {
   const [patError, setPatError] = useState(false);
 
   useEffect(() => {
-    invoke<{ has_pat: boolean; watched_repos: string[]; review_repos: string[] }>("get_config").then((config) => {
+    invoke<{ has_pat: boolean; watched_repos: string[]; review_repos: string[]; mention_repos: string[] }>("get_config").then((config) => {
       if (config.has_pat) {
         setBound(true);
         setPatStatus("Soul bound");
         setWatchedSet(new Set(config.watched_repos));
         setReviewSet(new Set(config.review_repos));
+        setMentionSet(new Set(config.mention_repos));
         loadRepos();
       }
     });
@@ -146,6 +148,18 @@ export default function BlackMetalSettings() {
       await invoke("set_review_repos", { repos: Array.from(next) });
     } catch (e) {
       console.error("set_review_repos failed", e);
+    }
+  };
+
+  const toggleMentionRepo = async (name: string) => {
+    const next = new Set(mentionSet);
+    if (next.has(name)) next.delete(name);
+    else next.add(name);
+    setMentionSet(next);
+    try {
+      await invoke("set_mention_repos", { repos: Array.from(next) });
+    } catch (e) {
+      console.error("set_mention_repos failed", e);
     }
   };
 
@@ -684,6 +698,7 @@ export default function BlackMetalSettings() {
                   <span className="bms-col-spacer">Repository</span>
                   <span className="bms-col-h">Workflows</span>
                   <span className="bms-col-h">Reviews</span>
+                  <span className="bms-col-h">Mentions</span>
                 </div>
                 {filtered.length === 0 ? (
                   <div className="bms-empty">No souls found</div>
@@ -701,6 +716,9 @@ export default function BlackMetalSettings() {
                       </div>
                       <div className="bms-repo-col" onClick={() => toggleReviewRepo(repo.full_name)}>
                         <div className={`bms-checkbox ${reviewSet.has(repo.full_name) ? "checked" : ""}`} />
+                      </div>
+                      <div className="bms-repo-col" onClick={() => toggleMentionRepo(repo.full_name)}>
+                        <div className={`bms-checkbox ${mentionSet.has(repo.full_name) ? "checked" : ""}`} />
                       </div>
                     </div>
                   ))

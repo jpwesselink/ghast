@@ -1,7 +1,7 @@
 use crate::github::GitHubClient;
 use crate::notify;
 use crate::panel;
-use crate::state::{PendingReview, SharedState, WorkflowRun};
+use crate::state::{Mention, PendingReview, SharedState, WorkflowRun};
 use crate::tray::update_tray_badge;
 use std::sync::Arc;
 use std::time::Duration;
@@ -33,16 +33,17 @@ pub fn start_polling(
 }
 
 async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
-    let (pat, repos, review_repos) = {
+    let (pat, repos, review_repos, mention_repos) = {
         let s = state.lock().unwrap();
         (
             s.github_pat.clone(),
             s.config.watched_repos.clone(),
             s.config.review_repos.clone(),
+            s.config.mention_repos.clone(),
         )
     };
 
-    if pat.is_empty() || (repos.is_empty() && review_repos.is_empty()) {
+    if pat.is_empty() || (repos.is_empty() && review_repos.is_empty() && mention_repos.is_empty()) {
         rebuild(app, state);
         return;
     }
@@ -99,6 +100,7 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
     }
 
     poll_review_requests(app, state, &client, &review_repos).await;
+    poll_mentions(app, state, &client, &mention_repos).await;
 
     rebuild(app, state);
 }
@@ -144,6 +146,48 @@ async fn poll_review_requests(
     let mut s = state.lock().unwrap();
     s.pending_reviews = new_reviews;
     s.first_review_poll = false;
+}
+
+async fn poll_mentions(
+    app: &tauri::AppHandle,
+    state: &SharedState,
+    client: &GitHubClient,
+    repos: &[String],
+) {
+    if repos.is_empty() {
+        let mut s = state.lock().unwrap();
+        s.mentions.clear();
+        s.first_mention_poll = false;
+        return;
+    }
+
+    let api_mentions = match client.get_mentions(repos).await {
+        Ok(m) => m,
+        Err(e) if e == "auth_error" => {
+            let mut s = state.lock().unwrap();
+            s.auth_error = true;
+            return;
+        }
+        Err(_) => return, // network error — keep last known list
+    };
+
+    let new_mentions: Vec<Mention> = api_mentions.iter().map(Mention::from_api).collect();
+
+    let to_notify: Vec<Mention> = {
+        let s = state.lock().unwrap();
+        if s.first_mention_poll {
+            Vec::new()
+        } else {
+            notify::detect_new_mentions(&s.mentions, &new_mentions)
+        }
+    };
+    for mention in &to_notify {
+        notify::send_mention_notification(app, mention);
+    }
+
+    let mut s = state.lock().unwrap();
+    s.mentions = new_mentions;
+    s.first_mention_poll = false;
 }
 
 fn rebuild(app: &tauri::AppHandle, state: &SharedState) {
