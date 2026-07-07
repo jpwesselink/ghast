@@ -59,7 +59,13 @@ function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
   );
 }
 
-function FocusView({ data }: { data: PanelPayload }) {
+function FocusView({
+  data,
+  expandRuns,
+}: {
+  data: PanelPayload;
+  expandRuns: number;
+}) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const { failing, running, quiet } = bucketRepos(data.repos, data.runs);
 
@@ -108,6 +114,7 @@ function FocusView({ data }: { data: PanelPayload }) {
               {expanded.has(repo) &&
                 [...history]
                   .reverse()
+                  .slice(0, expandRuns)
                   .map((run) => <RunItem key={run.html_url} run={run} />)}
             </div>
           ))}
@@ -196,7 +203,13 @@ const VIEWS: { id: BuildsView; label: string }[] = [
   { id: "timeline", label: "Timeline" },
 ];
 
-export default function Menu({ data }: { data: PanelPayload }) {
+export default function Menu({
+  data,
+  focusExpandRuns,
+}: {
+  data: PanelPayload;
+  focusExpandRuns: number;
+}) {
   const [tab, setTab] = useState<Tab>("builds");
   const [view, setView] = useState<BuildsView>(loadBuildsView);
   const handleSettings = () => invoke("open_settings");
@@ -261,7 +274,7 @@ export default function Menu({ data }: { data: PanelPayload }) {
           view === "repos" ? (
             <ReposView data={data} />
           ) : view === "focus" ? (
-            <FocusView data={data} />
+            <FocusView data={data} expandRuns={focusExpandRuns} />
           ) : (
             <TimelineView data={data} />
           )

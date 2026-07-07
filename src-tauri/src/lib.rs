@@ -42,6 +42,8 @@ struct ConfigResponse {
     mention_repos: Vec<String>,
     poll_interval_secs: u64,
     theme: String,
+    font_scale: f64,
+    focus_expand_runs: u32,
 }
 
 #[tauri::command]
@@ -54,7 +56,36 @@ fn get_config(state: tauri::State<'_, SharedState>) -> ConfigResponse {
         mention_repos: s.config.mention_repos.clone(),
         poll_interval_secs: s.config.poll_interval_secs,
         theme: s.config.theme.clone(),
+        font_scale: s.config.font_scale,
+        focus_expand_runs: s.config.focus_expand_runs,
     }
+}
+
+#[derive(serde::Serialize, Clone)]
+struct UiPrefs {
+    font_scale: f64,
+    focus_expand_runs: u32,
+}
+
+#[tauri::command]
+fn set_ui_prefs(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, SharedState>,
+    font_scale: f64,
+    focus_expand_runs: u32,
+) -> Result<(), String> {
+    let font_scale = font_scale.clamp(0.7, 2.0);
+    let focus_expand_runs = focus_expand_runs.clamp(1, 5);
+    {
+        let mut s = state.lock().unwrap();
+        s.config.font_scale = font_scale;
+        s.config.focus_expand_runs = focus_expand_runs;
+        s.config.save(&s.config_dir)?;
+    }
+    use tauri::Emitter;
+    app.emit("ui-prefs-changed", UiPrefs { font_scale, focus_expand_runs })
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -250,6 +281,7 @@ pub fn run() {
             set_watched_repos,
             set_review_repos,
             set_mention_repos,
+            set_ui_prefs,
             get_workflow_runs,
             open_settings,
             open_about,

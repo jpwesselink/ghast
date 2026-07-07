@@ -411,7 +411,13 @@ function BmFocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
   );
 }
 
-function BmFocusView({ data }: { data: PanelPayload }) {
+function BmFocusView({
+  data,
+  expandRuns,
+}: {
+  data: PanelPayload;
+  expandRuns: number;
+}) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const { failing, running, quiet } = bucketRepos(data.repos, data.runs);
 
@@ -460,6 +466,7 @@ function BmFocusView({ data }: { data: PanelPayload }) {
               {expanded.has(repo) &&
                 [...history]
                   .reverse()
+                  .slice(0, expandRuns)
                   .map((run) => <RunRow key={run.html_url} run={run} />)}
             </div>
           ))}
@@ -519,7 +526,13 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
 
 type BmTab = "builds" | "reviews" | "comments";
 
-export default function BlackMetal({ data }: { data: PanelPayload }) {
+export default function BlackMetal({
+  data,
+  focusExpandRuns,
+}: {
+  data: PanelPayload;
+  focusExpandRuns: number;
+}) {
   const [flickerClass, setFlickerClass] = useState("");
   const [tab, setTab] = useState<BmTab>("builds");
   const [view, setView] = useState<BuildsView>(loadBuildsView);
@@ -643,7 +656,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
 
         .bm-title {
           font-family: 'UnifrakturMaguntia', cursive;
-          font-size: 56px;
+          font-size: calc(56px * var(--font-scale, 1));
           text-align: center;
           color: #ede6d8;
           letter-spacing: 4px;
@@ -654,7 +667,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
 
         .bm-subtitle {
           font-family: 'IM Fell English SC', serif;
-          font-size: 11px;
+          font-size: calc(11px * var(--font-scale, 1));
           text-align: center;
           letter-spacing: 4px;
           color: #7a7068;
@@ -687,7 +700,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           background: transparent;
           color: #6a5a48;
           font-family: 'IM Fell English SC', serif;
-          font-size: 12px;
+          font-size: calc(12px * var(--font-scale, 1));
           letter-spacing: 2px;
           text-transform: uppercase;
           cursor: pointer;
@@ -717,7 +730,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           color: #ddc0a0;
           font-family: 'IM Fell English', serif;
           font-style: italic;
-          font-size: 11px;
+          font-size: calc(11px * var(--font-scale, 1));
           letter-spacing: 0;
         }
 
@@ -739,7 +752,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           background: transparent;
           color: #6a5a48;
           font-family: 'IM Fell English SC', serif;
-          font-size: 10px;
+          font-size: calc(10px * var(--font-scale, 1));
           letter-spacing: 2px;
           text-transform: uppercase;
           padding: 2px 10px;
@@ -756,7 +769,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
 
         .bm-chip {
           font-family: 'IM Fell English SC', serif;
-          font-size: 10px;
+          font-size: calc(10px * var(--font-scale, 1));
           letter-spacing: 1px;
           padding: 1px 7px;
           border: 1px solid #3a2a1a;
@@ -778,7 +791,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
 
         .bm-quiet-check {
           color: #55aa22;
-          font-size: 13px;
+          font-size: calc(13px * var(--font-scale, 1));
           width: 16px;
           text-align: center;
           flex-shrink: 0;
@@ -807,7 +820,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           flex-shrink: 0;
           text-align: right;
           color: #8a7e6e;
-          font-size: 11px;
+          font-size: calc(11px * var(--font-scale, 1));
           font-variant-numeric: tabular-nums;
         }
 
@@ -820,7 +833,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
 
         .bm-tl-now-label {
           font-family: 'IM Fell English SC', serif;
-          font-size: 9px;
+          font-size: calc(9px * var(--font-scale, 1));
           letter-spacing: 2px;
           text-transform: uppercase;
           color: #c01818;
@@ -853,7 +866,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
 
         .bm-repo-header {
           font-family: 'IM Fell English SC', serif;
-          font-size: 10px;
+          font-size: calc(10px * var(--font-scale, 1));
           letter-spacing: 2px;
           color: #c01818;
           text-transform: uppercase;
@@ -901,7 +914,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
 
         .bm-run-name {
           flex: 1;
-          font-size: 14px;
+          font-size: calc(14px * var(--font-scale, 1));
           color: #e0d8c8;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -913,7 +926,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
         }
 
         .bm-run-time {
-          font-size: 12px;
+          font-size: calc(12px * var(--font-scale, 1));
           color: #8a7e6e;
           flex-shrink: 0;
           font-style: italic;
@@ -925,7 +938,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
         .bm-message {
           padding: 16px 14px;
           color: #605848;
-          font-size: 12px;
+          font-size: calc(12px * var(--font-scale, 1));
           font-style: italic;
           text-align: center;
         }
@@ -943,7 +956,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           background: none;
           color: #b8b0a0;
           font: inherit;
-          font-size: 13px;
+          font-size: calc(13px * var(--font-scale, 1));
           cursor: pointer;
           text-align: left;
           transition: background 0.15s;
@@ -1046,7 +1059,7 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
               <div className="bm-message">No soul has been bound... open Settings</div>
             ) : tab === "builds" ? (
               view === "focus" ? (
-                <BmFocusView data={data} />
+                <BmFocusView data={data} expandRuns={focusExpandRuns} />
               ) : view === "timeline" ? (
                 <BmTimelineView data={data} />
               ) : data.repos.length === 0 ? (

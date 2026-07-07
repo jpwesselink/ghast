@@ -16,12 +16,38 @@ const isAbout = view === "about";
 const ACTIVATE = "hellripper";
 const DEACTIVATE = "holydiver";
 
+interface UiPrefs {
+  font_scale: number;
+  focus_expand_runs: number;
+}
+
 export default function App() {
   const [data, setData] = useState<PanelPayload | null>(null);
   const [blackMetal, setBlackMetal] = useState(
     () => localStorage.getItem("ghast-theme") === "blackmetal"
   );
   const [buffer, setBuffer] = useState("");
+  const [focusExpandRuns, setFocusExpandRuns] = useState(5);
+
+  useEffect(() => {
+    const apply = (p: UiPrefs) => {
+      document.documentElement.style.setProperty(
+        "--font-scale",
+        String(p.font_scale)
+      );
+      setFocusExpandRuns(p.focus_expand_runs);
+    };
+
+    invoke<UiPrefs & { has_pat: boolean }>("get_config").then(apply);
+
+    const unlisten = listen<UiPrefs>("ui-prefs-changed", (event) => {
+      apply(event.payload);
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   useEffect(() => {
     invoke<PanelPayload>("get_workflow_runs").then(setData);
@@ -128,7 +154,11 @@ export default function App() {
   } else if (isSettings) {
     content = blackMetal ? <BlackMetalSettings /> : <Settings />;
   } else if (data) {
-    content = blackMetal ? <BlackMetal data={data} /> : <Menu data={data} />;
+    content = blackMetal ? (
+      <BlackMetal data={data} focusExpandRuns={focusExpandRuns} />
+    ) : (
+      <Menu data={data} focusExpandRuns={focusExpandRuns} />
+    );
   }
 
   return <TooltipProvider delayDuration={250}>{content}</TooltipProvider>;

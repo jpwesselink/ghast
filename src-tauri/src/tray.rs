@@ -44,7 +44,7 @@ pub fn open_settings_window(app: &AppHandle) {
         .build();
 
         if let Some(win) = app.get_webview_window("settings") {
-            let _ = win.set_size(tauri::LogicalSize::new(560.0, 900.0));
+            let _ = win.set_size(tauri::LogicalSize::new(740.0, 620.0));
             let w = win.clone();
             win.on_window_event(move |event| {
                 if let tauri::WindowEvent::Focused(false) = event {

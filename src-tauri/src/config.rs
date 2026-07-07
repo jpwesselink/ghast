@@ -14,6 +14,10 @@ pub struct Config {
     pub poll_interval_secs: u64,
     #[serde(default = "default_theme")]
     pub theme: String,
+    #[serde(default = "default_font_scale")]
+    pub font_scale: f64,
+    #[serde(default = "default_focus_expand_runs")]
+    pub focus_expand_runs: u32,
 }
 
 fn default_poll_interval() -> u64 {
@@ -24,6 +28,14 @@ fn default_theme() -> String {
     "normal".to_string()
 }
 
+fn default_font_scale() -> f64 {
+    1.0
+}
+
+fn default_focus_expand_runs() -> u32 {
+    5
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -32,6 +44,8 @@ impl Default for Config {
             mention_repos: Vec::new(),
             poll_interval_secs: 30,
             theme: default_theme(),
+            font_scale: 1.0,
+            focus_expand_runs: 5,
         }
     }
 }
@@ -88,6 +102,8 @@ mod tests {
             mention_repos: vec!["owner/third".to_string()],
             poll_interval_secs: 30,
             theme: "blackmetal".to_string(),
+            font_scale: 1.15,
+            focus_expand_runs: 3,
         };
         let json = serde_json::to_string(&config).unwrap();
         let loaded: Config = serde_json::from_str(&json).unwrap();
@@ -103,6 +119,8 @@ mod tests {
         assert!(config.mention_repos.is_empty());
         assert_eq!(config.poll_interval_secs, 30);
         assert_eq!(config.theme, "normal");
+        assert_eq!(config.font_scale, 1.0);
+        assert_eq!(config.focus_expand_runs, 5);
     }
 
     #[test]
@@ -116,6 +134,8 @@ mod tests {
             mention_repos: vec!["owner/third".to_string()],
             poll_interval_secs: 60,
             theme: "normal".to_string(),
+            font_scale: 1.0,
+            focus_expand_runs: 5,
         };
         config.save(&dir).unwrap();
 
