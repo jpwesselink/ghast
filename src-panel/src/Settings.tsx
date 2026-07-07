@@ -40,7 +40,6 @@ export default function Settings() {
   const [patError, setPatError] = useState(false);
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const [theme, setTheme] = useState("normal");
   const [fontScale, setFontScale] = useState(1.0);
   const [expandRuns, setExpandRuns] = useState(5);
 
@@ -54,7 +53,6 @@ export default function Settings() {
       font_scale: number;
       focus_expand_runs: number;
     }>("get_config").then((config) => {
-      setTheme(config.theme === "blackmetal" ? "blackmetal" : "normal");
       setFontScale(config.font_scale);
       setExpandRuns(config.focus_expand_runs);
       if (config.has_pat) {
@@ -142,15 +140,6 @@ export default function Settings() {
   const pickExpandRuns = (v: number) => {
     setExpandRuns(v);
     saveUiPrefs(fontScale, v);
-  };
-
-  const pickTheme = async (t: string) => {
-    setTheme(t);
-    try {
-      await invoke("set_theme", { theme: t });
-    } catch (e) {
-      console.error("set_theme failed", e);
-    }
   };
 
   return (
@@ -451,28 +440,6 @@ export default function Settings() {
           font-size: 13px;
         }
 
-        .s-theme-cards { display: flex; gap: 12px; padding: 14px; }
-
-        .s-theme-card {
-          flex: 1;
-          border: 2px solid var(--s-border);
-          border-radius: 10px;
-          padding: 0;
-          overflow: hidden;
-          cursor: default;
-          background: none;
-          font: inherit;
-          color: var(--s-text);
-          text-align: center;
-        }
-
-        .s-theme-card.active { border-color: var(--s-accent); }
-
-        .s-theme-thumb { height: 58px; display: flex; align-items: center; justify-content: center; font-size: 21px; }
-        .s-theme-thumb.holy { background: linear-gradient(180deg, #f4f4f6, #dcdce2); color: #444; }
-        .s-theme-thumb.hell { background: linear-gradient(180deg, #17090a, #050000); color: #c01818; }
-
-        .s-theme-name { font-size: 12px; font-weight: 600; padding: 7px 0; }
       `}</style>
 
       <div className="s-shell">
@@ -580,24 +547,6 @@ export default function Settings() {
           {section === "appearance" && (
             <>
               <div className="s-pane-title">Appearance</div>
-              <div className="s-group">
-                <div className="s-theme-cards">
-                  <button
-                    className={`s-theme-card${theme === "normal" ? " active" : ""}`}
-                    onClick={() => pickTheme("normal")}
-                  >
-                    <div className="s-theme-thumb holy">☼</div>
-                    <div className="s-theme-name">Holy Diver</div>
-                  </button>
-                  <button
-                    className={`s-theme-card${theme === "blackmetal" ? " active" : ""}`}
-                    onClick={() => pickTheme("blackmetal")}
-                  >
-                    <div className="s-theme-thumb hell">⛧</div>
-                    <div className="s-theme-name">Hellripper</div>
-                  </button>
-                </div>
-              </div>
               <div className="s-group">
                 <div className="s-row">
                   <span className="s-row-label">
