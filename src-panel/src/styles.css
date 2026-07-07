@@ -137,9 +137,19 @@ body {
 }
 
 .repo-group + .repo-group {
-  border-top: 0.5px solid var(--separator);
   margin-top: 6px;
   padding-top: 6px;
+  position: relative;
+}
+
+.repo-group + .repo-group::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 0.5px;
+  background: var(--separator);
 }
 
 .repo-header {
@@ -226,7 +236,7 @@ body {
 .menu-separator {
   height: 0.5px;
   background: var(--separator);
-  margin: 6px 0;
+  margin: 6px 14px;
 }
 
 .menu-footer {
