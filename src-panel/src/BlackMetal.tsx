@@ -4,6 +4,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelMention, PanelPayload, PanelPendingReview, PanelWorkflowRun } from "./types";
 import Ghost from "./Ghost";
 import {
+  RunJob,
+  fetchRunJobs,
+  jobIsBad,
+  toggleRunExpanded,
+  useExpandedRuns,
+} from "./runJobs";
+import {
   BuildsView,
   bucketRepos,
   chipLabel,
@@ -343,23 +350,104 @@ function ReviewRow({ review }: { review: PanelPendingReview }) {
   );
 }
 
-function RunRow({ run }: { run: PanelWorkflowRun }) {
+function bmStepMark(s: { status: string; conclusion: string | null }): {
+  glyph: string;
+  color: string;
+} {
+  if (s.status !== "completed" && s.status !== "failed")
+    return s.status === "in_progress"
+      ? { glyph: "◌", color: "#5577ee" }
+      : { glyph: "·", color: "#9a8a78" };
+  if (s.conclusion === "success") return { glyph: "†", color: "#55aa22" };
+  if (jobIsBad(s as RunJob)) return { glyph: "✕", color: "#cc2020" };
+  return { glyph: "–", color: "#9a8a78" };
+}
+
+function BmJobList({ run }: { run: PanelWorkflowRun }) {
+  const [jobs, setJobs] = useState<RunJob[] | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    setError("");
+    fetchRunJobs(run.repo, run.run_id, run.status === "completed")
+      .then((j) => alive && setJobs(j))
+      .catch((e) => alive && setError(String(e)));
+    return () => {
+      alive = false;
+    };
+  }, [run.repo, run.run_id, run.status, run.conclusion, run.created_at]);
+
+  if (error) return <div className="bm-job-note">the summoning failed: {error}</div>;
+  if (!jobs) return <div className="bm-job-note">divining the rites...</div>;
+  if (jobs.length === 0) return <div className="bm-job-note">no rites recorded</div>;
+
   return (
-    <div
-      className="bm-run-item"
-      onClick={() => invoke("open_url", { url: run.html_url })}
-    >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="bm-icon-trigger">
-            <StatusIcon run={run} />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
-      </Tooltip>
-      <span className="bm-run-name">{run.workflow_name}</span>
-      <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
+    <div className="bm-job-list">
+      {jobs.map((job) => {
+        const mark = bmStepMark(job);
+        const showSteps = jobIsBad(job) || job.status === "in_progress";
+        return (
+          <div key={job.html_url}>
+            <div
+              className="bm-job-row"
+              onClick={() => invoke("open_url", { url: job.html_url })}
+            >
+              <span className="bm-step-mark" style={{ color: mark.color }}>
+                {mark.glyph}
+              </span>
+              <span className="bm-run-name">{job.name}</span>
+            </div>
+            {showSteps &&
+              job.steps.map((step) => {
+                const sm = bmStepMark(step);
+                return (
+                  <div className="bm-step-row" key={step.number}>
+                    <span className="bm-step-mark" style={{ color: sm.color }}>
+                      {sm.glyph}
+                    </span>
+                    <span className="bm-run-name">{step.name}</span>
+                  </div>
+                );
+              })}
+          </div>
+        );
+      })}
     </div>
+  );
+}
+
+function RunRow({ run }: { run: PanelWorkflowRun }) {
+  const expanded = useExpandedRuns().includes(run.run_id);
+
+  return (
+    <>
+      <div
+        className="bm-run-item"
+        onClick={() => invoke("open_url", { url: run.html_url })}
+      >
+        <span
+          className={`bm-run-chevron${expanded ? " open" : ""}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleRunExpanded(run.run_id);
+          }}
+        >
+          ›
+        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="bm-icon-trigger">
+              <StatusIcon run={run} />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
+        </Tooltip>
+        <span className="bm-run-name">{run.workflow_name}</span>
+        <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
+      </div>
+      {expanded && <BmJobList run={run} />}
+    </>
   );
 }
 
@@ -833,6 +921,64 @@ export default function BlackMetal({
         .bm-sect, .bm-sect-run, .bm-sect-quiet, .bm-calm-line {
           -webkit-user-select: none !important;
           user-select: none !important;
+        }
+
+        .bm-run-chevron {
+          color: #6a5a48;
+          font-size: 15px;
+          line-height: 1;
+          width: 14px;
+          text-align: center;
+          flex-shrink: 0;
+          transition: transform 0.15s, color 0.2s;
+        }
+
+        .bm-run-chevron.open {
+          transform: rotate(90deg);
+        }
+
+        .bm-run-item:hover .bm-run-chevron {
+          color: #dd3030;
+        }
+
+        .bm-job-list {
+          padding: 0 6px 4px;
+        }
+
+        .bm-job-row,
+        .bm-step-row {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 3px 8px 3px 38px;
+          margin: 0 6px;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: calc(13px * var(--font-scale, 1));
+          color: #c8c0b0;
+        }
+
+        .bm-job-row:hover {
+          background: #2a1a18;
+        }
+
+        .bm-step-row {
+          padding-left: 56px;
+          color: #8a7e6e;
+          cursor: default;
+        }
+
+        .bm-step-mark {
+          width: 12px;
+          text-align: center;
+          flex-shrink: 0;
+        }
+
+        .bm-job-note {
+          padding: 3px 8px 5px 44px;
+          color: #6a5f50;
+          font-style: italic;
+          font-size: calc(11px * var(--font-scale, 1));
         }
 
         .bm-calm {

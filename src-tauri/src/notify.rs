@@ -92,6 +92,7 @@ mod tests {
 
     fn api_run(id: u64, status: &str, conclusion: Option<&str>) -> ApiWorkflowRun {
         ApiWorkflowRun {
+            id: 1,
             name: "CI".to_string(),
             status: status.to_string(),
             conclusion: conclusion.map(String::from),

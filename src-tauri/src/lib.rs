@@ -194,6 +194,26 @@ fn get_workflow_runs(state: tauri::State<'_, SharedState>) -> state::PanelPayloa
     s.panel_payload()
 }
 
+#[tauri::command]
+async fn get_run_jobs(
+    state: tauri::State<'_, SharedState>,
+    repo: String,
+    run_id: u64,
+) -> Result<Vec<github::RunJob>, String> {
+    let pat = {
+        let s = state.lock().unwrap();
+        s.github_pat.clone()
+    };
+    if pat.is_empty() {
+        return Err("No PAT configured".to_string());
+    }
+    let (owner, name) = repo
+        .split_once('/')
+        .ok_or_else(|| format!("bad repo: {repo}"))?;
+    let client = GitHubClient::new(&pat)?;
+    client.get_run_jobs(owner, name, run_id).await
+}
+
 /// System accent color (NSColor.controlAccentColor) as a hex string.
 /// The CSS `AccentColor` keyword resolves to stock blue inside WKWebView,
 /// so the frontend asks for the real value instead.
@@ -327,6 +347,7 @@ pub fn run() {
             set_mention_repos,
             set_ui_prefs,
             get_accent_color,
+            get_run_jobs,
             get_workflow_runs,
             open_settings,
             open_about,

@@ -11,11 +11,36 @@ pub struct GitHubRepo {
 
 #[derive(Debug, Clone)]
 pub struct WorkflowRun {
+    pub id: u64,
     pub name: String,
     pub status: String,
     pub conclusion: Option<String>,
     pub html_url: String,
     pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct RunStep {
+    pub name: String,
+    pub status: String,
+    pub conclusion: Option<String>,
+    pub number: i64,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct RunJob {
+    pub name: String,
+    pub status: String,
+    pub conclusion: Option<String>,
+    pub html_url: String,
+    pub steps: Vec<RunStep>,
+}
+
+fn enum_str<T: serde::Serialize>(v: &T) -> String {
+    serde_json::to_value(v)
+        .ok()
+        .and_then(|x| x.as_str().map(String::from))
+        .unwrap_or_default()
 }
 
 #[derive(Debug, Clone)]
@@ -149,6 +174,7 @@ impl GitHubClient {
             .items
             .into_iter()
             .map(|r| WorkflowRun {
+                id: r.id.0,
                 name: r.name,
                 status: r.status.clone(),
                 conclusion: r.conclusion.clone(),
@@ -276,6 +302,50 @@ impl GitHubClient {
             });
         }
         Ok(out)
+    }
+
+    pub async fn get_run_jobs(
+        &self,
+        owner: &str,
+        repo: &str,
+        run_id: u64,
+    ) -> Result<Vec<RunJob>, String> {
+        let page = self
+            .octo
+            .workflows(owner, repo)
+            .list_jobs(octocrab::models::RunId(run_id))
+            .per_page(50)
+            .send()
+            .await
+            .map_err(|e| {
+                let msg = e.to_string();
+                if msg.contains("401") {
+                    "auth_error".to_string()
+                } else {
+                    msg
+                }
+            })?;
+
+        Ok(page
+            .items
+            .into_iter()
+            .map(|j| RunJob {
+                name: j.name,
+                status: enum_str(&j.status),
+                conclusion: j.conclusion.as_ref().map(enum_str),
+                html_url: j.html_url.to_string(),
+                steps: j
+                    .steps
+                    .into_iter()
+                    .map(|s| RunStep {
+                        name: s.name,
+                        status: enum_str(&s.status),
+                        conclusion: s.conclusion.as_ref().map(enum_str),
+                        number: s.number,
+                    })
+                    .collect(),
+            })
+            .collect())
     }
 
     pub async fn get_user_repos(&self) -> Result<Vec<GitHubRepo>, String> {

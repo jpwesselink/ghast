@@ -28,6 +28,7 @@ pub enum RunConclusion {
 
 #[derive(Debug, Clone)]
 pub struct WorkflowRun {
+    pub run_id: u64,
     pub repo: String,
     pub workflow_name: String,
     pub status: RunStatus,
@@ -39,6 +40,7 @@ pub struct WorkflowRun {
 impl WorkflowRun {
     pub fn from_api(repo: &str, api_run: &ApiWorkflowRun) -> Self {
         Self {
+            run_id: api_run.id,
             repo: repo.to_string(),
             workflow_name: api_run.name.clone(),
             status: match api_run.status.as_str() {
@@ -67,6 +69,7 @@ impl WorkflowRun {
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct PanelWorkflowRun {
+    pub run_id: u64,
     pub repo: String,
     pub workflow_name: String,
     pub status: String,
@@ -78,6 +81,7 @@ pub struct PanelWorkflowRun {
 impl From<&WorkflowRun> for PanelWorkflowRun {
     fn from(run: &WorkflowRun) -> Self {
         Self {
+            run_id: run.run_id,
             repo: run.repo.clone(),
             workflow_name: run.workflow_name.clone(),
             status: match run.status {
@@ -334,6 +338,7 @@ mod tests {
 
     fn make_api_run(status: &str, conclusion: Option<&str>) -> ApiWorkflowRun {
         ApiWorkflowRun {
+            id: 1,
             name: "CI".to_string(),
             status: status.to_string(),
             conclusion: conclusion.map(String::from),
@@ -389,6 +394,7 @@ mod tests {
     #[test]
     fn test_from_api_fallback_name() {
         let api = ApiWorkflowRun {
+            id: 1,
             name: "Deploy".to_string(),
             status: "completed".to_string(),
             conclusion: Some("success".to_string()),
