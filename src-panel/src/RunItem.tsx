@@ -79,18 +79,39 @@ function stepMark(s: { status: string; conclusion: string | null }): {
 function JobList({ run }: { run: PanelWorkflowRun }) {
   const [jobs, setJobs] = useState<RunJob[] | null>(null);
   const [error, setError] = useState("");
+  const [openJobs, setOpenJobs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let alive = true;
     setError("");
     fetchRunJobs(run.repo, run.run_id, run.status === "completed")
-      .then((j) => alive && setJobs(j))
+      .then((j) => {
+        if (!alive) return;
+        setJobs(j);
+        // failing and running jobs start with their steps showing
+        setOpenJobs(
+          new Set(
+            j
+              .filter((job) => jobIsBad(job) || job.status === "in_progress")
+              .map((job) => job.html_url)
+          )
+        );
+      })
       .catch((e) => alive && setError(String(e)));
     return () => {
       alive = false;
     };
     // re-fetch while the run is still moving
   }, [run.repo, run.run_id, run.status, run.conclusion, run.created_at]);
+
+  const toggleJob = (url: string) => {
+    setOpenJobs((prev) => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url);
+      else next.add(url);
+      return next;
+    });
+  };
 
   if (error) return <div className="job-note">jobs unavailable: {error}</div>;
   if (!jobs) return <div className="job-note">fetching jobs...</div>;
@@ -100,19 +121,28 @@ function JobList({ run }: { run: PanelWorkflowRun }) {
     <div className="job-list">
       {jobs.map((job) => {
         const mark = stepMark(job);
-        const showSteps = jobIsBad(job) || job.status === "in_progress";
+        const open = openJobs.has(job.html_url);
         return (
           <div key={job.html_url}>
             <button
               className="job-row"
               onClick={() => invoke("open_url", { url: job.html_url })}
             >
+              <span
+                className={`run-chevron job-chevron${open ? " open" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleJob(job.html_url);
+                }}
+              >
+                ›
+              </span>
               <span className="step-mark" style={{ color: mark.color }}>
                 {mark.glyph}
               </span>
               <span className="run-name">{job.name}</span>
             </button>
-            {showSteps &&
+            {open &&
               job.steps.map((step) => {
                 const sm = stepMark(step);
                 return (
