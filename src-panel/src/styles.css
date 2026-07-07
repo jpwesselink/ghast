@@ -283,3 +283,153 @@ body {
   from { opacity: 0; transform: translateY(2px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* builds view switcher */
+.view-switch {
+  display: flex;
+  gap: 3px;
+  padding: 0 8px 4px;
+}
+
+.view-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.82em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: default;
+}
+
+.view-btn:hover {
+  color: var(--text-primary);
+}
+
+.view-btn.active {
+  background: rgba(127, 127, 127, 0.18);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* focus view */
+.sect-fail {
+  color: rgb(255, 59, 48) !important;
+}
+
+.sect-run {
+  color: rgb(0, 122, 255) !important;
+}
+
+.repo-chip {
+  font-size: 0.8em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(127, 127, 127, 0.16);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.run-item:hover .repo-chip {
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--text-hover);
+}
+
+.quiet-row .run-name {
+  color: var(--text-secondary);
+}
+
+.quiet-row:hover .run-name {
+  color: var(--text-hover);
+}
+
+.quiet-check {
+  color: rgb(52, 199, 89);
+  font-size: 0.85em;
+  width: 9px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.hist {
+  display: inline-flex;
+  gap: 2.5px;
+  flex-shrink: 0;
+}
+
+.hist i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  display: block;
+}
+
+.hist .hist-ok { background: rgb(52, 199, 89); }
+.hist .hist-fail { background: rgb(255, 59, 48); }
+.hist .hist-skip { background: rgb(142, 142, 147); opacity: 0.6; }
+.hist .hist-run { background: rgb(0, 122, 255); }
+.hist .hist-dim { opacity: 0.4; }
+
+.dot-pulse {
+  animation: dot-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-pulse { animation: none; }
+}
+
+/* timeline view */
+.tl-day {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.78em !important;
+}
+
+.tl-row {
+  gap: 8px;
+}
+
+.tl-time {
+  width: 38px;
+  flex-shrink: 0;
+  text-align: right;
+  color: var(--text-secondary);
+  font-size: 0.82em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tl-row:hover .tl-time {
+  color: var(--text-hover);
+}
+
+.tl-now {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 14px 2px 52px;
+}
+
+.tl-now-label {
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(0, 122, 255);
+}
+
+.tl-now-line {
+  flex: 1;
+  height: 1.5px;
+  border-radius: 1px;
+  background: rgba(0, 122, 255, 0.5);
+}

@@ -2,6 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelMention, PanelPayload, PanelPendingReview, PanelWorkflowRun } from "./types";
+import {
+  BuildsView,
+  bucketRepos,
+  dayLabel,
+  isBad,
+  loadBuildsView,
+  saveBuildsView,
+  timeLabel,
+  timelineEntries,
+} from "./buildViews";
 
 function NoiseCanvas({ opacity = 0.08 }: { opacity?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -359,11 +369,165 @@ function RunRow({ run }: { run: PanelWorkflowRun }) {
   );
 }
 
+function bmHistClass(run: PanelWorkflowRun): string {
+  if (run.status !== "completed") return "bm-hist-run";
+  if (run.conclusion === "success") return "bm-hist-ok";
+  if (isBad(run)) return "bm-hist-fail";
+  return "bm-hist-skip";
+}
+
+function BmHistoryStrip({ runs }: { runs: PanelWorkflowRun[] }) {
+  const last = runs.slice(-5);
+  return (
+    <span className="bm-hist">
+      {last.map((r, i) => (
+        <i
+          key={r.html_url}
+          className={`${bmHistClass(r)}${i < last.length - 1 ? " bm-hist-dim" : ""}`}
+        />
+      ))}
+    </span>
+  );
+}
+
+function BmFocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
+  return (
+    <div
+      className="bm-run-item"
+      onClick={() => invoke("open_url", { url: run.html_url })}
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="bm-icon-trigger">
+            <StatusIcon run={run} />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
+      </Tooltip>
+      <span className="bm-run-name">{run.workflow_name}</span>
+      <span className="bm-chip">{repo.split("/")[1] ?? repo}</span>
+      <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
+    </div>
+  );
+}
+
+function BmFocusView({ data }: { data: PanelPayload }) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const { failing, running, quiet } = bucketRepos(data.repos, data.runs);
+
+  const toggle = (repo: string) => {
+    const next = new Set(expanded);
+    if (next.has(repo)) next.delete(repo);
+    else next.add(repo);
+    setExpanded(next);
+  };
+
+  if (failing.length === 0 && running.length === 0 && quiet.length === 0) {
+    return <div className="bm-message">No repositories have been haunted</div>;
+  }
+
+  return (
+    <>
+      {failing.length > 0 && (
+        <div className="bm-repo-group">
+          <div className="bm-repo-header">The damned</div>
+          {failing.map(({ repo, run }) => (
+            <BmFocusRunRow key={run.html_url} repo={repo} run={run} />
+          ))}
+        </div>
+      )}
+
+      {running.length > 0 && (
+        <div className="bm-repo-group">
+          <div className="bm-repo-header bm-sect-run">Rituals in progress</div>
+          {running.map(({ repo, run }) => (
+            <BmFocusRunRow key={run.html_url} repo={repo} run={run} />
+          ))}
+        </div>
+      )}
+
+      {quiet.length > 0 && (
+        <div className="bm-repo-group">
+          <div className="bm-repo-header bm-sect-quiet">At rest</div>
+          {quiet.map(({ repo, latest, history }) => (
+            <div key={repo}>
+              <div className="bm-run-item bm-quiet-row" onClick={() => toggle(repo)}>
+                <span className="bm-quiet-check">†</span>
+                <span className="bm-run-name">{repo}</span>
+                <BmHistoryStrip runs={history} />
+                <span className="bm-run-time">{formatTimeAgo(latest.created_at)}</span>
+              </div>
+              {expanded.has(repo) &&
+                [...history]
+                  .reverse()
+                  .map((run) => <RunRow key={run.html_url} run={run} />)}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function BmTimelineView({ data }: { data: PanelPayload }) {
+  const entries = timelineEntries(data.runs);
+  if (entries.length === 0) {
+    return <div className="bm-message">No repositories have been haunted</div>;
+  }
+
+  let lastDay = "";
+  const hasActive = entries.some(({ run }) => run.status !== "completed");
+
+  return (
+    <>
+      {entries.map(({ repo, run }, i) => {
+        const day = dayLabel(run.created_at);
+        const showDay = day !== lastDay;
+        lastDay = day;
+        const showNow = hasActive && i === 0;
+        return (
+          <div key={run.html_url}>
+            {showDay && <div className="bm-repo-header">{day}</div>}
+            {showNow && (
+              <div className="bm-tl-now">
+                <span className="bm-tl-now-label">the witching hour</span>
+                <span className="bm-tl-now-line" />
+              </div>
+            )}
+            <div
+              className="bm-run-item"
+              onClick={() => invoke("open_url", { url: run.html_url })}
+            >
+              <span className="bm-tl-time">{timeLabel(run.created_at)}</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="bm-icon-trigger">
+                    <StatusIcon run={run} />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
+              </Tooltip>
+              <span className="bm-run-name">{run.workflow_name}</span>
+              <span className="bm-chip">{repo.split("/")[1] ?? repo}</span>
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 type BmTab = "builds" | "reviews" | "comments";
 
 export default function BlackMetal({ data }: { data: PanelPayload }) {
   const [flickerClass, setFlickerClass] = useState("");
   const [tab, setTab] = useState<BmTab>("builds");
+  const [view, setView] = useState<BuildsView>(loadBuildsView);
+
+  const switchView = (v: BuildsView) => {
+    setView(v);
+    saveBuildsView(v);
+  };
 
   useEffect(() => {
     setFlickerClass("screen-flicker");
@@ -458,6 +622,13 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           .bm-tab.active { color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
           .bm-tab-badge { background: #e0c8a8 !important; border-color: #b09070 !important; color: #2a1a10 !important; }
           .bm-tab.active .bm-tab-badge { background: #8b0000 !important; border-color: #8b0000 !important; color: #f0e8d8 !important; }
+          .bm-view-btn { color: #8a7a68 !important; }
+          .bm-view-btn:hover { color: #2a1a10 !important; }
+          .bm-view-btn.active { color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
+          .bm-chip { border-color: #c0a090 !important; color: #6a5a48 !important; }
+          .bm-quiet-row .bm-run-name { color: #6a5a48 !important; }
+          .bm-quiet-row:hover .bm-run-name { color: #000 !important; }
+          .bm-tl-time { color: #6a5a48 !important; }
         }
 
         .bm-inner {
@@ -554,6 +725,110 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
           background: #4a1010;
           border-color: #8b0000;
           color: #ede6d8;
+        }
+
+        .bm-view-switch {
+          display: flex;
+          gap: 4px;
+          padding: 4px 10px 0;
+          justify-content: center;
+        }
+
+        .bm-view-btn {
+          border: none;
+          background: transparent;
+          color: #6a5a48;
+          font-family: 'IM Fell English SC', serif;
+          font-size: 10px;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          padding: 2px 10px;
+          cursor: pointer;
+          border-bottom: 1px solid transparent;
+        }
+
+        .bm-view-btn:hover { color: #b8a890; }
+
+        .bm-view-btn.active {
+          color: #ddc0a0;
+          border-bottom-color: #8b0000;
+        }
+
+        .bm-chip {
+          font-family: 'IM Fell English SC', serif;
+          font-size: 10px;
+          letter-spacing: 1px;
+          padding: 1px 7px;
+          border: 1px solid #3a2a1a;
+          color: #8a7e6e;
+          flex-shrink: 0;
+          max-width: 110px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .bm-sect-run { color: #5577ee !important; }
+        .bm-sect-quiet { color: #6a7a48 !important; }
+
+        .bm-quiet-row .bm-run-name { color: #9a8e7e; }
+        .bm-quiet-row:hover .bm-run-name { color: #e0d8c8; }
+
+        .bm-quiet-check {
+          color: #55aa22;
+          font-size: 13px;
+          width: 16px;
+          text-align: center;
+          flex-shrink: 0;
+        }
+
+        .bm-hist {
+          display: inline-flex;
+          gap: 2.5px;
+          flex-shrink: 0;
+        }
+
+        .bm-hist i {
+          width: 7px;
+          height: 7px;
+          display: block;
+        }
+
+        .bm-hist .bm-hist-ok { background: #55aa22; }
+        .bm-hist .bm-hist-fail { background: #cc2020; }
+        .bm-hist .bm-hist-skip { background: #9a8a78; opacity: 0.6; }
+        .bm-hist .bm-hist-run { background: #5577ee; }
+        .bm-hist .bm-hist-dim { opacity: 0.4; }
+
+        .bm-tl-time {
+          width: 40px;
+          flex-shrink: 0;
+          text-align: right;
+          color: #8a7e6e;
+          font-size: 11px;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .bm-tl-now {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 2px 14px 2px 56px;
+        }
+
+        .bm-tl-now-label {
+          font-family: 'IM Fell English SC', serif;
+          font-size: 9px;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          color: #c01818;
+          white-space: nowrap;
+        }
+
+        .bm-tl-now-line {
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(to right, #8b0000, transparent);
         }
 
         .bm-content {
@@ -745,13 +1020,31 @@ export default function BlackMetal({ data }: { data: PanelPayload }) {
             </button>
           </div>
 
+          {tab === "builds" && !data.auth_error && data.has_pat && (
+            <div className="bm-view-switch">
+              {(["repos", "focus", "timeline"] as BuildsView[]).map((v) => (
+                <button
+                  key={v}
+                  className={`bm-view-btn${view === v ? " active" : ""}`}
+                  onClick={() => switchView(v)}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="bm-content">
             {data.auth_error ? (
               <div className="bm-message">The binding has failed... check Settings</div>
             ) : !data.has_pat ? (
               <div className="bm-message">No soul has been bound... open Settings</div>
             ) : tab === "builds" ? (
-              data.repos.length === 0 ? (
+              view === "focus" ? (
+                <BmFocusView data={data} />
+              ) : view === "timeline" ? (
+                <BmTimelineView data={data} />
+              ) : data.repos.length === 0 ? (
                 <div className="bm-message">No repositories have been haunted</div>
               ) : (
                 data.repos.map((repo) => (
