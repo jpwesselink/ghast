@@ -20,6 +20,12 @@ import {
 
 type Tab = "builds" | "reviews" | "comments";
 
+function openRepoUrl(repo: string) {
+  // don't hijack a text-selection drag
+  if (window.getSelection()?.toString()) return;
+  invoke("open_url", { url: `https://github.com/${repo}` });
+}
+
 function histClass(run: PanelWorkflowRun): string {
   if (run.status !== "completed") return "hist-run";
   if (run.conclusion === "success") return "hist-ok";
@@ -55,7 +61,15 @@ function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
         }}
       />
       <span className="run-name">{run.workflow_name}</span>
-      <span className="repo-chip">{chipLabel(repo)}</span>
+      <span
+        className="repo-chip"
+        onClick={(e) => {
+          e.stopPropagation();
+          openRepoUrl(repo);
+        }}
+      >
+        {chipLabel(repo)}
+      </span>
       <span className="run-time">{formatTimeAgo(run.created_at)}</span>
     </button>
   );
@@ -182,7 +196,15 @@ function TimelineView({ data }: { data: PanelPayload }) {
                 }}
               />
               <span className="run-name">{run.workflow_name}</span>
-              <span className="repo-chip">{chipLabel(repo)}</span>
+              <span
+                className="repo-chip"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openRepoUrl(repo);
+                }}
+              >
+                {chipLabel(repo)}
+              </span>
             </button>
           </div>
         );
@@ -199,7 +221,9 @@ function ReposView({ data }: { data: PanelPayload }) {
     <>
       {data.repos.map((repo) => (
         <div key={repo} className="repo-group">
-          <div className="repo-header">{repo}</div>
+          <button className="repo-header repo-link" onClick={() => openRepoUrl(repo)}>
+            {repo}
+          </button>
           {data.runs[repo] ? (
             data.runs[repo].map((run) => <RunItem key={run.html_url} run={run} />)
           ) : (

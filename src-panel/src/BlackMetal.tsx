@@ -371,6 +371,12 @@ function RunRow({ run }: { run: PanelWorkflowRun }) {
   );
 }
 
+function openRepoUrl(repo: string) {
+  // don't hijack a text-selection drag
+  if (window.getSelection()?.toString()) return;
+  invoke("open_url", { url: `https://github.com/${repo}` });
+}
+
 function bmHistClass(run: PanelWorkflowRun): string {
   if (run.status !== "completed") return "bm-hist-run";
   if (run.conclusion === "success") return "bm-hist-ok";
@@ -407,7 +413,15 @@ function BmFocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
         <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
       </Tooltip>
       <span className="bm-run-name">{run.workflow_name}</span>
-      <span className="bm-chip">{chipLabel(repo)}</span>
+      <span
+        className="bm-chip"
+        onClick={(e) => {
+          e.stopPropagation();
+          openRepoUrl(repo);
+        }}
+      >
+        {chipLabel(repo)}
+      </span>
       <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
     </div>
   );
@@ -529,7 +543,15 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
                 <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
               </Tooltip>
               <span className="bm-run-name">{run.workflow_name}</span>
-              <span className="bm-chip">{chipLabel(repo)}</span>
+              <span
+                className="bm-chip"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openRepoUrl(repo);
+                }}
+              >
+                {chipLabel(repo)}
+              </span>
             </div>
           </div>
         );
@@ -898,6 +920,23 @@ export default function BlackMetal({
 
         @media (prefers-reduced-motion: reduce) {
           .bm-pager-strip { transition: none; }
+        }
+
+        .bm-repo-link {
+          display: block;
+          width: 100%;
+          border: none;
+          background: none;
+          -webkit-appearance: none;
+          appearance: none;
+          border-radius: 0;
+          cursor: pointer;
+          text-align: left;
+        }
+
+        .bm-repo-link:hover {
+          color: #dd3030;
+          text-shadow: 0 0 6px rgba(200, 20, 20, 0.3);
         }
 
         .bm-view-pager {
@@ -1270,7 +1309,12 @@ export default function BlackMetal({
                   ) : (
                     data.repos.map((repo) => (
                       <div key={repo} className="bm-repo-group">
-                        <div className="bm-repo-header">{repo}</div>
+                        <button
+                          className="bm-repo-header bm-repo-link"
+                          onClick={() => openRepoUrl(repo)}
+                        >
+                          {repo}
+                        </button>
                         {data.runs[repo] ? (
                           data.runs[repo].map((run) => (
                             <RunRow key={run.html_url} run={run} />
