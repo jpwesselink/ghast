@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelMention, PanelPayload, PanelPendingReview, PanelWorkflowRun } from "./types";
+import Ghost from "./Ghost";
 import {
   BuildsView,
   bucketRepos,
@@ -430,14 +431,26 @@ function BmFocusView({
   };
 
   if (failing.length === 0 && running.length === 0 && quiet.length === 0) {
-    return <div className="bm-message">No repositories have been haunted</div>;
+    return (
+      <div className="bm-calm">
+        <Ghost size={56} bodyOpacity={0.85} eyeMilkColor="#e6e0d2" eyeMilkScale={1.1} glow="#aa1010" />
+        <div className="bm-calm-line">No repositories have been haunted</div>
+      </div>
+    );
   }
 
   return (
     <>
+      {failing.length === 0 && running.length === 0 && (
+        <div className="bm-calm">
+          <Ghost size={56} bodyOpacity={0.85} eyeMilkColor="#e6e0d2" eyeMilkScale={1.1} glow="#aa1010" />
+          <div className="bm-calm-line">All souls at rest</div>
+        </div>
+      )}
+
       {failing.length > 0 && (
         <div className="bm-repo-group">
-          <div className="bm-repo-header">The damned</div>
+          <div className="bm-repo-header bm-sect">The damned</div>
           {failing.map(({ repo, run }) => (
             <BmFocusRunRow key={run.html_url} repo={repo} run={run} />
           ))}
@@ -495,7 +508,7 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
         const showNow = hasActive && i === 0;
         return (
           <div key={run.html_url}>
-            {showDay && <div className="bm-repo-header">{day}</div>}
+            {showDay && <div className="bm-repo-header bm-sect">{day}</div>}
             {showNow && (
               <div className="bm-tl-now">
                 <span className="bm-tl-now-label">the witching hour</span>
@@ -789,6 +802,35 @@ export default function BlackMetal({
           background: #4a1010;
           border-color: #8b0000;
           color: #ede6d8;
+        }
+
+        .bm-container, .bm-container * {
+          -webkit-user-select: none;
+          user-select: none;
+        }
+
+        .bm-run-name, .bm-chip, .bm-run-time, .bm-tl-time, .bm-repo-header {
+          -webkit-user-select: text;
+          user-select: text;
+        }
+
+        .bm-sect, .bm-sect-run, .bm-sect-quiet, .bm-calm-line {
+          -webkit-user-select: none !important;
+          user-select: none !important;
+        }
+
+        .bm-calm {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 18px 0 10px;
+        }
+
+        .bm-calm-line {
+          color: #8a7e6e;
+          font-style: italic;
+          font-size: calc(12px * var(--font-scale, 1));
         }
 
         .bm-pager-head {

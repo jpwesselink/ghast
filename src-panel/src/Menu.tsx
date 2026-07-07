@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import RunItem from "./RunItem";
 import ReviewItem from "./ReviewItem";
 import MentionItem from "./MentionItem";
+import Ghost from "./Ghost";
 import type { PanelPayload, PanelWorkflowRun } from "./types";
 import {
   BuildsView,
@@ -78,11 +79,23 @@ function FocusView({
   };
 
   if (failing.length === 0 && running.length === 0 && quiet.length === 0) {
-    return <div className="menu-message">No repos watched - check Settings</div>;
+    return (
+      <div className="calm-ghost">
+        <Ghost size={56} bodyColor="var(--ghost-body)" eyeMilkColor="#ffffff" eyeMilkScale={0.8} />
+        <div className="calm-line">No repos watched - check Settings</div>
+      </div>
+    );
   }
 
   return (
     <>
+      {failing.length === 0 && running.length === 0 && (
+        <div className="calm-ghost">
+          <Ghost size={56} bodyColor="var(--ghost-body)" eyeMilkColor="#ffffff" eyeMilkScale={0.8} />
+          <div className="calm-line">Nothing haunts you</div>
+        </div>
+      )}
+
       {failing.length > 0 && (
         <div className="repo-group">
           <div className="repo-header sect-fail">Failing</div>
@@ -103,7 +116,7 @@ function FocusView({
 
       {quiet.length > 0 && (
         <div className="repo-group">
-          <div className="repo-header">All quiet</div>
+          <div className="repo-header sect-label">All quiet</div>
           {quiet.map(({ repo, latest, history }) => (
             <div key={repo}>
               <button className="run-item quiet-row" onClick={() => toggle(repo)}>

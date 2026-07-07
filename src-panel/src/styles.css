@@ -596,3 +596,57 @@ body {
     transition: none;
   }
 }
+
+/* calm state ghost */
+:root {
+  --ghost-body: #b8b8c0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ghost-body: #55555e;
+  }
+}
+
+.calm-ghost {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 16px 0 10px;
+}
+
+.calm-line {
+  color: var(--text-secondary);
+  font-size: 0.92em;
+}
+
+/* selection policy: chrome is not selectable, data is */
+.menu,
+.menu * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.run-name,
+.repo-chip,
+.run-time,
+.tl-time,
+.repo-header {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* section labels reuse .repo-header but are chrome */
+.sect-fail,
+.sect-run,
+.sect-label,
+.tl-day {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+.calm-line {
+  -webkit-user-select: none;
+  user-select: none;
+}
