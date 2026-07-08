@@ -59,29 +59,45 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
         }
     };
 
+    // All repos in parallel: sequential fetches made a full cycle take
+    // seconds-per-repo and the panel only updates when the cycle lands.
+    let mut handles = Vec::new();
     for repo in &repos {
-        let parts: Vec<&str> = repo.splitn(2, '/').collect();
-        if parts.len() != 2 {
+        let Some((owner, name)) = repo.split_once('/') else {
             continue;
-        }
-        let (owner, name) = (parts[0], parts[1]);
+        };
+        let (client, repo, owner, name) = (
+            client.clone(),
+            repo.clone(),
+            owner.to_string(),
+            name.to_string(),
+        );
+        handles.push(tauri::async_runtime::spawn(async move {
+            let result = client.get_workflow_runs(&owner, &name, runs_per_repo).await;
+            (repo, result)
+        }));
+    }
 
-        match client.get_workflow_runs(owner, name, runs_per_repo).await {
+    for handle in handles {
+        let Ok((repo, result)) = handle.await else {
+            continue;
+        };
+        match result {
             Ok(api_runs) => {
                 let runs: Vec<WorkflowRun> = api_runs
                     .iter()
-                    .map(|r| WorkflowRun::from_api(repo, r))
+                    .map(|r| WorkflowRun::from_api(&repo, r))
                     .collect();
 
                 let mut s = state.lock().unwrap();
                 if !s.first_poll {
-                    let old_runs = s.runs.get(repo).map(|r| r.as_slice());
+                    let old_runs = s.runs.get(&repo).map(|r| r.as_slice());
                     let completed = notify::detect_completions(old_runs, &runs);
                     for run in &completed {
                         notify::send_completion_notification(app, run);
                     }
                 }
-                s.runs.insert(repo.clone(), runs);
+                s.runs.insert(repo, runs);
                 s.auth_error = false;
             }
             Err(e) if e == "auth_error" => {
@@ -99,6 +115,9 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
         let mut s = state.lock().unwrap();
         s.first_poll = false;
     }
+
+    // paint run results immediately; the searches below take their time
+    rebuild(app, state);
 
     poll_review_requests(app, state, &client, &review_repos).await;
     poll_mentions(app, state, &client, &mention_repos).await;

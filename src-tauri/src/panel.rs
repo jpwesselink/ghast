@@ -82,6 +82,11 @@ pub fn toggle_panel(app: &AppHandle, rect: Rect) {
 
             let _ = window.show();
             let _ = window.set_focus();
+
+            // fresh data the moment the panel opens
+            if let Some(trigger) = app.try_state::<std::sync::Arc<tokio::sync::Notify>>() {
+                trigger.notify_one();
+            }
         }
     }
 }

@@ -127,6 +127,7 @@ pub fn mention_html_url(
         .unwrap_or_else(|| format!("https://github.com/{repo}"))
 }
 
+#[derive(Clone)]
 pub struct GitHubClient {
     octo: Octocrab,
 }
