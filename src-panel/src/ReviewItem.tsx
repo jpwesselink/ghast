@@ -35,7 +35,7 @@ export default function ReviewItem({ review }: { review: PanelPendingReview }) {
   };
 
   return (
-    <button className="run-item" onClick={handleClick}>
+    <div className="run-item" onClick={handleClick}>
       <Tooltip>
         <TooltipTrigger asChild>
           <span style={{ display: "inline-flex", flexShrink: 0 }}>
@@ -58,6 +58,6 @@ export default function ReviewItem({ review }: { review: PanelPendingReview }) {
         {chipLabel(review.repo)}
       </span>
       <span className="run-time">{formatTimeAgo(review.created_at)}</span>
-    </button>
+    </div>
   );
 }

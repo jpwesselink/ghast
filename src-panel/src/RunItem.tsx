@@ -70,7 +70,7 @@ export default function RunItem({ run }: { run: PanelWorkflowRun }) {
 
   return (
     <>
-      <button className="run-item" onClick={handleClick}>
+      <div className="run-item" onClick={handleClick}>
         <span
           className={`run-chevron${expanded ? " open" : ""}`}
           onClick={(e) => {
@@ -104,7 +104,7 @@ export default function RunItem({ run }: { run: PanelWorkflowRun }) {
         })()}
         <WorkflowDuration run={run} className="run-duration" />
         <span className="run-time">{formatTimeAgo(run.created_at)}</span>
-      </button>
+      </div>
       {expanded && <JobSteps run={run} variant="clean" />}
     </>
   );

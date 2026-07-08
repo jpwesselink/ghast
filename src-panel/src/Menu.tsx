@@ -54,7 +54,7 @@ function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
   const expanded = useExpandedRuns().includes(run.run_id);
   return (
     <>
-    <button
+    <div
       className="run-item"
       onClick={() => invoke("open_url", { url: run.html_url })}
     >
@@ -89,7 +89,7 @@ function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
         {chipLabel(repo)}
       </span>
       <span className="run-time">{formatTimeAgo(run.created_at)}</span>
-    </button>
+    </div>
     {expanded && <JobSteps run={run} variant="clean" />}
     </>
   );
@@ -212,7 +212,7 @@ function TimelineView({ data }: { data: PanelPayload }) {
                 <span className="tl-now-line" />
               </div>
             )}
-            <button
+            <div
               className="run-item tl-row"
               onClick={() => invoke("open_url", { url: run.html_url })}
             >
@@ -251,7 +251,7 @@ function TimelineView({ data }: { data: PanelPayload }) {
               >
                 {chipLabel(repo)}
               </span>
-            </button>
+            </div>
             {expandedRuns.includes(run.run_id) && (
               <JobSteps run={run} variant="clean" />
             )}
