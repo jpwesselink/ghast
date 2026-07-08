@@ -13,6 +13,9 @@ pub struct GitHubRepo {
 pub struct WorkflowRun {
     pub id: u64,
     pub name: String,
+    pub branch: String,
+    pub on_default_branch: bool,
+    pub pr_number: Option<u64>,
     pub status: String,
     pub conclusion: Option<String>,
     pub html_url: String,
@@ -159,12 +162,14 @@ impl GitHubClient {
         repo: &str,
         per_page: u8,
     ) -> Result<Vec<WorkflowRun>, String> {
-        let page = self
+        // Raw JSON instead of octocrab's typed model: the typed Run drops
+        // `pull_requests`, which links a run to its PR.
+        let body: serde_json::Value = self
             .octo
-            .workflows(owner, repo)
-            .list_all_runs()
-            .per_page(per_page)
-            .send()
+            .get(
+                format!("/repos/{owner}/{repo}/actions/runs?per_page={per_page}"),
+                None::<&()>,
+            )
             .await
             .map_err(|e| {
                 let msg = e.to_string();
@@ -175,17 +180,35 @@ impl GitHubClient {
                 }
             })?;
 
-        let runs = page
-            .items
+        let runs = body["workflow_runs"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default()
             .into_iter()
-            .map(|r| WorkflowRun {
-                id: r.id.0,
-                name: r.name,
-                status: r.status.clone(),
-                conclusion: r.conclusion.clone(),
-                html_url: r.html_url.to_string(),
-                created_at: r.created_at,
-                updated_at: r.updated_at,
+            .filter_map(|r| {
+                let created_at = r["created_at"]
+                    .as_str()
+                    .and_then(|t| DateTime::parse_from_rfc3339(t).ok())?
+                    .with_timezone(&Utc);
+                let updated_at = r["updated_at"]
+                    .as_str()
+                    .and_then(|t| DateTime::parse_from_rfc3339(t).ok())
+                    .map(|t| t.with_timezone(&Utc))
+                    .unwrap_or(created_at);
+                let branch = r["head_branch"].as_str().unwrap_or_default().to_string();
+                Some(WorkflowRun {
+                    id: r["id"].as_u64()?,
+                    on_default_branch: r["repository"]["default_branch"].as_str()
+                        == Some(branch.as_str()),
+                    pr_number: r["pull_requests"][0]["number"].as_u64(),
+                    branch,
+                    name: r["name"].as_str().unwrap_or("workflow").to_string(),
+                    status: r["status"].as_str().unwrap_or_default().to_string(),
+                    conclusion: r["conclusion"].as_str().map(String::from),
+                    html_url: r["html_url"].as_str().unwrap_or_default().to_string(),
+                    created_at,
+                    updated_at,
+                })
             })
             .collect();
 

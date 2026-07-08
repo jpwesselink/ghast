@@ -138,6 +138,27 @@ export function chipLabel(repo: string, max = 15): string {
   return `…${tail}`;
 }
 
+/// Where a run came from: its PR when GitHub links one, else its branch
+/// when not the default branch.
+export function sourceChip(
+  run: PanelWorkflowRun
+): { label: string; url: string } | null {
+  if (run.pr_number != null)
+    return {
+      label: `#${run.pr_number}`,
+      url: `https://github.com/${run.repo}/pull/${run.pr_number}`,
+    };
+  if (!run.on_default_branch && run.branch) {
+    const label =
+      run.branch.length > 15 ? `…${run.branch.slice(-14)}` : run.branch;
+    return {
+      label,
+      url: `https://github.com/${run.repo}/tree/${run.branch}`,
+    };
+  }
+  return null;
+}
+
 export function formatTimeAgo(iso: string): string {
   const diffS = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (diffS < 60) return "just now";

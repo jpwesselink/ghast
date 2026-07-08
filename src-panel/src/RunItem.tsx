@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelWorkflowRun } from "./types";
 import JobSteps, { WorkflowDuration } from "./JobSteps";
+import { sourceChip } from "./buildViews";
 import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
 
 function formatTimeAgo(iso: string): string {
@@ -86,6 +87,21 @@ export default function RunItem({ run }: { run: PanelWorkflowRun }) {
           <TooltipContent>{statusLabel(run)}</TooltipContent>
         </Tooltip>
         <span className="run-name">{run.workflow_name}</span>
+        {(() => {
+          const src = sourceChip(run);
+          return src ? (
+            <span
+              className="repo-chip"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.getSelection()?.toString()) return;
+                invoke("open_url", { url: src.url });
+              }}
+            >
+              {src.label}
+            </span>
+          ) : null;
+        })()}
         <WorkflowDuration run={run} className="step-duration" />
         <span className="run-time">{formatTimeAgo(run.created_at)}</span>
       </button>

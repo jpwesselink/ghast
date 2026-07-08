@@ -1,6 +1,9 @@
 export interface PanelWorkflowRun {
   run_id: number;
   repo: string;
+  branch: string;
+  on_default_branch: boolean;
+  pr_number: number | null;
   workflow_name: string;
   status: "queued" | "waiting" | "in_progress" | "completed";
   conclusion: string | null;

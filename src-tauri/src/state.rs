@@ -31,6 +31,9 @@ pub enum RunConclusion {
 pub struct WorkflowRun {
     pub run_id: u64,
     pub repo: String,
+    pub branch: String,
+    pub on_default_branch: bool,
+    pub pr_number: Option<u64>,
     pub workflow_name: String,
     pub status: RunStatus,
     pub conclusion: Option<RunConclusion>,
@@ -44,6 +47,9 @@ impl WorkflowRun {
         Self {
             run_id: api_run.id,
             repo: repo.to_string(),
+            branch: api_run.branch.clone(),
+            on_default_branch: api_run.on_default_branch,
+            pr_number: api_run.pr_number,
             workflow_name: api_run.name.clone(),
             status: match api_run.status.as_str() {
                 "in_progress" => RunStatus::InProgress,
@@ -79,6 +85,9 @@ impl WorkflowRun {
 pub struct PanelWorkflowRun {
     pub run_id: u64,
     pub repo: String,
+    pub branch: String,
+    pub on_default_branch: bool,
+    pub pr_number: Option<u64>,
     pub workflow_name: String,
     pub status: String,
     pub conclusion: Option<String>,
@@ -92,6 +101,9 @@ impl From<&WorkflowRun> for PanelWorkflowRun {
         Self {
             run_id: run.run_id,
             repo: run.repo.clone(),
+            branch: run.branch.clone(),
+            on_default_branch: run.on_default_branch,
+            pr_number: run.pr_number,
             workflow_name: run.workflow_name.clone(),
             status: match run.status {
                 RunStatus::Queued => "queued",
@@ -361,6 +373,9 @@ mod tests {
         ApiWorkflowRun {
             id: 1,
             name: "CI".to_string(),
+            branch: "main".to_string(),
+            on_default_branch: true,
+            pr_number: None,
             status: status.to_string(),
             conclusion: conclusion.map(String::from),
             html_url: "https://github.com/o/r/actions/runs/1".to_string(),
@@ -418,6 +433,9 @@ mod tests {
         let api = ApiWorkflowRun {
             id: 1,
             name: "Deploy".to_string(),
+            branch: "main".to_string(),
+            on_default_branch: true,
+            pr_number: None,
             status: "completed".to_string(),
             conclusion: Some("success".to_string()),
             html_url: "https://github.com/o/r/actions/runs/1".to_string(),

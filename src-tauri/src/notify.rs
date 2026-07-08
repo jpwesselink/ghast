@@ -94,6 +94,9 @@ mod tests {
         ApiWorkflowRun {
             id: 1,
             name: "CI".to_string(),
+            branch: "main".to_string(),
+            on_default_branch: true,
+            pr_number: None,
             status: status.to_string(),
             conclusion: conclusion.map(String::from),
             html_url: format!("https://github.com/o/r/actions/runs/{}", id),

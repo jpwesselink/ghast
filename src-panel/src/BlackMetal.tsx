@@ -13,6 +13,7 @@ import {
   isBad,
   loadBuildsView,
   saveBuildsView,
+  sourceChip,
   timeLabel,
   timelineEntries,
 } from "./buildViews";
@@ -384,6 +385,21 @@ function RunRow({ run }: { run: PanelWorkflowRun }) {
           <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
         </Tooltip>
         <span className="bm-run-name">{run.workflow_name}</span>
+        {(() => {
+          const src = sourceChip(run);
+          return src ? (
+            <span
+              className="bm-chip"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.getSelection()?.toString()) return;
+                invoke("open_url", { url: src.url });
+              }}
+            >
+              {src.label}
+            </span>
+          ) : null;
+        })()}
         <WorkflowDuration run={run} className="bm-step-duration" />
         <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
       </div>
