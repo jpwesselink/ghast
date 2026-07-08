@@ -548,7 +548,9 @@ function BmFocusView({
           {quiet.map(({ repo, latest, history }) => (
             <div key={repo}>
               <div className="bm-run-item bm-quiet-row" onClick={() => toggle(repo)}>
-                <span className="bm-quiet-check">†</span>
+                <span className={`bm-run-chevron${expanded.has(repo) ? " open" : ""}`}>
+                  ›
+                </span>
                 <span className="bm-run-name">{repo}</span>
                 <BmHistoryStrip runs={history} />
                 <span className="bm-run-time">{formatTimeAgo(latest.created_at)}</span>

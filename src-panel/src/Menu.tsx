@@ -163,7 +163,9 @@ function FocusView({
           {quiet.map(({ repo, latest, history }) => (
             <div key={repo}>
               <button className="run-item quiet-row" onClick={() => toggle(repo)}>
-                <span className="quiet-check">✓</span>
+                <span className={`run-chevron${expanded.has(repo) ? " open" : ""}`}>
+                  ›
+                </span>
                 <span className="run-name">{repo}</span>
                 <HistoryStrip runs={history} />
                 <span className="run-time">{formatTimeAgo(latest.created_at)}</span>
