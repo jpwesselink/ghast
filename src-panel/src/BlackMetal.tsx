@@ -400,7 +400,7 @@ function RunRow({ run }: { run: PanelWorkflowRun }) {
             </span>
           ) : null;
         })()}
-        <WorkflowDuration run={run} className="bm-step-duration" />
+        <WorkflowDuration run={run} className="bm-run-duration" />
         <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
       </div>
       {expanded && <JobSteps run={run} variant="blackmetal" />}
@@ -977,6 +977,16 @@ export default function BlackMetal({
           width: 12px;
           text-align: center;
           flex-shrink: 0;
+        }
+
+        .bm-run-duration {
+          color: #6a5f50;
+          font-size: calc(11px * var(--font-scale, 1));
+          font-style: italic;
+          flex-shrink: 0;
+          min-width: calc(52px * var(--font-scale, 1));
+          text-align: right;
+          font-variant-numeric: tabular-nums;
         }
 
         .bm-step-duration {

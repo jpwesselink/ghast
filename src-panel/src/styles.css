@@ -783,3 +783,16 @@ body {
 .hist .hist-wait {
   background: rgb(255, 149, 0);
 }
+
+.run-duration {
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  flex-shrink: 0;
+  min-width: calc(52px * var(--font-scale, 1));
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.run-item:hover .run-duration {
+  color: var(--text-hover);
+}

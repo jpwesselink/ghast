@@ -102,7 +102,7 @@ export default function RunItem({ run }: { run: PanelWorkflowRun }) {
             </span>
           ) : null;
         })()}
-        <WorkflowDuration run={run} className="step-duration" />
+        <WorkflowDuration run={run} className="run-duration" />
         <span className="run-time">{formatTimeAgo(run.created_at)}</span>
       </button>
       {expanded && <JobSteps run={run} variant="clean" />}

@@ -196,10 +196,15 @@ impl GitHubClient {
                     .map(|t| t.with_timezone(&Utc))
                     .unwrap_or(created_at);
                 let branch = r["head_branch"].as_str().unwrap_or_default().to_string();
+                // the runs payload often omits repository.default_branch;
+                // fall back to the usual suspects
+                let on_default_branch = match r["repository"]["default_branch"].as_str() {
+                    Some(d) => d == branch,
+                    None => branch == "main" || branch == "master",
+                };
                 Some(WorkflowRun {
                     id: r["id"].as_u64()?,
-                    on_default_branch: r["repository"]["default_branch"].as_str()
-                        == Some(branch.as_str()),
+                    on_default_branch,
                     pr_number: r["pull_requests"][0]["number"].as_u64(),
                     branch,
                     name: r["name"].as_str().unwrap_or("workflow").to_string(),
