@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { chipLabel } from "./buildViews";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelPendingReview } from "./types";
 
@@ -46,6 +47,16 @@ export default function ReviewItem({ review }: { review: PanelPendingReview }) {
         </TooltipContent>
       </Tooltip>
       <span className="run-name">{review.title}</span>
+      <span
+        className="repo-chip"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (window.getSelection()?.toString()) return;
+          invoke("open_url", { url: `https://github.com/${review.repo}` });
+        }}
+      >
+        {chipLabel(review.repo)}
+      </span>
       <span className="run-time">{formatTimeAgo(review.created_at)}</span>
     </button>
   );

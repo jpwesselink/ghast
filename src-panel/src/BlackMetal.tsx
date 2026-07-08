@@ -343,6 +343,15 @@ function ReviewRow({ review }: { review: PanelPendingReview }) {
         </TooltipContent>
       </Tooltip>
       <span className="bm-run-name">{review.title}</span>
+      <span
+        className="bm-chip"
+        onClick={(e) => {
+          e.stopPropagation();
+          openRepoUrl(review.repo);
+        }}
+      >
+        {chipLabel(review.repo)}
+      </span>
       <span className="bm-run-time">{formatTimeAgo(review.created_at)}</span>
     </div>
   );
