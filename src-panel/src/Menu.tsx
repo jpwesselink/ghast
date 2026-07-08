@@ -8,19 +8,14 @@ import JobSteps from "./JobSteps";
 import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
 import type { PanelPayload, PanelWorkflowRun } from "./types";
 import {
-  BuildsView,
   bucketRepos,
   chipLabel,
   dayLabel,
   formatTimeAgo,
   isBad,
-  loadBuildsView,
-  saveBuildsView,
   timeLabel,
   timelineEntries,
 } from "./buildViews";
-
-type Tab = "builds" | "reviews" | "prs" | "comments";
 
 function openRepoUrl(repo: string) {
   // don't hijack a text-selection drag
@@ -284,19 +279,23 @@ function ReposView({ data }: { data: PanelPayload }) {
   );
 }
 
-const VIEWS: { id: BuildsView; label: string }[] = [
+const PANES = [
   { id: "repos", label: "Repos" },
   { id: "focus", label: "Focus" },
   { id: "timeline", label: "Timeline" },
-];
+  { id: "reviews", label: "Reviews" },
+  { id: "prs", label: "My PRs" },
+  { id: "comments", label: "Comments" },
+] as const;
 
-const TABS: Tab[] = ["builds", "reviews", "prs", "comments"];
-const TAB_LABELS: Record<Tab, string> = {
-  builds: "Builds",
-  reviews: "Reviews",
-  prs: "My PRs",
-  comments: "Comments",
-};
+type Pane = (typeof PANES)[number]["id"];
+
+const PANE_KEY = "ghast-pane";
+
+function loadPane(): number {
+  const i = PANES.findIndex((p) => p.id === localStorage.getItem(PANE_KEY));
+  return i === -1 ? 0 : i;
+}
 
 export default function Menu({
   data,
@@ -305,62 +304,44 @@ export default function Menu({
   data: PanelPayload;
   focusExpandRuns: number;
 }) {
-  const [tabIdx, setTabIdx] = useState(0);
-  const [view, setView] = useState<BuildsView>(loadBuildsView);
+  const [paneIdx, setPaneIdx] = useState(loadPane);
   const handleSettings = () => invoke("open_settings");
   const handleQuit = () => invoke("quit_app");
 
-  const switchView = (v: BuildsView) => {
-    setView(v);
-    saveBuildsView(v);
+  const goto = (i: number) => {
+    setPaneIdx(i);
+    localStorage.setItem(PANE_KEY, PANES[i].id);
   };
 
-
-  const activeRunCount = Object.values(data.runs)
-    .flat()
-    .filter((r) => r.status === "queued" || r.status === "in_progress").length;
-  const counts: Record<Tab, number> = {
-    builds: activeRunCount,
+  const { failing, waiting, running } = bucketRepos(data.repos, data.runs);
+  const counts: Record<Pane, number> = {
+    repos: 0,
+    focus: failing.length + waiting.length + running.length,
+    timeline: 0,
     reviews: data.pending_reviews.length,
     prs: data.my_prs.length,
     comments: data.mentions.length,
-  };
-  const tab = TABS[tabIdx];
-
-  const goto = (i: number) => {
-    setTabIdx((i + TABS.length) % TABS.length);
   };
 
   const ready = !data.auth_error && data.has_pat;
 
   return (
     <div className="menu">
-      <div className="pager-head">
-        <button className="pg-arrow" onClick={() => goto(tabIdx - 1)} aria-label="Previous section">
-          ‹
-        </button>
-        <div className="pg-title">
-          {TAB_LABELS[tab]}
-          {counts[tab] > 0 && <span className="menu-tab-badge">{counts[tab]}</span>}
-        </div>
-        <button className="pg-arrow" onClick={() => goto(tabIdx + 1)} aria-label="Next section">
-          ›
-        </button>
+      <div className="menu-tabs">
+        {PANES.map((p, i) => (
+          <button
+            key={p.id}
+            className={`menu-tab${i === paneIdx ? " active" : ""}`}
+            onClick={() => goto(i)}
+          >
+            {p.label}
+            {counts[p.id] > 0 && (
+              <span className="menu-tab-badge">{counts[p.id]}</span>
+            )}
+          </button>
+        ))}
       </div>
       <div className="menu-separator" />
-      {tab === "builds" && ready && (
-        <div className="view-switch">
-          {VIEWS.map((v) => (
-            <button
-              key={v.id}
-              className={`view-btn${view === v.id ? " active" : ""}`}
-              onClick={() => switchView(v.id)}
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
-      )}
       {!ready ? (
         <div className="menu-content">
           {data.auth_error ? (
@@ -373,16 +354,16 @@ export default function Menu({
         <div className="pager-clip">
           <div
             className="pager-strip"
-            style={{ transform: `translateX(-${tabIdx * 25}%)` }}
+            style={{ transform: `translateX(-${paneIdx * (100 / PANES.length)}%)` }}
           >
             <div className="pager-page menu-content">
-              {view === "repos" ? (
-                <ReposView data={data} />
-              ) : view === "focus" ? (
-                <FocusView data={data} expandRuns={focusExpandRuns} />
-              ) : (
-                <TimelineView data={data} />
-              )}
+              <ReposView data={data} />
+            </div>
+            <div className="pager-page menu-content">
+              <FocusView data={data} expandRuns={focusExpandRuns} />
+            </div>
+            <div className="pager-page menu-content">
+              <TimelineView data={data} />
             </div>
             <div className="pager-page menu-content">
               {data.pending_reviews.length === 0 ? (

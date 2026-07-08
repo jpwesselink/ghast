@@ -6,13 +6,10 @@ import Ghost from "./Ghost";
 import JobSteps, { WorkflowDuration } from "./JobSteps";
 import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
 import {
-  BuildsView,
   bucketRepos,
   chipLabel,
   dayLabel,
   isBad,
-  loadBuildsView,
-  saveBuildsView,
   sourceChip,
   timeLabel,
   timelineEntries,
@@ -638,16 +635,23 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
   );
 }
 
-type BmTab = "builds" | "reviews" | "prs" | "comments";
+const BM_PANES = [
+  { id: "repos", label: "Repos" },
+  { id: "focus", label: "Focus" },
+  { id: "timeline", label: "Timeline" },
+  { id: "reviews", label: "Reviews" },
+  { id: "prs", label: "My PRs" },
+  { id: "comments", label: "Comments" },
+] as const;
 
-const BM_TABS: BmTab[] = ["builds", "reviews", "prs", "comments"];
-const BM_VIEWS: BuildsView[] = ["repos", "focus", "timeline"];
-const BM_TAB_LABELS: Record<BmTab, string> = {
-  builds: "Builds",
-  reviews: "Reviews",
-  prs: "My PRs",
-  comments: "Comments",
-};
+type BmPane = (typeof BM_PANES)[number]["id"];
+
+const PANE_KEY = "ghast-pane";
+
+function loadPane(): number {
+  const i = BM_PANES.findIndex((p) => p.id === localStorage.getItem(PANE_KEY));
+  return i === -1 ? 0 : i;
+}
 
 export default function BlackMetal({
   data,
@@ -657,33 +661,26 @@ export default function BlackMetal({
   focusExpandRuns: number;
 }) {
   const [flickerClass, setFlickerClass] = useState("");
-  const [tabIdx, setTabIdx] = useState(0);
-  const [view, setView] = useState<BuildsView>(loadBuildsView);
-
-  const switchView = (v: BuildsView) => {
-    setView(v);
-    saveBuildsView(v);
-  };
-
+  const [paneIdx, setPaneIdx] = useState(loadPane);
 
   useEffect(() => {
     setFlickerClass("screen-flicker");
     setTimeout(() => setFlickerClass(""), 600);
   }, []);
 
-  const activeRunCount = Object.values(data.runs)
-    .flat()
-    .filter((r) => r.status === "queued" || r.status === "in_progress").length;
-  const counts: Record<BmTab, number> = {
-    builds: activeRunCount,
+  const { failing, waiting, running } = bucketRepos(data.repos, data.runs);
+  const counts: Record<BmPane, number> = {
+    repos: 0,
+    focus: failing.length + waiting.length + running.length,
+    timeline: 0,
     reviews: data.pending_reviews.length,
     prs: data.my_prs.length,
     comments: data.mentions.length,
   };
-  const tab = BM_TABS[tabIdx];
 
   const goto = (i: number) => {
-    setTabIdx((i + BM_TABS.length) % BM_TABS.length);
+    setPaneIdx(i);
+    localStorage.setItem(PANE_KEY, BM_PANES[i].id);
   };
 
   const ready = !data.auth_error && data.has_pat;
@@ -1076,14 +1073,14 @@ export default function BlackMetal({
 
         .bm-pager-strip {
           display: flex;
-          width: 400%;
-          flex: 0 0 400%;
+          width: 600%;
+          flex: 0 0 600%;
           transition: transform 240ms cubic-bezier(0.25, 0.8, 0.3, 1);
           align-items: stretch;
         }
 
         .bm-pager-page {
-          width: 25%;
+          width: 16.6667%;
           flex-shrink: 0;
         }
 
@@ -1423,32 +1420,20 @@ export default function BlackMetal({
           </div>
           <div className="bm-subtitle">The GitHub Actions Ghost</div>
 
-          <div className="bm-pager-head">
-            <button className="bm-pg-arrow" onClick={() => goto(tabIdx - 1)} aria-label="Previous section">
-              ‹
-            </button>
-            <div className="bm-pg-title">
-              {BM_TAB_LABELS[tab]}
-              {counts[tab] > 0 && <span className="bm-tab-badge">{counts[tab]}</span>}
-            </div>
-            <button className="bm-pg-arrow" onClick={() => goto(tabIdx + 1)} aria-label="Next section">
-              ›
-            </button>
+          <div className="bm-tabs">
+            {BM_PANES.map((p, i) => (
+              <button
+                key={p.id}
+                className={`bm-tab${i === paneIdx ? " active" : ""}`}
+                onClick={() => goto(i)}
+              >
+                <span>{p.label}</span>
+                {counts[p.id] > 0 && (
+                  <span className="bm-tab-badge">{counts[p.id]}</span>
+                )}
+              </button>
+            ))}
           </div>
-
-          {tab === "builds" && ready && (
-            <div className="bm-view-switch">
-              {BM_VIEWS.map((v) => (
-                <button
-                  key={v}
-                  className={`bm-view-btn${view === v ? " active" : ""}`}
-                  onClick={() => switchView(v)}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
-          )}
 
           {!ready ? (
             <div className="bm-content">
@@ -1462,14 +1447,10 @@ export default function BlackMetal({
             <div className="bm-pager-clip">
               <div
                 className="bm-pager-strip"
-                style={{ transform: `translateX(-${tabIdx * 25}%)` }}
+                style={{ transform: `translateX(-${paneIdx * (100 / BM_PANES.length)}%)` }}
               >
                 <div className="bm-pager-page bm-content">
-                  {view === "focus" ? (
-                    <BmFocusView data={data} expandRuns={focusExpandRuns} />
-                  ) : view === "timeline" ? (
-                    <BmTimelineView data={data} />
-                  ) : data.repos.length === 0 ? (
+                  {data.repos.length === 0 ? (
                     <div className="bm-message">No repositories have been haunted</div>
                   ) : (
                     data.repos.map((repo) => (
@@ -1490,6 +1471,12 @@ export default function BlackMetal({
                       </div>
                     ))
                   )}
+                </div>
+                <div className="bm-pager-page bm-content">
+                  <BmFocusView data={data} expandRuns={focusExpandRuns} />
+                </div>
+                <div className="bm-pager-page bm-content">
+                  <BmTimelineView data={data} />
                 </div>
                 <div className="bm-pager-page bm-content">
                   {data.pending_reviews.length === 0 ? (
