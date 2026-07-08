@@ -617,6 +617,21 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
                 <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
               </Tooltip>
               <span className="bm-run-name">{run.workflow_name}</span>
+              {(() => {
+                const src = sourceChip(run);
+                return src ? (
+                  <span
+                    className="bm-chip"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.getSelection()?.toString()) return;
+                      invoke("open_url", { url: src.url });
+                    }}
+                  >
+                    {src.label}
+                  </span>
+                ) : null;
+              })()}
               <span
                 className="bm-chip"
                 onClick={(e) => {

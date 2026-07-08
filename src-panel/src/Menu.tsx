@@ -10,6 +10,7 @@ import type { PanelPayload, PanelWorkflowRun } from "./types";
 import {
   bucketRepos,
   chipLabel,
+  sourceChip,
   dayLabel,
   formatTimeAgo,
   isBad,
@@ -239,6 +240,21 @@ function TimelineView({ data }: { data: PanelPayload }) {
                 }}
               />
               <span className="run-name">{run.workflow_name}</span>
+              {(() => {
+                const src = sourceChip(run);
+                return src ? (
+                  <span
+                    className="repo-chip"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.getSelection()?.toString()) return;
+                      invoke("open_url", { url: src.url });
+                    }}
+                  >
+                    {src.label}
+                  </span>
+                ) : null;
+              })()}
               <span
                 className="repo-chip"
                 onClick={(e) => {
