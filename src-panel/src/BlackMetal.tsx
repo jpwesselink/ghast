@@ -613,13 +613,14 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
   );
 }
 
-type BmTab = "builds" | "reviews" | "comments";
+type BmTab = "builds" | "reviews" | "prs" | "comments";
 
-const BM_TABS: BmTab[] = ["builds", "reviews", "comments"];
+const BM_TABS: BmTab[] = ["builds", "reviews", "prs", "comments"];
 const BM_VIEWS: BuildsView[] = ["repos", "focus", "timeline"];
 const BM_TAB_LABELS: Record<BmTab, string> = {
   builds: "Builds",
   reviews: "Reviews",
+  prs: "My PRs",
   comments: "Comments",
 };
 
@@ -651,6 +652,7 @@ export default function BlackMetal({
   const counts: Record<BmTab, number> = {
     builds: activeRunCount,
     reviews: data.pending_reviews.length,
+    prs: data.my_prs.length,
     comments: data.mentions.length,
   };
   const tab = BM_TABS[tabIdx];
@@ -1039,14 +1041,14 @@ export default function BlackMetal({
 
         .bm-pager-strip {
           display: flex;
-          width: 300%;
-          flex: 0 0 300%;
+          width: 400%;
+          flex: 0 0 400%;
           transition: transform 240ms cubic-bezier(0.25, 0.8, 0.3, 1);
           align-items: stretch;
         }
 
         .bm-pager-page {
-          width: 33.3333%;
+          width: 25%;
           flex-shrink: 0;
         }
 
@@ -1425,7 +1427,7 @@ export default function BlackMetal({
             <div className="bm-pager-clip">
               <div
                 className="bm-pager-strip"
-                style={{ transform: `translateX(-${tabIdx * 33.3333}%)` }}
+                style={{ transform: `translateX(-${tabIdx * 25}%)` }}
               >
                 <div className="bm-pager-page bm-content">
                   {view === "focus" ? (
@@ -1459,6 +1461,15 @@ export default function BlackMetal({
                     <div className="bm-message">No souls awaiting judgment</div>
                   ) : (
                     data.pending_reviews.map((r) => (
+                      <ReviewRow key={r.html_url} review={r} />
+                    ))
+                  )}
+                </div>
+                <div className="bm-pager-page bm-content">
+                  {data.my_prs.length === 0 ? (
+                    <div className="bm-message">No offerings of thine own</div>
+                  ) : (
+                    data.my_prs.map((r) => (
                       <ReviewRow key={r.html_url} review={r} />
                     ))
                   )}

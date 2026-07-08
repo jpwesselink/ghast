@@ -103,6 +103,17 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
     poll_review_requests(app, state, &client, &review_repos).await;
     poll_mentions(app, state, &client, &mention_repos).await;
 
+    // own PRs across every repo selected anywhere
+    let mut all_repos: Vec<String> = repos
+        .iter()
+        .chain(review_repos.iter())
+        .chain(mention_repos.iter())
+        .cloned()
+        .collect();
+    all_repos.sort();
+    all_repos.dedup();
+    poll_my_prs(state, &client, &all_repos).await;
+
     rebuild(app, state);
 }
 
@@ -189,6 +200,26 @@ async fn poll_mentions(
     let mut s = state.lock().unwrap();
     s.mentions = new_mentions;
     s.first_mention_poll = false;
+}
+
+async fn poll_my_prs(state: &SharedState, client: &GitHubClient, repos: &[String]) {
+    if repos.is_empty() {
+        let mut s = state.lock().unwrap();
+        s.my_prs.clear();
+        return;
+    }
+
+    match client.get_my_prs(repos).await {
+        Ok(prs) => {
+            let mut s = state.lock().unwrap();
+            s.my_prs = prs.iter().map(PendingReview::from_api).collect();
+        }
+        Err(e) if e == "auth_error" => {
+            let mut s = state.lock().unwrap();
+            s.auth_error = true;
+        }
+        Err(_) => {} // network error — keep last known list
+    }
 }
 
 fn rebuild(app: &tauri::AppHandle, state: &SharedState) {

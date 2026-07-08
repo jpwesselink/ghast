@@ -20,7 +20,7 @@ import {
   timelineEntries,
 } from "./buildViews";
 
-type Tab = "builds" | "reviews" | "comments";
+type Tab = "builds" | "reviews" | "prs" | "comments";
 
 function openRepoUrl(repo: string) {
   // don't hijack a text-selection drag
@@ -290,10 +290,11 @@ const VIEWS: { id: BuildsView; label: string }[] = [
   { id: "timeline", label: "Timeline" },
 ];
 
-const TABS: Tab[] = ["builds", "reviews", "comments"];
+const TABS: Tab[] = ["builds", "reviews", "prs", "comments"];
 const TAB_LABELS: Record<Tab, string> = {
   builds: "Builds",
   reviews: "Reviews",
+  prs: "My PRs",
   comments: "Comments",
 };
 
@@ -321,6 +322,7 @@ export default function Menu({
   const counts: Record<Tab, number> = {
     builds: activeRunCount,
     reviews: data.pending_reviews.length,
+    prs: data.my_prs.length,
     comments: data.mentions.length,
   };
   const tab = TABS[tabIdx];
@@ -371,7 +373,7 @@ export default function Menu({
         <div className="pager-clip">
           <div
             className="pager-strip"
-            style={{ transform: `translateX(-${tabIdx * 33.3333}%)` }}
+            style={{ transform: `translateX(-${tabIdx * 25}%)` }}
           >
             <div className="pager-page menu-content">
               {view === "repos" ? (
@@ -387,6 +389,15 @@ export default function Menu({
                 <div className="menu-message">No pending reviews</div>
               ) : (
                 data.pending_reviews.map((r) => (
+                  <ReviewItem key={r.html_url} review={r} />
+                ))
+              )}
+            </div>
+            <div className="pager-page menu-content">
+              {data.my_prs.length === 0 ? (
+                <div className="menu-message">No open PRs of yours</div>
+              ) : (
+                data.my_prs.map((r) => (
                   <ReviewItem key={r.html_url} review={r} />
                 ))
               )}

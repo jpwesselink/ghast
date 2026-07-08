@@ -31,6 +31,7 @@ export interface PanelPayload {
   repos: string[];
   runs: Record<string, PanelWorkflowRun[]>;
   pending_reviews: PanelPendingReview[];
+  my_prs: PanelPendingReview[];
   mentions: PanelMention[];
   auth_error: boolean;
   has_pat: boolean;

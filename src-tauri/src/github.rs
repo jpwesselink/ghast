@@ -196,6 +196,18 @@ impl GitHubClient {
         &self,
         repos: &[String],
     ) -> Result<Vec<ReviewRequest>, String> {
+        self.search_open_prs(repos, "review-requested:@me").await
+    }
+
+    pub async fn get_my_prs(&self, repos: &[String]) -> Result<Vec<ReviewRequest>, String> {
+        self.search_open_prs(repos, "author:@me").await
+    }
+
+    async fn search_open_prs(
+        &self,
+        repos: &[String],
+        who: &str,
+    ) -> Result<Vec<ReviewRequest>, String> {
         if repos.is_empty() {
             return Ok(Vec::new());
         }
@@ -205,7 +217,7 @@ impl GitHubClient {
             .map(|r| format!("repo:{r}"))
             .collect::<Vec<_>>()
             .join(" ");
-        let query = format!("is:pr is:open review-requested:@me {repo_filter}");
+        let query = format!("is:pr is:open {who} {repo_filter}");
 
         let page = self
             .octo

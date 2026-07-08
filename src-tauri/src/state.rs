@@ -213,6 +213,7 @@ pub struct PanelPayload {
     pub repos: Vec<String>,
     pub runs: HashMap<String, Vec<PanelWorkflowRun>>,
     pub pending_reviews: Vec<PanelPendingReview>,
+    pub my_prs: Vec<PanelPendingReview>,
     pub mentions: Vec<PanelMention>,
     pub auth_error: bool,
     pub has_pat: bool,
@@ -224,6 +225,7 @@ pub struct AppState {
     pub github_pat: String,
     pub runs: HashMap<String, Vec<WorkflowRun>>,
     pub pending_reviews: Vec<PendingReview>,
+    pub my_prs: Vec<PendingReview>,
     pub mentions: Vec<Mention>,
     pub auth_error: bool,
     pub config_dir: PathBuf,
@@ -249,6 +251,7 @@ impl AppState {
             github_pat,
             runs: HashMap::new(),
             pending_reviews: Vec::new(),
+            my_prs: Vec::new(),
             mentions: Vec::new(),
             auth_error: false,
             config_dir,
@@ -282,6 +285,12 @@ impl AppState {
             sorted.iter().map(|r| PanelPendingReview::from(*r)).collect()
         };
 
+        let my_prs: Vec<PanelPendingReview> = {
+            let mut sorted: Vec<&PendingReview> = self.my_prs.iter().collect();
+            sorted.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+            sorted.iter().map(|r| PanelPendingReview::from(*r)).collect()
+        };
+
         let mentions: Vec<PanelMention> = {
             let mut sorted: Vec<&Mention> = self.mentions.iter().collect();
             sorted.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
@@ -292,6 +301,7 @@ impl AppState {
             repos,
             runs,
             pending_reviews,
+            my_prs,
             mentions,
             auth_error: self.auth_error,
             has_pat: !self.github_pat.is_empty(),
