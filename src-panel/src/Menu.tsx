@@ -7,10 +7,10 @@ import Ghost from "./Ghost";
 import JobSteps from "./JobSteps";
 import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
 import type { PanelPayload, PanelWorkflowRun } from "./types";
+import SourceChip from "./SourceChip";
 import {
   bucketRepos,
   chipLabel,
-  sourceChip,
   dayLabel,
   formatTimeAgo,
   isBad,
@@ -75,6 +75,7 @@ function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
         }}
       />
       <span className="run-name">{run.workflow_name}</span>
+      <SourceChip run={run} variant="clean" />
       <span
         className="repo-chip"
         onClick={(e) => {
@@ -240,21 +241,7 @@ function TimelineView({ data }: { data: PanelPayload }) {
                 }}
               />
               <span className="run-name">{run.workflow_name}</span>
-              {(() => {
-                const src = sourceChip(run);
-                return src ? (
-                  <span
-                    className="repo-chip"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (window.getSelection()?.toString()) return;
-                      invoke("open_url", { url: src.url });
-                    }}
-                  >
-                    {src.label}
-                  </span>
-                ) : null;
-              })()}
+              <SourceChip run={run} variant="clean" />
               <span
                 className="repo-chip"
                 onClick={(e) => {

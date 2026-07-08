@@ -399,6 +399,21 @@ impl GitHubClient {
             .collect())
     }
 
+    pub async fn get_pr_title(
+        &self,
+        owner: &str,
+        repo: &str,
+        number: u64,
+    ) -> Result<String, String> {
+        let pr = self
+            .octo
+            .pulls(owner, repo)
+            .get(number)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(pr.title.unwrap_or_default())
+    }
+
     pub async fn get_user_repos(&self) -> Result<Vec<GitHubRepo>, String> {
         let mut all_repos = Vec::new();
         let mut page = 1u8;

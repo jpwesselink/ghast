@@ -195,6 +195,26 @@ fn get_workflow_runs(state: tauri::State<'_, SharedState>) -> state::PanelPayloa
 }
 
 #[tauri::command]
+async fn get_pr_title(
+    state: tauri::State<'_, SharedState>,
+    repo: String,
+    number: u64,
+) -> Result<String, String> {
+    let pat = {
+        let s = state.lock().unwrap();
+        s.github_pat.clone()
+    };
+    if pat.is_empty() {
+        return Err("No PAT configured".to_string());
+    }
+    let (owner, name) = repo
+        .split_once('/')
+        .ok_or_else(|| format!("bad repo: {repo}"))?;
+    let client = GitHubClient::new(&pat)?;
+    client.get_pr_title(owner, name, number).await
+}
+
+#[tauri::command]
 async fn get_run_jobs(
     state: tauri::State<'_, SharedState>,
     repo: String,
@@ -348,6 +368,7 @@ pub fn run() {
             set_ui_prefs,
             get_accent_color,
             get_run_jobs,
+            get_pr_title,
             get_workflow_runs,
             open_settings,
             open_about,

@@ -5,12 +5,12 @@ import type { PanelMention, PanelPayload, PanelPendingReview, PanelWorkflowRun }
 import Ghost from "./Ghost";
 import JobSteps, { WorkflowDuration } from "./JobSteps";
 import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
+import SourceChip from "./SourceChip";
 import {
   bucketRepos,
   chipLabel,
   dayLabel,
   isBad,
-  sourceChip,
   timeLabel,
   timelineEntries,
 } from "./buildViews";
@@ -382,21 +382,7 @@ function RunRow({ run }: { run: PanelWorkflowRun }) {
           <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
         </Tooltip>
         <span className="bm-run-name">{run.workflow_name}</span>
-        {(() => {
-          const src = sourceChip(run);
-          return src ? (
-            <span
-              className="bm-chip"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (window.getSelection()?.toString()) return;
-                invoke("open_url", { url: src.url });
-              }}
-            >
-              {src.label}
-            </span>
-          ) : null;
-        })()}
+        <SourceChip run={run} variant="blackmetal" />
         <WorkflowDuration run={run} className="bm-run-duration" />
         <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
       </div>
@@ -459,6 +445,7 @@ function BmFocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
         <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
       </Tooltip>
       <span className="bm-run-name">{run.workflow_name}</span>
+      <SourceChip run={run} variant="blackmetal" />
       <span
         className="bm-chip"
         onClick={(e) => {
@@ -617,21 +604,7 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
                 <TooltipContent variant="blackmetal">{statusLabel(run)}</TooltipContent>
               </Tooltip>
               <span className="bm-run-name">{run.workflow_name}</span>
-              {(() => {
-                const src = sourceChip(run);
-                return src ? (
-                  <span
-                    className="bm-chip"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (window.getSelection()?.toString()) return;
-                      invoke("open_url", { url: src.url });
-                    }}
-                  >
-                    {src.label}
-                  </span>
-                ) : null;
-              })()}
+              <SourceChip run={run} variant="blackmetal" />
               <span
                 className="bm-chip"
                 onClick={(e) => {
