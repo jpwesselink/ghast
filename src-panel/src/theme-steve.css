@@ -583,16 +583,16 @@
   flex: 1;
 }
 
-/* repo grid */
+/* repo grid — Apple tiles: state face, titlebar plaque */
 [data-theme="steve"] .repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
-  gap: 8px;
-  padding: 10px 14px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  padding: 12px 14px;
 }
 [data-theme="steve"] .repo-cell {
   position: relative;
-  height: 44px;
+  height: 74px;
   overflow: visible;
 }
 [data-theme="steve"] .repo-cell-segs {
@@ -600,7 +600,10 @@
   inset: 0;
   display: flex;
   overflow: hidden;
-  border-radius: 7px;
+  border-radius: 10px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 0.5px rgba(0, 0, 0, 0.15);
 }
 [data-theme="steve"] .repo-seg {
   flex: 1;
@@ -610,41 +613,69 @@
   cursor: default;
   position: relative;
   padding: 0;
+  background: linear-gradient(#ffffff, #eceff1);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.8);
 }
+[data-theme="steve"] .repo-seg + .repo-seg { border-left: 0.5px solid rgba(0, 0, 0, 0.18); }
+[data-theme="steve"] .repo-seg[data-state="run"] { background: linear-gradient(#4ba3ff, #0a7cf5); }
+[data-theme="steve"] .repo-seg[data-state="fail"] { background: linear-gradient(#ff6b62, #f5382c); }
+[data-theme="steve"] .repo-seg[data-state="wait"] { background: linear-gradient(#ffb84d, #f59300); }
+[data-theme="steve"] .repo-seg[data-state="ok"] { background: linear-gradient(#4cd964, #2fb14e); }
+[data-theme="steve"] .repo-seg:active { filter: brightness(0.9); }
 [data-theme="steve"] .repo-seg-count {
   position: absolute;
-  top: 3px;
-  right: 5px;
-  font-size: 9px;
-  font-weight: 800;
+  top: 5px;
+  right: 6px;
+  font-size: 10px;
+  font-weight: 700;
   line-height: 1;
-  padding: 2px 4px;
-  border-radius: 6px;
+  padding: 2px 5px;
+  border-radius: 8px;
   background: rgba(0, 0, 0, 0.35);
   color: #fff;
 }
+/* titlebar plaque along the base */
 [data-theme="steve"] .repo-cell-label {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  font-size: calc(10.5px * var(--font-scale, 1));
+  z-index: 1;
+  font-size: calc(11px * var(--font-scale, 1));
+  font-weight: 600;
+  color: #1d1d1f;
+  background: rgba(250, 250, 252, 0.88);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0 0 10px 10px;
   overflow: hidden;
-  padding: 0 6px;
+  padding: 0 8px;
   white-space: nowrap;
   text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="steve"] .repo-seg { background: linear-gradient(#6b6b70, #58585d); }
+  [data-theme="steve"] .repo-cell-label {
+    background: rgba(38, 38, 42, 0.9);
+    color: #f5f5f7;
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
 }
 [data-theme="steve"] .repo-pop {
   position: absolute;
-  top: calc(100% + 3px);
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   z-index: 60;
-  border-radius: 7px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background: #f5f5f7;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
 }
 [data-theme="steve"] .repo-pop-item {
   display: flex;
@@ -654,52 +685,23 @@
   border: none;
   -webkit-appearance: none;
   appearance: none;
+  background: none;
   font: inherit;
-  font-size: calc(10.5px * var(--font-scale, 1));
+  font-size: calc(11.5px * var(--font-scale, 1));
+  color: #1d1d1f;
   cursor: default;
   text-align: left;
-  padding: 6px 9px;
+  padding: 6px 10px;
 }
+[data-theme="steve"] .repo-pop-item:hover { background: var(--bg-hover); color: #fff; }
 [data-theme="steve"] .repo-pop-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-[data-theme="steve"] .repo-pop-time { flex-shrink: 0; opacity: 0.65; font-size: 0.9em; }
-
-/* the Apple push button, in five moods */
-[data-theme="steve"] .repo-cell-segs {
-  box-shadow: 0 0.5px 1.5px rgba(0, 0, 0, 0.2), inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
-}
-[data-theme="steve"] .repo-seg {
-  background: linear-gradient(#ffffff, #f0f0f2);
-}
-[data-theme="steve"] .repo-seg + .repo-seg { border-left: 0.5px solid rgba(0, 0, 0, 0.15); }
-[data-theme="steve"] .repo-seg[data-state="run"] { background: linear-gradient(#4ba3ff, #0a7cf5); }
-[data-theme="steve"] .repo-seg[data-state="fail"] { background: linear-gradient(#ff6b62, #f5382c); }
-[data-theme="steve"] .repo-seg[data-state="wait"] { background: linear-gradient(#ffb84d, #f59300); }
-[data-theme="steve"] .repo-seg[data-state="ok"] { background: linear-gradient(#4cd964, #2fb14e); }
-[data-theme="steve"] .repo-seg:active { filter: brightness(0.92); }
-[data-theme="steve"] .repo-cell-label {
-  color: #fff;
-  font-weight: 600;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
-}
-[data-theme="steve"] .repo-cell:has(.repo-seg[data-state="idle"]) .repo-cell-label {
-  color: var(--text-primary);
-  text-shadow: none;
-}
-[data-theme="steve"] .repo-pop {
-  background: var(--jump-bg, #f5f5f7);
-  background: #f5f5f7;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
-}
-[data-theme="steve"] .repo-pop-item { background: none; color: #1d1d1f; }
-[data-theme="steve"] .repo-pop-item:hover { background: var(--bg-hover); color: #fff; }
+[data-theme="steve"] .repo-pop-time { flex-shrink: 0; opacity: 0.6; font-size: 0.9em; }
 @media (prefers-color-scheme: dark) {
-  [data-theme="steve"] .repo-seg { background: linear-gradient(#6b6b70, #58585d); }
-  [data-theme="steve"] .repo-cell:has(.repo-seg[data-state="idle"]) .repo-cell-label { color: #fff; }
   [data-theme="steve"] .repo-pop { background: #2c2c2e; }
   [data-theme="steve"] .repo-pop-item { color: #f5f5f7; }
 }
