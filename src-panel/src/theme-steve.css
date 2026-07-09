@@ -583,34 +583,123 @@
   flex: 1;
 }
 
-
 /* repo grid */
 [data-theme="steve"] .repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
   gap: 8px;
   padding: 10px 14px;
 }
 [data-theme="steve"] .repo-cell {
+  position: relative;
+  height: 44px;
+  overflow: visible;
+}
+[data-theme="steve"] .repo-cell-segs {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  border-radius: 7px;
+}
+[data-theme="steve"] .repo-seg {
+  flex: 1;
+  border: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: default;
+  position: relative;
+  padding: 0;
+}
+[data-theme="steve"] .repo-seg-count {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+}
+[data-theme="steve"] .repo-cell-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-size: calc(10.5px * var(--font-scale, 1));
+  overflow: hidden;
+  padding: 0 6px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+[data-theme="steve"] .repo-pop {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+[data-theme="steve"] .repo-pop-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
   border: none;
   -webkit-appearance: none;
   appearance: none;
   font: inherit;
-  font-size: 0.82em;
-  font-weight: 600;
-  color: var(--text-primary);
-  padding: 12px 8px;
-  border-radius: 9px;
+  font-size: calc(10.5px * var(--font-scale, 1));
   cursor: default;
-  text-align: center;
+  text-align: left;
+  padding: 6px 9px;
+}
+[data-theme="steve"] .repo-pop-name {
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: rgba(127, 127, 127, 0.14);
-  border-left: 4px solid rgb(142, 142, 147);
 }
-[data-theme="steve"] .repo-cell[data-state="ok"] { border-left-color: rgb(52, 199, 89); background: rgba(52, 199, 89, 0.12); }
-[data-theme="steve"] .repo-cell[data-state="fail"] { border-left-color: rgb(255, 59, 48); background: rgba(255, 59, 48, 0.14); }
-[data-theme="steve"] .repo-cell[data-state="run"] { border-left-color: rgb(0, 122, 255); background: rgba(0, 122, 255, 0.12); }
-[data-theme="steve"] .repo-cell[data-state="wait"] { border-left-color: rgb(255, 149, 0); background: rgba(255, 149, 0, 0.14); }
-[data-theme="steve"] .repo-cell:hover { filter: brightness(1.12); }
+[data-theme="steve"] .repo-pop-time { flex-shrink: 0; opacity: 0.65; font-size: 0.9em; }
+
+/* the Apple push button, in five moods */
+[data-theme="steve"] .repo-cell-segs {
+  box-shadow: 0 0.5px 1.5px rgba(0, 0, 0, 0.2), inset 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+}
+[data-theme="steve"] .repo-seg {
+  background: linear-gradient(#ffffff, #f0f0f2);
+}
+[data-theme="steve"] .repo-seg + .repo-seg { border-left: 0.5px solid rgba(0, 0, 0, 0.15); }
+[data-theme="steve"] .repo-seg[data-state="run"] { background: linear-gradient(#4ba3ff, #0a7cf5); }
+[data-theme="steve"] .repo-seg[data-state="fail"] { background: linear-gradient(#ff6b62, #f5382c); }
+[data-theme="steve"] .repo-seg[data-state="wait"] { background: linear-gradient(#ffb84d, #f59300); }
+[data-theme="steve"] .repo-seg[data-state="ok"] { background: linear-gradient(#4cd964, #2fb14e); }
+[data-theme="steve"] .repo-seg:active { filter: brightness(0.92); }
+[data-theme="steve"] .repo-cell-label {
+  color: #fff;
+  font-weight: 600;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+[data-theme="steve"] .repo-cell:has(.repo-seg[data-state="idle"]) .repo-cell-label {
+  color: var(--text-primary);
+  text-shadow: none;
+}
+[data-theme="steve"] .repo-pop {
+  background: var(--jump-bg, #f5f5f7);
+  background: #f5f5f7;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+}
+[data-theme="steve"] .repo-pop-item { background: none; color: #1d1d1f; }
+[data-theme="steve"] .repo-pop-item:hover { background: var(--bg-hover); color: #fff; }
+@media (prefers-color-scheme: dark) {
+  [data-theme="steve"] .repo-seg { background: linear-gradient(#6b6b70, #58585d); }
+  [data-theme="steve"] .repo-cell:has(.repo-seg[data-state="idle"]) .repo-cell-label { color: #fff; }
+  [data-theme="steve"] .repo-pop { background: #2c2c2e; }
+  [data-theme="steve"] .repo-pop-item { color: #f5f5f7; }
+}

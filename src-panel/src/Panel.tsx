@@ -301,60 +301,108 @@ function TimelineView({ themeId, data }: { themeId: ThemeId; data: PanelPayload 
 
 type RepoState = "fail" | "wait" | "run" | "ok" | "idle";
 
-/// Worst state among each workflow's latest run, plus the run that set it
-/// (newest within that state) — the run a click should land on.
-function repoState(
+function runState(r: PanelWorkflowRun): RepoState {
+  if (r.status === "waiting") return "wait";
+  if (r.status !== "completed") return "run";
+  if (
+    r.conclusion === "failure" ||
+    r.conclusion === "timed_out" ||
+    r.conclusion === "action_required"
+  )
+    return "fail";
+  if (r.conclusion === "success") return "ok";
+  return "idle";
+}
+
+/// Latest run per workflow, grouped by state. Attention states (fail,
+/// waiting, running) each get a segment; a calm repo collapses to one
+/// ok/idle segment holding its newest run.
+function repoSegments(
   runs: PanelWorkflowRun[] | undefined
-): { state: RepoState; run?: PanelWorkflowRun } {
-  if (!runs || runs.length === 0) return { state: "idle" };
-  const rank: Record<RepoState, number> = { fail: 4, wait: 3, run: 2, ok: 1, idle: 0 };
+): { state: RepoState; runs: PanelWorkflowRun[] }[] {
+  if (!runs || runs.length === 0) return [{ state: "idle", runs: [] }];
   const latest = new Map<string, PanelWorkflowRun>();
   for (const r of runs) {
     const prev = latest.get(r.workflow_name);
     if (!prev || r.created_at > prev.created_at) latest.set(r.workflow_name, r);
   }
-  let state: RepoState = "idle";
-  let run: PanelWorkflowRun | undefined;
-  for (const r of latest.values()) {
-    let s: RepoState = "idle";
-    if (r.status === "waiting") s = "wait";
-    else if (r.status !== "completed") s = "run";
-    else if (
-      r.conclusion === "failure" ||
-      r.conclusion === "timed_out" ||
-      r.conclusion === "action_required"
-    )
-      s = "fail";
-    else if (r.conclusion === "success") s = "ok";
-    if (rank[s] > rank[state] || (s === state && run && r.created_at > run.created_at)) {
-      state = s;
-      run = r;
-    }
-  }
-  return { state, run };
+  const groups: Record<RepoState, PanelWorkflowRun[]> = {
+    fail: [], wait: [], run: [], ok: [], idle: [],
+  };
+  for (const r of latest.values()) groups[runState(r)].push(r);
+  for (const g of Object.values(groups))
+    g.sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+  const segs = (["fail", "wait", "run"] as RepoState[])
+    .filter((st) => groups[st].length > 0)
+    .map((st) => ({ state: st, runs: groups[st] }));
+  if (segs.length > 0) return segs;
+
+  const newest = [...latest.values()].sort((a, b) =>
+    b.created_at.localeCompare(a.created_at)
+  )[0];
+  return [{ state: runState(newest), runs: [newest] }];
 }
 
 function GridView({ themeId, data }: { themeId: ThemeId; data: PanelPayload }) {
   const copy = PANEL_COPY[themeId];
+  const [openPop, setOpenPop] = useState<string | null>(null);
+
   if (data.repos.length === 0) {
     return <CalmGhost themeId={themeId} line={copy.noRepos} />;
   }
+
+  const open = (repo: string, run: PanelWorkflowRun) => {
+    setOpenPop(null);
+    openExternal(run.html_url, repo);
+  };
+
   return (
-    <div className="repo-grid">
+    <div className="repo-grid" onMouseLeave={() => setOpenPop(null)}>
       {data.repos.map((repo) => {
-        const { state, run } = repoState(data.runs[repo]);
+        const segs = repoSegments(data.runs[repo]);
         return (
-          <button
-            key={repo}
-            className="repo-cell"
-            data-state={state}
-            title={run ? `${repo} — ${run.workflow_name}` : repo}
-            onClick={() =>
-              run ? openExternal(run.html_url, repo) : openRepoUrl(repo)
-            }
-          >
-            {chipLabel(repo)}
-          </button>
+          <div key={repo} className="repo-cell" title={repo}>
+            <div className="repo-cell-segs">
+              {segs.map(({ state, runs }) => {
+                const key = `${repo}:${state}`;
+                return (
+                  <button
+                    key={state}
+                    className="repo-seg"
+                    data-state={state}
+                    onClick={() => {
+                      if (runs.length === 0) openRepoUrl(repo);
+                      else if (runs.length === 1) open(repo, runs[0]);
+                      else setOpenPop(openPop === key ? null : key);
+                    }}
+                  >
+                    {runs.length > 1 && (
+                      <span className="repo-seg-count">{runs.length}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="repo-cell-label">{chipLabel(repo)}</span>
+            {segs.map(({ state, runs }) =>
+              openPop === `${repo}:${state}` ? (
+                <div key={`pop-${state}`} className="repo-pop">
+                  {runs.map((r) => (
+                    <button
+                      key={r.html_url}
+                      className="repo-pop-item"
+                      data-state={state}
+                      onClick={() => open(repo, r)}
+                    >
+                      <span className="repo-pop-name">{r.workflow_name}</span>
+                      <span className="repo-pop-time">{formatTimeAgo(r.created_at)}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null
+            )}
+          </div>
         );
       })}
     </div>

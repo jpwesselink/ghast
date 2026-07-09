@@ -711,34 +711,104 @@
 }
 [data-theme="hellripper"] .tooltip-arrow { fill: #1a0808; }
 
-
 /* repo grid */
 [data-theme="hellripper"] .repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
   gap: 8px;
   padding: 10px 14px;
 }
 [data-theme="hellripper"] .repo-cell {
-  border: 1px solid #3a2525;
-  background: #0c0908;
+  position: relative;
+  height: 44px;
+  overflow: visible;
+}
+[data-theme="hellripper"] .repo-cell-segs {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  border-radius: 0px;
+}
+[data-theme="hellripper"] .repo-seg {
+  flex: 1;
+  border: none;
   -webkit-appearance: none;
   appearance: none;
-  font-family: 'IM Fell English SC', serif;
-  font-size: calc(11px * var(--font-scale, 1));
-  letter-spacing: 1px;
-  color: #b8b0a0;
-  padding: 12px 8px;
   cursor: default;
-  text-align: center;
+  position: relative;
+  padding: 0;
+}
+[data-theme="hellripper"] .repo-seg-count {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+}
+[data-theme="hellripper"] .repo-cell-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-size: calc(10.5px * var(--font-scale, 1));
+  overflow: hidden;
+  padding: 0 6px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+[data-theme="hellripper"] .repo-pop {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  border-radius: 0px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+[data-theme="hellripper"] .repo-pop-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  font-size: calc(10.5px * var(--font-scale, 1));
+  cursor: default;
+  text-align: left;
+  padding: 6px 9px;
+}
+[data-theme="hellripper"] .repo-pop-name {
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  --cell: #9a8a78;
-  box-shadow: inset 0 -3px 0 var(--cell);
 }
-[data-theme="hellripper"] .repo-cell[data-state="ok"] { --cell: #55aa22; }
-[data-theme="hellripper"] .repo-cell[data-state="fail"] { --cell: #cc2020; color: #e0d8c8; box-shadow: inset 0 -3px 0 var(--cell), 0 0 12px rgba(204, 32, 32, 0.35); }
-[data-theme="hellripper"] .repo-cell[data-state="run"] { --cell: #5577ee; }
-[data-theme="hellripper"] .repo-cell[data-state="wait"] { --cell: #cc8822; }
-[data-theme="hellripper"] .repo-cell:hover { border-color: var(--cell); color: #ede6d8; }
+[data-theme="hellripper"] .repo-pop-time { flex-shrink: 0; opacity: 0.65; font-size: 0.9em; }
+
+[data-theme="hellripper"] .repo-cell-segs { border: 1px solid #3a2525; background: #0c0908; }
+[data-theme="hellripper"] .repo-seg { background: #0c0908; --cell: #9a8a78; box-shadow: inset 0 -3px 0 var(--cell); }
+[data-theme="hellripper"] .repo-seg + .repo-seg { border-left: 1px solid #221816; }
+[data-theme="hellripper"] .repo-seg[data-state="ok"] { --cell: #55aa22; }
+[data-theme="hellripper"] .repo-seg[data-state="fail"] { --cell: #cc2020; box-shadow: inset 0 -3px 0 var(--cell), 0 0 12px rgba(204, 32, 32, 0.35); }
+[data-theme="hellripper"] .repo-seg[data-state="run"] { --cell: #5577ee; }
+[data-theme="hellripper"] .repo-seg[data-state="wait"] { --cell: #cc8822; }
+[data-theme="hellripper"] .repo-cell-label {
+  font-family: 'IM Fell English SC', serif;
+  letter-spacing: 1px;
+  color: #b8b0a0;
+}
+[data-theme="hellripper"] .repo-cell:hover .repo-cell-label { color: #ede6d8; }
+[data-theme="hellripper"] .repo-pop { background: #14100e; border: 1px solid #3a2525; }
+[data-theme="hellripper"] .repo-pop-item { background: none; color: #b8b0a0; font-family: 'IM Fell English', serif; }
+[data-theme="hellripper"] .repo-pop-item:hover { background: #2a1a18; color: #e8e0d0; }
