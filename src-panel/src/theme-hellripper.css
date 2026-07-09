@@ -24,7 +24,8 @@
 
         [data-theme="hellripper"] .menu{
           font-family: 'IM Fell English', serif;
-          background: #141210;
+          background: #0e0a08;
+          box-shadow: inset 0 0 90px 24px rgba(0, 0, 0, 0.72);
           color: #ddd6c8;
           height: 100vh;
           position: relative;
@@ -39,8 +40,9 @@
           position: absolute;
           inset: 0;
           background:
-            radial-gradient(ellipse at 50% 0%, rgba(160, 10, 10, 0.1) 0%, transparent 60%),
-            radial-gradient(ellipse at 50% 100%, rgba(160, 10, 10, 0.05) 0%, transparent 40%);
+            radial-gradient(ellipse at 50% -5%, rgba(96, 44, 120, 0.13) 0%, transparent 55%),
+            radial-gradient(ellipse at 50% 108%, rgba(224, 140, 40, 0.16) 0%, transparent 45%),
+            radial-gradient(ellipse at 18% 85%, rgba(200, 110, 30, 0.07) 0%, transparent 35%);
           pointer-events: none;
         }
 
@@ -181,9 +183,9 @@
         [data-theme="hellripper"] .menu-tab:hover{ color: #b8a890; background: rgba(80, 0, 0, 0.1); }
 
         [data-theme="hellripper"] .menu-tab.active{
-          color: #e0d8c8;
+          color: #ecd9a8;
           border-bottom-color: #8b0000;
-          text-shadow: 0 0 6px rgba(180, 20, 20, 0.4);
+          text-shadow: 0 0 7px rgba(212, 150, 50, 0.45), 0 0 14px rgba(180, 20, 20, 0.3);
         }
 
         [data-theme="hellripper"] .menu-tab-badge{
@@ -194,9 +196,9 @@
           height: 16px;
           padding: 0 5px;
           border-radius: 8px;
-          background: #2a1010;
-          border: 1px solid #4a1818;
-          color: #ddc0a0;
+          background: #1d1026;
+          border: 1px solid #5a3d78;
+          color: #cbb3e0;
           font-family: 'IM Fell English', serif;
           font-style: italic;
           font-size: calc(11px * var(--font-scale, 1));
@@ -495,7 +497,8 @@
         }
 
         [data-theme="hellripper"] .run-item:hover{
-          background: #2a1a18;
+          background: linear-gradient(90deg, rgba(70, 36, 16, 0.85), rgba(42, 22, 14, 0.9) 55%, rgba(28, 16, 12, 0.85));
+          box-shadow: inset 0 0 12px rgba(224, 140, 40, 0.08);
         }
 
         [data-theme="hellripper"] .status-icon{
@@ -524,7 +527,8 @@
         }
 
         [data-theme="hellripper"] .run-item:hover .run-name{
-          color: #e8e0d0;
+          color: #f0dfb2;
+          text-shadow: 0 0 6px rgba(224, 170, 60, 0.25);
         }
 
         [data-theme="hellripper"] .run-time{
@@ -566,8 +570,8 @@
         }
 
         [data-theme="hellripper"] .footer-item:hover{
-          background: #2a1a18;
-          color: #e8e0d0;
+          background: linear-gradient(90deg, rgba(70, 36, 16, 0.85), rgba(28, 16, 12, 0.85));
+          color: #f0dfb2;
         }
 
         [data-theme="hellripper"] .footer-sigil{
@@ -675,7 +679,7 @@
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: overlay;
-  opacity: 0.06;
+  opacity: 0.09;
   background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' width%3D'120' height%3D'120'%3E%3Cfilter id%3D'n'%3E%3CfeTurbulence type%3D'fractalNoise' baseFrequency%3D'0.9' numOctaves%3D'2'%2F%3E%3C%2Ffilter%3E%3Crect width%3D'120' height%3D'120' filter%3D'url(%2523n)'%2F%3E%3C%2Fsvg%3E");
 }
 [data-theme="hellripper"] .footer-sigil-mark {
