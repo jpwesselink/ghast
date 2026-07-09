@@ -384,7 +384,7 @@ function GridView({ themeId, data }: { themeId: ThemeId; data: PanelPayload }) {
                 );
               })}
             </div>
-            <span className="repo-cell-label">{chipLabel(repo)}</span>
+            <span className="repo-cell-label">{chipLabel(repo, 22)}</span>
             {segs.map(({ state, runs }) =>
               openPop === `${repo}:${state}` ? (
                 <div key={`pop-${state}`} className="repo-pop">
