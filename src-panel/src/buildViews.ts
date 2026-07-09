@@ -155,3 +155,22 @@ export function formatTimeAgo(iso: string): string {
   if (diffH < 24) return `${diffH}h ago`;
   return `${Math.floor(diffH / 24)}d ago`;
 }
+
+export function statusLabel(run: PanelWorkflowRun): string {
+  if (run.status === "in_progress") return "Running";
+  if (run.status === "queued") return "Queued";
+  if (run.status === "waiting") return "Waiting for approval";
+  if (run.status === "completed") {
+    switch (run.conclusion) {
+      case "success": return "Succeeded";
+      case "failure": return "Failed";
+      case "cancelled": return "Cancelled";
+      case "skipped": return "Skipped";
+      case "timed_out": return "Timed out";
+      case "action_required": return "Action required";
+      case "neutral": return "Neutral";
+      default: return "Completed";
+    }
+  }
+  return "Unknown";
+}

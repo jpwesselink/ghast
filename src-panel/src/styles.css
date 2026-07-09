@@ -620,3 +620,8 @@ body {
 .run-item:hover .run-duration {
   color: var(--text-hover);
 }
+
+.icon-trigger {
+  display: inline-flex;
+  flex-shrink: 0;
+}

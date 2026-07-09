@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, type ReactElement } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
-import Menu from "./Menu";
-import BlackMetal from "./BlackMetal";
+import Panel from "./Panel";
+import { cleanTheme } from "./panelTheme";
+import { blackmetalTheme } from "./panelThemeBlackmetal";
 import BlackMetalSettings from "./BlackMetalSettings";
 import Settings from "./Settings";
 import About from "./About";
@@ -170,10 +171,12 @@ export default function App() {
   } else if (isSettings) {
     content = blackMetal ? <BlackMetalSettings /> : <Settings />;
   } else if (data) {
-    content = blackMetal ? (
-      <BlackMetal data={data} focusExpandRuns={focusExpandRuns} />
-    ) : (
-      <Menu data={data} focusExpandRuns={focusExpandRuns} />
+    content = (
+      <Panel
+        theme={blackMetal ? blackmetalTheme : cleanTheme}
+        data={data}
+        focusExpandRuns={focusExpandRuns}
+      />
     );
   }
 
