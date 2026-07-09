@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelWorkflowRun } from "./types";
-import { sourceChip } from "./buildViews";
+import { openExternal, sourceChip } from "./buildViews";
 
 const prTitleCache = new Map<string, string>();
 
@@ -47,7 +47,7 @@ export default function SourceChip({ run }: { run: PanelWorkflowRun }) {
       onClick={(e) => {
         e.stopPropagation();
         if (window.getSelection()?.toString()) return;
-        invoke("open_url", { url: src.url });
+        openExternal(src.url, run.repo);
       }}
     >
       {src.label}

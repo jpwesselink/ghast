@@ -20,6 +20,8 @@ pub struct Config {
     pub focus_expand_runs: u32,
     #[serde(default = "default_runs_per_repo")]
     pub runs_per_repo: u32,
+    #[serde(default = "default_repo_tabs")]
+    pub repo_tabs: bool,
     /// Panel size in logical px, set once the user resizes the panel.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub panel_width: Option<f64>,
@@ -47,6 +49,10 @@ fn default_runs_per_repo() -> u32 {
     5
 }
 
+fn default_repo_tabs() -> bool {
+    true
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -58,6 +64,7 @@ impl Default for Config {
             font_scale: 1.0,
             focus_expand_runs: 5,
             runs_per_repo: 5,
+            repo_tabs: true,
             panel_width: None,
             panel_height: None,
         }
@@ -119,6 +126,7 @@ mod tests {
             font_scale: 1.15,
             focus_expand_runs: 3,
             runs_per_repo: 10,
+            repo_tabs: false,
             panel_width: Some(320.0),
             panel_height: Some(480.0),
         };
@@ -139,6 +147,7 @@ mod tests {
         assert_eq!(config.font_scale, 1.0);
         assert_eq!(config.focus_expand_runs, 5);
         assert_eq!(config.runs_per_repo, 5);
+        assert!(config.repo_tabs);
     }
 
     #[test]
@@ -155,6 +164,7 @@ mod tests {
             font_scale: 1.0,
             focus_expand_runs: 5,
             runs_per_repo: 5,
+            repo_tabs: true,
             panel_width: None,
             panel_height: None,
         };

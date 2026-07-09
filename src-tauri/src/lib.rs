@@ -45,6 +45,7 @@ struct ConfigResponse {
     font_scale: f64,
     focus_expand_runs: u32,
     runs_per_repo: u32,
+    repo_tabs: bool,
     panel_width: Option<f64>,
 }
 
@@ -61,6 +62,7 @@ fn get_config(state: tauri::State<'_, SharedState>) -> ConfigResponse {
         font_scale: s.config.font_scale,
         focus_expand_runs: s.config.focus_expand_runs,
         runs_per_repo: s.config.runs_per_repo,
+        repo_tabs: s.config.repo_tabs,
         panel_width: s.config.panel_width,
     }
 }
@@ -79,6 +81,7 @@ fn set_ui_prefs(
     font_scale: f64,
     focus_expand_runs: u32,
     runs_per_repo: u32,
+    repo_tabs: bool,
 ) -> Result<(), String> {
     let font_scale = font_scale.clamp(0.7, 2.0);
     let focus_expand_runs = focus_expand_runs.clamp(1, 5);
@@ -89,6 +92,7 @@ fn set_ui_prefs(
         s.config.font_scale = font_scale;
         s.config.focus_expand_runs = focus_expand_runs;
         s.config.runs_per_repo = runs_per_repo;
+        s.config.repo_tabs = repo_tabs;
         s.config.save(&s.config_dir)?;
         refetch
     };
@@ -281,8 +285,15 @@ fn quit_app() {
 }
 
 #[tauri::command]
-fn open_url(url: String) {
-    tray::open_url_in_browser(&url);
+fn open_url(state: tauri::State<'_, SharedState>, url: String, repo: Option<String>) {
+    let repo_tabs = {
+        let s = state.lock().unwrap();
+        s.config.repo_tabs
+    };
+    match repo {
+        Some(r) if repo_tabs && !r.is_empty() => tray::open_url_in_repo_tab(&r, &url),
+        _ => tray::open_url_in_browser(&url),
+    }
 }
 
 #[tauri::command]

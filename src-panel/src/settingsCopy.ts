@@ -23,6 +23,10 @@ export interface SettingsCopy {
   perRepoHint: string;
   expandLabel: string;
   expandHint: string;
+  repoTabsLabel: string;
+  repoTabsHint: string;
+  onLabel: string;
+  offLabel: string;
   colRepository: string;
   colWorkflows: string;
   colReviews: string;
@@ -31,6 +35,10 @@ export interface SettingsCopy {
 
 export const SETTINGS_COPY: Record<ThemeId, SettingsCopy> = {
   pathe: {
+    repoTabsLabel: "Herbruik browser-tab per repo",
+    repoTabsHint: "Links van dezelfde repo openen in een tab",
+    onLabel: "Aan",
+    offLabel: "Uit",
     nav: {
       account: "Account",
       repositories: "Repos",
@@ -73,6 +81,10 @@ export const SETTINGS_COPY: Record<ThemeId, SettingsCopy> = {
     colMentions: "Mentions",
   },
   phosphor: {
+    repoTabsLabel: "reuse tab per repo",
+    repoTabsHint: "links from one repo share a browser tab",
+    onLabel: "on",
+    offLabel: "off",
     nav: {
       account: "auth",
       repositories: "repos",
@@ -115,6 +127,10 @@ export const SETTINGS_COPY: Record<ThemeId, SettingsCopy> = {
     colMentions: "mentions",
   },
   holydiver: {
+    repoTabsLabel: "Reuse a browser tab per repo",
+    repoTabsHint: "Links from the same repo open in one tab",
+    onLabel: "On",
+    offLabel: "Off",
     nav: {
       account: "Account",
       repositories: "Repositories",
@@ -158,6 +174,10 @@ export const SETTINGS_COPY: Record<ThemeId, SettingsCopy> = {
     colMentions: "Mentions",
   },
   hellripper: {
+    repoTabsLabel: "One portal per haunt",
+    repoTabsHint: "A repo's links possess a single browser tab",
+    onLabel: "Open",
+    offLabel: "Sealed",
     nav: {
       account: "Soul Binding",
       repositories: "Haunted Repos",

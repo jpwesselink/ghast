@@ -1,4 +1,11 @@
+import { invoke } from "@tauri-apps/api/core";
 import type { PanelWorkflowRun } from "./types";
+
+/// Open a URL in the browser; with a repo, the backend reuses that
+/// repo's browser tab (config: repo_tabs).
+export function openExternal(url: string, repo?: string) {
+  invoke("open_url", { url, repo: repo ?? null });
+}
 
 const BAD_CONCLUSIONS = new Set(["failure", "timed_out", "action_required"]);
 

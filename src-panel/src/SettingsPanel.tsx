@@ -50,6 +50,7 @@ export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
   const [fontScale, setFontScale] = useState(1.0);
   const [expandRuns, setExpandRuns] = useState(5);
   const [runsPerRepo, setRunsPerRepo] = useState(5);
+  const [repoTabs, setRepoTabs] = useState(true);
 
   useEffect(() => {
     invoke<{
@@ -61,11 +62,13 @@ export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
       font_scale: number;
       focus_expand_runs: number;
       runs_per_repo: number;
+      repo_tabs: boolean;
     }>("get_config").then((config) => {
       setCurrentTheme(config.theme);
       setFontScale(config.font_scale);
       setExpandRuns(config.focus_expand_runs);
       setRunsPerRepo(config.runs_per_repo);
+      setRepoTabs(config.repo_tabs);
       if (config.has_pat) {
         setBound(true);
         setPatStatus(copy.connected);
@@ -138,12 +141,18 @@ export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
     }
   };
 
-  const saveUiPrefs = async (scale: number, runs: number, perRepo: number) => {
+  const saveUiPrefs = async (
+    scale: number,
+    runs: number,
+    perRepo: number,
+    tabs: boolean
+  ) => {
     try {
       await invoke("set_ui_prefs", {
         fontScale: scale,
         focusExpandRuns: runs,
         runsPerRepo: perRepo,
+        repoTabs: tabs,
       });
     } catch (e) {
       console.error("set_ui_prefs failed", e);
@@ -152,17 +161,22 @@ export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
 
   const pickFontScale = (v: number) => {
     setFontScale(v);
-    saveUiPrefs(v, expandRuns, runsPerRepo);
+    saveUiPrefs(v, expandRuns, runsPerRepo, repoTabs);
   };
 
   const pickExpandRuns = (v: number) => {
     setExpandRuns(v);
-    saveUiPrefs(fontScale, v, runsPerRepo);
+    saveUiPrefs(fontScale, v, runsPerRepo, repoTabs);
   };
 
   const pickRunsPerRepo = (v: number) => {
     setRunsPerRepo(v);
-    saveUiPrefs(fontScale, expandRuns, v);
+    saveUiPrefs(fontScale, expandRuns, v, repoTabs);
+  };
+
+  const pickRepoTabs = (v: boolean) => {
+    setRepoTabs(v);
+    saveUiPrefs(fontScale, expandRuns, runsPerRepo, v);
   };
 
   const pickTheme = async (th: string) => {
@@ -396,6 +410,18 @@ export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
                   [1, 2, 3, 4, 5].map((n) => ({ label: String(n), value: n })),
                   expandRuns,
                   pickExpandRuns
+                )
+              )}
+              {prefRow(
+                copy.repoTabsLabel,
+                copy.repoTabsHint,
+                seg(
+                  [
+                    { label: copy.onLabel, value: 1 },
+                    { label: copy.offLabel, value: 0 },
+                  ],
+                  repoTabs ? 1 : 0,
+                  (v) => pickRepoTabs(v === 1)
                 )
               )}
             </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { openExternal } from "./buildViews";
 import type { PanelWorkflowRun } from "./types";
 import { PANEL_COPY, ThemeId } from "./panelCopy";
 import {
@@ -71,7 +71,7 @@ export default function JobSteps({
         <div key={job.html_url}>
           <button
             className="job-row"
-            onClick={() => invoke("open_url", { url: job.html_url })}
+            onClick={() => openExternal(job.html_url, run.repo)}
           >
             <span className="step-mark" data-state={markState(job)} />
             <span className="run-name">{job.name}</span>
@@ -83,7 +83,7 @@ export default function JobSteps({
             <button
               className="step-row step-link"
               key={step.number}
-              onClick={() => invoke("open_url", { url: stepUrl(job, step) })}
+              onClick={() => openExternal(stepUrl(job, step), run.repo)}
             >
               <span className="step-mark" data-state={markState(step)} />
               <span className="run-name">{step.name}</span>

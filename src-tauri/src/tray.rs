@@ -29,6 +29,57 @@ pub fn open_url_in_browser(url: &str) {
     let _ = open::that(url);
 }
 
+const CHROME_TAB_SCRIPT: &str = r#"
+on run argv
+    set matchPrefix to item 1 of argv
+    set targetURL to item 2 of argv
+    tell application "Google Chrome"
+        activate
+        if (count of windows) = 0 then
+            make new window
+            set URL of active tab of window 1 to targetURL
+            return
+        end if
+        repeat with w in windows
+            set i to 0
+            repeat with t in tabs of w
+                set i to i + 1
+                if URL of t starts with matchPrefix then
+                    set URL of t to targetURL
+                    set active tab index of w to i
+                    set index of w to 1
+                    return
+                end if
+            end repeat
+        end repeat
+        tell window 1 to make new tab with properties {URL:targetURL}
+    end tell
+end run
+"#;
+
+/// Reuse one browser tab per repo: if a tab is already on this repo,
+/// retarget and focus it; otherwise open a new tab. Falls back to a plain
+/// open when Chrome isn't around to be scripted.
+pub fn open_url_in_repo_tab(repo: &str, url: &str) {
+    let prefix = format!("https://github.com/{repo}");
+    let url = url.to_string();
+    std::thread::spawn(move || {
+        let chrome_present = std::path::Path::new("/Applications/Google Chrome.app").exists();
+        if chrome_present {
+            let status = std::process::Command::new("osascript")
+                .arg("-e")
+                .arg(CHROME_TAB_SCRIPT)
+                .arg(&prefix)
+                .arg(&url)
+                .status();
+            if matches!(status, Ok(s) if s.success()) {
+                return;
+            }
+        }
+        let _ = open::that(&url);
+    });
+}
+
 pub fn open_settings_window(app: &AppHandle) {
     use tauri::Manager;
     if let Some(window) = app.get_webview_window("settings") {

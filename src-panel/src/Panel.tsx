@@ -11,6 +11,7 @@ import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
 import {
   bucketRepos,
   chipLabel,
+  openExternal,
   dayLabel,
   formatTimeAgo,
   statusLabel,
@@ -39,7 +40,7 @@ function loadPane(): number {
 function openRepoUrl(repo: string) {
   // don't hijack a text-selection drag
   if (window.getSelection()?.toString()) return;
-  invoke("open_url", { url: `https://github.com/${repo}` });
+  openExternal(`https://github.com/${repo}`, repo);
 }
 
 function histClass(run: PanelWorkflowRun): string {
@@ -131,7 +132,7 @@ function RunRow({
   const expanded = useExpandedRuns().includes(run.run_id);
   return (
     <>
-      <div className="run-item" onClick={() => invoke("open_url", { url: run.html_url })}>
+      <div className="run-item" onClick={() => openExternal(run.html_url, run.repo)}>
         <ExpandChevron runId={run.run_id} />
         <StatusIconTip run={run} />
         <span className="run-name">{run.workflow_name}</span>
@@ -278,7 +279,7 @@ function TimelineView({ themeId, data }: { themeId: ThemeId; data: PanelPayload 
             )}
             <div
               className="run-item tl-row"
-              onClick={() => invoke("open_url", { url: run.html_url })}
+              onClick={() => openExternal(run.html_url, run.repo)}
             >
               <span className="tl-time">{timeLabel(run.created_at)}</span>
               <ExpandChevron runId={run.run_id} />
@@ -301,7 +302,7 @@ function ReviewRow({ review }: { review: PanelPendingReview }) {
   return (
     <div
       className="run-item"
-      onClick={() => invoke("open_url", { url: review.html_url })}
+      onClick={() => openExternal(review.html_url, review.repo)}
     >
       <Tooltip>
         <TooltipTrigger asChild>
@@ -324,7 +325,7 @@ function MentionRow({ mention }: { mention: PanelMention }) {
   return (
     <div
       className="run-item"
-      onClick={() => invoke("open_url", { url: mention.html_url })}
+      onClick={() => openExternal(mention.html_url, mention.repo)}
     >
       <Tooltip>
         <TooltipTrigger asChild>
