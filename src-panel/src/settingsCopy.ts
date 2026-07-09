@@ -30,6 +30,48 @@ export interface SettingsCopy {
 }
 
 export const SETTINGS_COPY: Record<ThemeId, SettingsCopy> = {
+  phosphor: {
+    nav: {
+      account: "auth",
+      repositories: "repos",
+      appearance: "display",
+      general: "config",
+    },
+    titles: {
+      account: "auth",
+      repositories: "repos",
+      appearance: "display",
+      general: "config",
+    },
+    tokenPlaceholder: "ghp_...",
+    connect: "bind",
+    connecting: "binding",
+    connected: "token bound",
+    connectedAs: (login) => `bound :: ${login}`,
+    failed: (e) => `error :: ${e}`,
+    searchPlaceholder: "grep...",
+    emptyUnbound: "bind a token under auth first",
+    emptyNone: "no repositories found",
+    noMatches: "no matches",
+    loadingRepos: "scanning remotes...",
+    privateBadge: "priv",
+    fontSizeLabel: "font size",
+    fontSizeHint: "scales panel text",
+    fontSizes: [
+      { label: "80", value: 0.9 },
+      { label: "100", value: 1.0 },
+      { label: "115", value: 1.15 },
+      { label: "130", value: 1.3 },
+    ],
+    perRepoLabel: "runs per repo",
+    perRepoHint: "recent runs fetched and shown per repo",
+    expandLabel: "runs per idle repo",
+    expandHint: "runs shown when expanding an idle repo in focus",
+    colRepository: "repository",
+    colWorkflows: "workflows",
+    colReviews: "reviews",
+    colMentions: "mentions",
+  },
   holydiver: {
     nav: {
       account: "Account",

@@ -1,4 +1,4 @@
-export type ThemeId = "holydiver" | "hellripper";
+export type ThemeId = "holydiver" | "hellripper" | "phosphor";
 
 export interface PanelCopy {
   authError: string;
@@ -20,6 +20,24 @@ export interface PanelCopy {
 }
 
 export const PANEL_COPY: Record<ThemeId, PanelCopy> = {
+  phosphor: {
+    authError: "auth error :: check settings",
+    noPat: "no token bound :: open settings",
+    noRepos: "no repos configured",
+    loadingRuns: "polling...",
+    noReviews: "review queue empty",
+    noPrs: "no open prs",
+    noMentions: "no unread mentions",
+    calm: "all systems nominal",
+    failing: "FAIL",
+    waiting: "HOLD",
+    running: "EXEC",
+    quiet: "IDLE",
+    nowLabel: "now>",
+    jobsLoading: "reading job table...",
+    jobsError: "job table unavailable",
+    jobsEmpty: "no jobs recorded",
+  },
   holydiver: {
     authError: "Auth error - check Settings",
     noPat: "Open Settings to connect GitHub",
@@ -68,6 +86,12 @@ export const CALM_GHOST: Record<
     glow?: string;
   }
 > = {
+  phosphor: {
+    bodyColor: "#0d2b17",
+    eyeMilkColor: "#33ff66",
+    eyeMilkScale: 0.9,
+    glow: "#1aff5c",
+  },
   holydiver: {
     bodyColor: "var(--ghost-body)",
     eyeMilkColor: "#ffffff",

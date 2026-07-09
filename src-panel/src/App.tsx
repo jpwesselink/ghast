@@ -11,12 +11,22 @@ const view = new URLSearchParams(window.location.search).get("view");
 const isSettings = view === "settings";
 const isAbout = view === "about";
 
+const THEME_IDS: Record<string, "holydiver" | "hellripper" | "phosphor"> = {
+  normal: "holydiver",
+  blackmetal: "hellripper",
+  phosphor: "phosphor",
+};
+
+// incantation -> config theme value
+const INCANTATIONS: Record<string, string> = {
+  holydiver: "normal",
+  hellripper: "blackmetal",
+  phosphor: "phosphor",
+};
+
 // set before first paint so themed CSS applies immediately
 document.documentElement.dataset.theme =
-  localStorage.getItem("ghast-theme") === "blackmetal" ? "hellripper" : "holydiver";
-
-const ACTIVATE = "hellripper";
-const DEACTIVATE = "holydiver";
+  THEME_IDS[localStorage.getItem("ghast-theme") ?? "normal"] ?? "holydiver";
 
 interface UiPrefs {
   font_scale: number;
@@ -25,8 +35,8 @@ interface UiPrefs {
 
 export default function App() {
   const [data, setData] = useState<PanelPayload | null>(null);
-  const [blackMetal, setBlackMetal] = useState(
-    () => localStorage.getItem("ghast-theme") === "blackmetal"
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("ghast-theme") ?? "normal"
   );
   const [buffer, setBuffer] = useState("");
   const [focusExpandRuns, setFocusExpandRuns] = useState(5);
@@ -114,10 +124,10 @@ export default function App() {
 
   useEffect(() => {
     const applyTheme = (t: string) => {
-      const isBm = t === "blackmetal";
-      setBlackMetal(isBm);
-      localStorage.setItem("ghast-theme", isBm ? "blackmetal" : "normal");
-      document.documentElement.dataset.theme = isBm ? "hellripper" : "holydiver";
+      const known = THEME_IDS[t] ? t : "normal";
+      setTheme(known);
+      localStorage.setItem("ghast-theme", known);
+      document.documentElement.dataset.theme = THEME_IDS[known];
     };
 
     invoke<string>("get_theme").then(applyTheme);
@@ -131,8 +141,6 @@ export default function App() {
     };
   }, []);
 
-  const target = blackMetal ? DEACTIVATE : ACTIVATE;
-
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape" && !isSettings) {
@@ -140,19 +148,20 @@ export default function App() {
         return;
       }
       const next = buffer + e.key.toLowerCase();
-      if (target.startsWith(next)) {
+      const words = Object.keys(INCANTATIONS);
+      if (words.some((w) => w.startsWith(next))) {
         setBuffer(next);
-        if (next === target) {
-          const newMode = !blackMetal;
-          invoke("set_theme", { theme: newMode ? "blackmetal" : "normal" });
+        const hit = words.find((w) => w === next);
+        if (hit) {
+          invoke("set_theme", { theme: INCANTATIONS[hit] });
           setBuffer("");
         }
       } else {
         const key = e.key.toLowerCase();
-        setBuffer(target.startsWith(key) ? key : "");
+        setBuffer(words.some((w) => w.startsWith(key)) ? key : "");
       }
     },
-    [buffer, blackMetal, target]
+    [buffer]
   );
 
   useEffect(() => {
@@ -164,18 +173,18 @@ export default function App() {
     if (isSettings) return;
     // Theme default only applies until the user has resized the panel.
     if (hasStoredSize !== false) return;
-    invoke("set_panel_width", { width: blackMetal ? 360 : 280 });
-  }, [blackMetal, hasStoredSize]);
+    invoke("set_panel_width", { width: theme === "blackmetal" ? 360 : 280 });
+  }, [theme, hasStoredSize]);
 
   let content: ReactElement | null = null;
   if (isAbout) {
     content = <About />;
   } else if (isSettings) {
-    content = <SettingsPanel themeId={blackMetal ? "hellripper" : "holydiver"} />;
+    content = <SettingsPanel themeId={THEME_IDS[theme]} />;
   } else if (data) {
     content = (
       <Panel
-        themeId={blackMetal ? "hellripper" : "holydiver"}
+        themeId={THEME_IDS[theme]}
         data={data}
         focusExpandRuns={focusExpandRuns}
       />

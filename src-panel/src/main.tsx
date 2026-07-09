@@ -4,6 +4,8 @@ import App from "./App";
 import "./base.css";
 import "./theme-holydiver.css";
 import "./theme-hellripper.css";
+import "./theme-phosphor.css";
+import "./theme-phosphor-settings.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

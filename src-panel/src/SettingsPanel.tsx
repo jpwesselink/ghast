@@ -62,7 +62,7 @@ export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
       focus_expand_runs: number;
       runs_per_repo: number;
     }>("get_config").then((config) => {
-      setCurrentTheme(config.theme === "blackmetal" ? "blackmetal" : "normal");
+      setCurrentTheme(config.theme);
       setFontScale(config.font_scale);
       setExpandRuns(config.focus_expand_runs);
       setRunsPerRepo(config.runs_per_repo);
@@ -344,6 +344,15 @@ export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
                   >
                     <div className="s-theme-thumb hell">⛧</div>
                     <div className="s-theme-name">Hellripper</div>
+                  </button>
+                  <button
+                    className={`s-theme-card${
+                      currentTheme === "phosphor" ? " active" : ""
+                    }`}
+                    onClick={() => pickTheme("phosphor")}
+                  >
+                    <div className="s-theme-thumb crt">▮</div>
+                    <div className="s-theme-name">Phosphor</div>
                   </button>
                 </div>
               </div>
