@@ -716,16 +716,16 @@
 }
 [data-theme="hellripper"] .tooltip-arrow { fill: #1a0808; }
 
-/* repo grid — carved slabs from the pit */
+/* repo grid — Diablo buttons: beveled stone, state-colored face, name plaque */
 [data-theme="hellripper"] .repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 10px;
   padding: 12px 14px;
 }
 [data-theme="hellripper"] .repo-cell {
   position: relative;
-  height: 54px;
+  height: 78px;
   overflow: visible;
 }
 [data-theme="hellripper"] .repo-cell-segs {
@@ -733,23 +733,12 @@
   inset: 0;
   display: flex;
   overflow: hidden;
-  border-radius: 3px;
-  /* bronze rim, black mortar, sunken face */
+  border-radius: 4px;
+  /* iron rim over black mortar */
   box-shadow:
-    0 0 0 1px #000,
-    0 0 0 2px #4a3520,
-    0 0 0 3px #241408,
-    0 2px 6px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -4px 8px rgba(0, 0, 0, 0.75);
-  /* corner rivets */
-  background-image:
-    radial-gradient(circle 2.5px at 5px 5px, #6b4d2a 0 2px, transparent 2.5px),
-    radial-gradient(circle 2.5px at calc(100% - 5px) 5px, #6b4d2a 0 2px, transparent 2.5px),
-    radial-gradient(circle 2.5px at 5px calc(100% - 5px), #6b4d2a 0 2px, transparent 2.5px),
-    radial-gradient(circle 2.5px at calc(100% - 5px) calc(100% - 5px), #6b4d2a 0 2px, transparent 2.5px);
-  background-color: #171009;
-  z-index: 0;
+    0 0 0 2px #43301c,
+    0 0 0 3px #000,
+    0 3px 8px rgba(0, 0, 0, 0.85);
 }
 [data-theme="hellripper"] .repo-seg {
   flex: 1;
@@ -759,70 +748,82 @@
   cursor: default;
   position: relative;
   padding: 0;
-  --cell: #9a8a78;
-  /* torchlit stone */
+  --face: #3a332b;
+  --face-lit: #55493c;
   background:
-    radial-gradient(ellipse 120% 90% at 50% -30%, rgba(122, 90, 48, 0.28), transparent 60%),
-    linear-gradient(#221810, #0d0805);
-  /* smoldering state ember along the base */
+    radial-gradient(ellipse 130% 60% at 50% -10%, rgba(255, 240, 210, 0.14), transparent 55%),
+    linear-gradient(var(--face-lit), var(--face) 45%, color-mix(in srgb, var(--face) 55%, #000));
+  /* carved bevel */
   box-shadow:
-    inset 0 -10px 14px -8px var(--cell),
-    inset 0 -1px 0 var(--cell);
+    inset 0 2px 0 rgba(255, 255, 255, 0.16),
+    inset 2px 0 0 rgba(255, 255, 255, 0.07),
+    inset -2px 0 0 rgba(0, 0, 0, 0.45),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.55);
 }
-[data-theme="hellripper"] .repo-seg + .repo-seg {
-  border-left: 1px solid #000;
+[data-theme="hellripper"] .repo-seg + .repo-seg { border-left: 2px solid #000; }
+[data-theme="hellripper"] .repo-seg:hover { filter: brightness(1.18); }
+[data-theme="hellripper"] .repo-seg:active {
+  filter: brightness(0.85);
   box-shadow:
-    inset 1px 0 0 rgba(122, 90, 48, 0.35),
-    inset 0 -10px 14px -8px var(--cell),
-    inset 0 -1px 0 var(--cell);
+    inset 0 3px 6px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
 }
-[data-theme="hellripper"] .repo-seg[data-state="ok"] { --cell: #5f9c1e; }
-[data-theme="hellripper"] .repo-seg[data-state="run"] { --cell: #4f6fe0; }
-[data-theme="hellripper"] .repo-seg[data-state="wait"] { --cell: #d08a1f; }
+[data-theme="hellripper"] .repo-seg[data-state="ok"] { --face: #3f6a18; --face-lit: #5c8f2a; }
+[data-theme="hellripper"] .repo-seg[data-state="run"] { --face: #2c4a9e; --face-lit: #4266c4; }
+[data-theme="hellripper"] .repo-seg[data-state="wait"] { --face: #a3641a; --face-lit: #c5842e; }
 [data-theme="hellripper"] .repo-seg[data-state="fail"] {
-  --cell: #d42a1e;
-  animation: slabSmolder 2.2s ease-in-out infinite;
+  --face: #8e1b12;
+  --face-lit: #b83324;
+  animation: faceSmolder 2.2s ease-in-out infinite;
 }
-@keyframes slabSmolder {
-  0%, 100% { box-shadow: inset 0 -10px 14px -8px var(--cell), inset 0 -1px 0 var(--cell); }
-  50% { box-shadow: inset 0 -16px 20px -8px var(--cell), inset 0 -2px 0 var(--cell), inset 0 0 14px rgba(212, 42, 30, 0.25); }
+@keyframes faceSmolder {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18) saturate(1.15); }
 }
-[data-theme="hellripper"] .repo-seg:hover { filter: brightness(1.2); }
 [data-theme="hellripper"] .repo-seg-count {
   position: absolute;
   top: 4px;
   right: 5px;
   font-family: 'IM Fell English', serif;
-  font-style: italic;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
   padding: 2px 5px;
-  border-radius: 0;
-  background: #000;
-  border: 1px solid var(--cell);
-  color: #e8dcc0;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #f0e6cc;
 }
+/* the name plaque: dark bar riveted across the base */
 [data-theme="hellripper"] .repo-cell-label {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
   z-index: 1;
   font-family: 'IM Fell English SC', serif;
-  font-size: calc(15px * var(--font-scale, 1));
-  letter-spacing: 2px;
-  color: #d8c9a3;
-  text-shadow: 0 1px 2px #000, 0 0 8px rgba(0, 0, 0, 0.9);
+  font-size: calc(13px * var(--font-scale, 1));
+  letter-spacing: 1.5px;
+  color: #f0e6cc;
+  background: rgba(8, 5, 3, 0.82);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0 0 4px 4px;
+  text-shadow: 0 1px 1px #000;
   overflow: hidden;
   padding: 0 8px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-[data-theme="hellripper"] .repo-cell:hover .repo-cell-label {
-  color: #f3e8c8;
-  text-shadow: 0 1px 2px #000, 0 0 10px rgba(212, 160, 60, 0.45);
+@media (prefers-color-scheme: light) {
+  [data-theme="hellripper"] .repo-cell-label {
+    background: rgba(240, 232, 216, 0.9);
+    color: #1a0808;
+    border-top-color: rgba(0, 0, 0, 0.25);
+    text-shadow: none;
+  }
 }
 [data-theme="hellripper"] .repo-pop {
   position: absolute;
@@ -831,7 +832,7 @@
   right: 0;
   z-index: 60;
   background: #100b07;
-  border: 1px solid #4a3520;
+  border: 1px solid #43301c;
   box-shadow: 0 0 0 1px #000, 0 10px 26px rgba(0, 0, 0, 0.8);
   overflow: hidden;
 }
@@ -846,7 +847,7 @@
   background: none;
   font-family: 'IM Fell English', serif;
   font-size: calc(13px * var(--font-scale, 1));
-  color: #c8b894;
+  color: #d4c8a8;
   cursor: default;
   text-align: left;
   padding: 7px 10px;
@@ -858,4 +859,4 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-[data-theme="hellripper"] .repo-pop-time { flex-shrink: 0; opacity: 0.6; font-style: italic; font-size: 0.9em; }
+[data-theme="hellripper"] .repo-pop-time { flex-shrink: 0; opacity: 0.65; font-style: italic; font-size: 0.9em; }
