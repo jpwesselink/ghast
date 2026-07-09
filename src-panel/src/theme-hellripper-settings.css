@@ -17,18 +17,18 @@
 
         @keyframes sigilSpin { to { transform: rotate(360deg); } }
 
-        .s-sigil-spin {
+        [data-theme="hellripper"] .s-sigil-spin{
           animation: sigilSpin 1.4s linear infinite;
           flex-shrink: 0;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .s-sigil-spin { animation-duration: 3s; }
+          [data-theme="hellripper"] .s-sigil-spin{ animation-duration: 3s; }
         }
 
-        .screen-flicker { animation: settingsFlicker 0.6s ease-out; }
+        [data-theme="hellripper"] .screen-flicker{ animation: settingsFlicker 0.6s ease-out; }
 
-        .s-shell {
+        [data-theme="hellripper"] .s-shell{
           font-family: 'IM Fell English', serif;
           display: flex;
           height: 100vh;
@@ -37,7 +37,7 @@
           position: relative;
         }
 
-        .s-shell::before {
+        [data-theme="hellripper"] .s-shell::before{
           content: '';
           position: absolute;
           inset: 0;
@@ -47,7 +47,7 @@
           pointer-events: none;
         }
 
-        .s-sidebar {
+        [data-theme="hellripper"] .s-sidebar{
           width: 185px;
           flex-shrink: 0;
           border-right: 1px solid #2a1a18;
@@ -60,7 +60,7 @@
           z-index: 1;
         }
 
-        .s-side-title {
+        [data-theme="hellripper"] .s-side-title{
           font-family: 'UnifrakturMaguntia', cursive;
           font-size: 30px;
           text-align: center;
@@ -71,7 +71,7 @@
           line-height: 1;
         }
 
-        .s-nav-item {
+        [data-theme="hellripper"] .s-nav-item{
           display: block;
           width: 100%;
           border: none;
@@ -88,15 +88,15 @@
           transition: color 0.2s, border-color 0.2s;
         }
 
-        .s-nav-item:hover { color: #d0c4b0; }
+        [data-theme="hellripper"] .s-nav-item:hover{ color: #d0c4b0; }
 
-        .s-nav-item.active {
+        [data-theme="hellripper"] .s-nav-item.active{
           color: #ede6d8;
           border-left-color: #b01010;
           text-shadow: 0 0 8px rgba(180, 20, 20, 0.4);
         }
 
-        .s-pane {
+        [data-theme="hellripper"] .s-pane{
           flex: 1;
           min-width: 0;
           overflow-y: auto;
@@ -105,11 +105,11 @@
           z-index: 1;
         }
 
-        .s-pane::-webkit-scrollbar { width: 6px; }
-        .s-pane::-webkit-scrollbar-track { background: #0a0806; }
-        .s-pane::-webkit-scrollbar-thumb { background: #3a2525; border-radius: 3px; }
+        [data-theme="hellripper"] .s-pane::-webkit-scrollbar{ width: 6px; }
+        [data-theme="hellripper"] .s-pane::-webkit-scrollbar-track{ background: #0a0806; }
+        [data-theme="hellripper"] .s-pane::-webkit-scrollbar-thumb{ background: #3a2525; border-radius: 3px; }
 
-        .s-pane-title {
+        [data-theme="hellripper"] .s-pane-title{
           font-family: 'IM Fell English SC', serif;
           font-size: 17px;
           letter-spacing: 5px;
@@ -118,23 +118,23 @@
           margin-bottom: 18px;
         }
 
-        .s-group {
+        [data-theme="hellripper"] .s-group{
           border: 1px solid #2a1a18;
           background: #0c0908;
           margin-bottom: 18px;
         }
 
-        .s-row {
+        [data-theme="hellripper"] .s-row{
           display: flex;
           align-items: center;
           gap: 12px;
           padding: 12px 14px;
         }
 
-        .s-row + .s-row { border-top: 1px solid #221816; }
+        [data-theme="hellripper"] .s-row + .s-row{ border-top: 1px solid #221816; }
 
-        .s-row-label { flex: 1; font-size: 14px; color: #b8b0a0; }
-        .s-row-label .s-row-hint {
+        [data-theme="hellripper"] .s-row-label{ flex: 1; font-size: 14px; color: #b8b0a0; }
+        [data-theme="hellripper"] .s-row-label .s-row-hint{
           display: block;
           font-size: 12px;
           font-style: italic;
@@ -142,7 +142,7 @@
           margin-top: 2px;
         }
 
-        .s-input {
+        [data-theme="hellripper"] .s-input{
           flex: 1;
           box-sizing: border-box;
           background: #0c0a08;
@@ -156,14 +156,14 @@
           min-width: 0;
         }
 
-        .s-input:focus {
+        [data-theme="hellripper"] .s-input:focus{
           border-color: #b01010;
           box-shadow: 0 0 15px rgba(160, 10, 10, 0.3);
         }
 
-        .s-input::placeholder { color: #584e44; font-style: italic; }
+        [data-theme="hellripper"] .s-input::placeholder{ color: #584e44; font-style: italic; }
 
-        .s-btn {
+        [data-theme="hellripper"] .s-btn{
           font-family: 'IM Fell English SC', serif;
           font-size: 12px;
           letter-spacing: 3px;
@@ -180,15 +180,15 @@
           white-space: nowrap;
         }
 
-        .s-btn:hover {
+        [data-theme="hellripper"] .s-btn:hover{
           border-color: #b01010;
           color: #dd3030;
           box-shadow: 0 0 25px rgba(160, 10, 10, 0.4);
         }
 
-        .s-btn:disabled { opacity: 0.6; }
+        [data-theme="hellripper"] .s-btn:disabled{ opacity: 0.6; }
 
-        .s-status {
+        [data-theme="hellripper"] .s-status{
           font-size: 12px;
           font-style: italic;
           color: #78b830;
@@ -196,9 +196,9 @@
           letter-spacing: 1px;
         }
 
-        .s-status.error { color: #cc3333; }
+        [data-theme="hellripper"] .s-status.error{ color: #cc3333; }
 
-        .s-loading-row {
+        [data-theme="hellripper"] .s-loading-row{
           display: flex;
           align-items: center;
           justify-content: center;
@@ -209,9 +209,9 @@
           font-size: 13px;
         }
 
-        .s-seg { display: inline-flex; gap: 4px; }
+        [data-theme="hellripper"] .s-seg{ display: inline-flex; gap: 4px; }
 
-        .s-seg button {
+        [data-theme="hellripper"] .s-seg button{
           border: 1px solid #3a2525;
           background: #0a0604;
           color: #8a7e6e;
@@ -224,16 +224,16 @@
           transition: all 0.2s;
         }
 
-        .s-seg button:hover { color: #d0c4b0; }
+        [data-theme="hellripper"] .s-seg button:hover{ color: #d0c4b0; }
 
-        .s-seg button.active {
+        [data-theme="hellripper"] .s-seg button.active{
           background: #200c0c;
           border-color: #b01010;
           color: #ede6d8;
           box-shadow: 0 0 10px rgba(160, 10, 10, 0.35);
         }
 
-        .s-col-headers {
+        [data-theme="hellripper"] .s-col-headers{
           display: flex;
           align-items: center;
           padding: 9px 14px;
@@ -246,10 +246,10 @@
           border-bottom: 1px solid #221816;
           background: #0e0a08;
         }
-        .s-col-headers .s-col-spacer { flex: 1; }
-        .s-col-headers .s-col-h { width: 68px; text-align: center; flex-shrink: 0; }
+        [data-theme="hellripper"] .s-col-headers .s-col-spacer{ flex: 1; }
+        [data-theme="hellripper"] .s-col-headers .s-col-h{ width: 68px; text-align: center; flex-shrink: 0; }
 
-        .s-repo-item {
+        [data-theme="hellripper"] .s-repo-item{
           display: flex;
           align-items: center;
           padding: 11px 14px;
@@ -258,10 +258,10 @@
           gap: 10px;
         }
 
-        .s-repo-item:hover { background: #1a1210; }
-        .s-repo-item:last-child { border-bottom: none; }
+        [data-theme="hellripper"] .s-repo-item:hover{ background: #1a1210; }
+        [data-theme="hellripper"] .s-repo-item:last-child{ border-bottom: none; }
 
-        .s-repo-col {
+        [data-theme="hellripper"] .s-repo-col{
           width: 68px;
           flex-shrink: 0;
           display: flex;
@@ -269,7 +269,7 @@
           cursor: default;
         }
 
-        .s-checkbox {
+        [data-theme="hellripper"] .s-checkbox{
           width: 17px;
           height: 17px;
           border: 1px solid #4a2828;
@@ -281,13 +281,13 @@
           transition: all 0.2s;
         }
 
-        .s-checkbox.checked {
+        [data-theme="hellripper"] .s-checkbox.checked{
           background: #200c0c;
           border-color: #b01010;
           box-shadow: 0 0 10px rgba(160, 10, 10, 0.35);
         }
 
-        .s-checkbox.checked::after {
+        [data-theme="hellripper"] .s-checkbox.checked::after{
           content: '†';
           color: #cc2020;
           font-size: 15px;
@@ -295,7 +295,7 @@
           line-height: 1;
         }
 
-        .s-repo-name {
+        [data-theme="hellripper"] .s-repo-name{
           flex: 1;
           font-size: 14px;
           color: #b8b0a0;
@@ -305,9 +305,9 @@
           white-space: nowrap;
         }
 
-        .s-repo-item:hover .s-repo-name { color: #e8e0d0; }
+        [data-theme="hellripper"] .s-repo-item:hover .s-repo-name{ color: #e8e0d0; }
 
-        .s-badge {
+        [data-theme="hellripper"] .s-badge{
           font-family: 'IM Fell English SC', serif;
           font-size: 9px;
           letter-spacing: 3px;
@@ -318,14 +318,14 @@
           flex-shrink: 0;
         }
 
-        .s-empty {
+        [data-theme="hellripper"] .s-empty{
           padding: 30px 20px;
           text-align: center;
           color: #584e44;
           font-style: italic;
         }
 
-        .s-eye-toggle {
+        [data-theme="hellripper"] .s-eye-toggle{
           background: none;
           border: none;
           color: #504030;
@@ -336,11 +336,11 @@
           flex-shrink: 0;
         }
 
-        .s-eye-toggle:hover { color: #cc2020; }
+        [data-theme="hellripper"] .s-eye-toggle:hover{ color: #cc2020; }
 
-        .s-theme-cards { display: flex; gap: 12px; padding: 14px; }
+        [data-theme="hellripper"] .s-theme-cards{ display: flex; gap: 12px; padding: 14px; }
 
-        .s-theme-card {
+        [data-theme="hellripper"] .s-theme-card{
           flex: 1;
           border: 1px solid #3a2525;
           padding: 0;
@@ -353,19 +353,19 @@
           transition: all 0.3s;
         }
 
-        .s-theme-card:hover { border-color: #6a3030; }
+        [data-theme="hellripper"] .s-theme-card:hover{ border-color: #6a3030; }
 
-        .s-theme-card.active {
+        [data-theme="hellripper"] .s-theme-card.active{
           border-color: #b01010;
           box-shadow: 0 0 15px rgba(160, 10, 10, 0.35);
           color: #ede6d8;
         }
 
-        .s-theme-thumb { height: 58px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-        .s-theme-thumb.holy { background: linear-gradient(180deg, #f4f4f6, #dcdce2); color: #444; }
-        .s-theme-thumb.hell { background: linear-gradient(180deg, #17090a, #050000); color: #c01818; }
+        [data-theme="hellripper"] .s-theme-thumb{ height: 58px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        [data-theme="hellripper"] .s-theme-thumb.holy{ background: linear-gradient(180deg, #f4f4f6, #dcdce2); color: #444; }
+        [data-theme="hellripper"] .s-theme-thumb.hell{ background: linear-gradient(180deg, #17090a, #050000); color: #c01818; }
 
-        .s-theme-name {
+        [data-theme="hellripper"] .s-theme-name{
           font-family: 'IM Fell English SC', serif;
           font-size: 11px;
           letter-spacing: 2px;
@@ -374,37 +374,36 @@
         }
 
         @media (prefers-color-scheme: light) {
-          .s-shell { background: #f0e8d8; color: #2a1a10; }
-          .s-sidebar { background: #e8dcc8; border-right-color: #c0a090; }
-          .s-side-title { color: #1a0808; }
-          .s-nav-item { color: #6a5a48; }
-          .s-nav-item:hover { color: #2a1a10; }
-          .s-nav-item.active { color: #1a0808; border-left-color: #8b0000; }
-          .s-pane-title { color: #8b0000; }
-          .s-group { background: #e8dcc8; border-color: #c0a090; }
-          .s-row + .s-row { border-top-color: #d0c0a8; }
-          .s-row-label { color: #2a1a10; }
-          .s-row-label .s-row-hint { color: #6a5a48; }
-          .s-input { background: #f0e8d8; border-color: #b09070; color: #000; }
-          .s-input::placeholder { color: #9a8a78; }
-          .s-btn { background: #e0d0b8; color: #8b0000; border-color: #b09070; }
-          .s-status { color: #2d8a2d; }
-          .s-col-headers { background: #e0d4c0; border-bottom-color: #d0c0a8; color: #6a5a48; }
-          .s-repo-item { border-bottom-color: #d0c0a8; }
-          .s-repo-item:hover { background: rgba(139, 0, 0, 0.08); }
-          .s-repo-name { color: #000; }
-          .s-checkbox { background: #f0e8d8; border-color: #b09070; }
-          .s-badge { color: #6a5a48; border-color: #c0a090; }
-          .s-empty { color: #6a5a48; }
-          .s-loading-row { color: #6a5a48; }
-          .s-seg button { background: #f0e8d8; border-color: #b09070; color: #6a5a48; }
-          .s-seg button.active { background: #8b0000; border-color: #8b0000; color: #f0e8d8; }
-          .s-theme-card { border-color: #b09070; color: #2a1a10; }
-          .s-theme-card.active { border-color: #8b0000; }
-          .s-pane::-webkit-scrollbar-track { background: #e0d4c0; }
-          .s-pane::-webkit-scrollbar-thumb { background: #b09070; }
+          [data-theme="hellripper"] .s-shell{ background: #f0e8d8; color: #2a1a10; }
+          [data-theme="hellripper"] .s-sidebar{ background: #e8dcc8; border-right-color: #c0a090; }
+          [data-theme="hellripper"] .s-side-title{ color: #1a0808; }
+          [data-theme="hellripper"] .s-nav-item{ color: #6a5a48; }
+          [data-theme="hellripper"] .s-nav-item:hover{ color: #2a1a10; }
+          [data-theme="hellripper"] .s-nav-item.active{ color: #1a0808; border-left-color: #8b0000; }
+          [data-theme="hellripper"] .s-pane-title{ color: #8b0000; }
+          [data-theme="hellripper"] .s-group{ background: #e8dcc8; border-color: #c0a090; }
+          [data-theme="hellripper"] .s-row + .s-row{ border-top-color: #d0c0a8; }
+          [data-theme="hellripper"] .s-row-label{ color: #2a1a10; }
+          [data-theme="hellripper"] .s-row-label .s-row-hint{ color: #6a5a48; }
+          [data-theme="hellripper"] .s-input{ background: #f0e8d8; border-color: #b09070; color: #000; }
+          [data-theme="hellripper"] .s-input::placeholder{ color: #9a8a78; }
+          [data-theme="hellripper"] .s-btn{ background: #e0d0b8; color: #8b0000; border-color: #b09070; }
+          [data-theme="hellripper"] .s-status{ color: #2d8a2d; }
+          [data-theme="hellripper"] .s-col-headers{ background: #e0d4c0; border-bottom-color: #d0c0a8; color: #6a5a48; }
+          [data-theme="hellripper"] .s-repo-item{ border-bottom-color: #d0c0a8; }
+          [data-theme="hellripper"] .s-repo-item:hover{ background: rgba(139, 0, 0, 0.08); }
+          [data-theme="hellripper"] .s-repo-name{ color: #000; }
+          [data-theme="hellripper"] .s-checkbox{ background: #f0e8d8; border-color: #b09070; }
+          [data-theme="hellripper"] .s-badge{ color: #6a5a48; border-color: #c0a090; }
+          [data-theme="hellripper"] .s-empty{ color: #6a5a48; }
+          [data-theme="hellripper"] .s-loading-row{ color: #6a5a48; }
+          [data-theme="hellripper"] .s-seg button{ background: #f0e8d8; border-color: #b09070; color: #6a5a48; }
+          [data-theme="hellripper"] .s-seg button.active{ background: #8b0000; border-color: #8b0000; color: #f0e8d8; }
+          [data-theme="hellripper"] .s-theme-card{ border-color: #b09070; color: #2a1a10; }
+          [data-theme="hellripper"] .s-theme-card.active{ border-color: #8b0000; }
+          [data-theme="hellripper"] .s-pane::-webkit-scrollbar-track{ background: #e0d4c0; }
+          [data-theme="hellripper"] .s-pane::-webkit-scrollbar-thumb{ background: #b09070; }
         }
-
 
 /* spinner is a spinning pentagram here */
 [data-theme="hellripper"] .s-spinner {

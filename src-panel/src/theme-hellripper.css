@@ -20,9 +20,9 @@
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .screen-flicker { animation: screenFlicker 0.6s ease-out; }
+        [data-theme="hellripper"] .screen-flicker{ animation: screenFlicker 0.6s ease-out; }
 
-        .menu {
+        [data-theme="hellripper"] .menu{
           font-family: 'IM Fell English', serif;
           background: #141210;
           color: #ddd6c8;
@@ -34,7 +34,7 @@
           border-radius: 14px;
         }
 
-        .menu::before {
+        [data-theme="hellripper"] .menu::before{
           content: '';
           position: absolute;
           inset: 0;
@@ -45,45 +45,45 @@
         }
 
         @media (prefers-color-scheme: light) {
-          .menu {
+          [data-theme="hellripper"] .menu{
             background: #f0e8d8;
             color: #2a1a10;
           }
-          .menu::before {
+          [data-theme="hellripper"] .menu::before{
             background:
               radial-gradient(ellipse at 50% 0%, rgba(160, 10, 10, 0.08) 0%, transparent 60%),
               radial-gradient(ellipse at 50% 100%, rgba(160, 10, 10, 0.04) 0%, transparent 40%);
           }
-          .menu { background: #f0e8d8 !important; color: #000 !important; }
-          .brand-title { color: #000 !important; text-shadow: 0 0 10px #b01010, 0 0 25px #8b0000, 0 0 50px #5a0000 !important; }
-          .brand-subtitle { color: #5a4a3a !important; }
-          .menu-separator { background: linear-gradient(to right, transparent, #c0a090, transparent) !important; }
-          .repo-header { color: #8b0000 !important; }
-          .run-name { color: #000 !important; }
-          .run-item:hover { background: rgba(139, 0, 0, 0.15) !important; }
-          .run-item:hover .run-name { color: #000 !important; }
-          .run-time { color: #4a3a28 !important; }
-          .status-icon { filter: none !important; }
-          .menu-message { color: #4a3a28 !important; }
-          .footer-item { color: #000 !important; }
-          .footer-item:hover { background: rgba(139, 0, 0, 0.15) !important; }
-          .repo-group + .repo-group { border-top-color: #d0c0a8 !important; }
-          .menu-content::-webkit-scrollbar-track { background: #e8dcc8 !important; }
-          .menu-content::-webkit-scrollbar-thumb { background: #b09070 !important; }
-          .decor-scratch { background: rgba(80, 50, 20, 0.04) !important; }
-          .menu-tabs { border-bottom-color: #c0a090 !important; }
-          .menu-tab { color: #6a5a48 !important; }
-          .menu-tab:hover { color: #2a1a10 !important; background: rgba(139, 0, 0, 0.08) !important; }
-          .menu-tab.active { color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
-          .menu-tab-badge { background: #e0c8a8 !important; border-color: #b09070 !important; color: #2a1a10 !important; }
-          .menu-tab.active .menu-tab-badge { background: #8b0000 !important; border-color: #8b0000 !important; color: #f0e8d8 !important; }
-          .repo-chip { border-color: #c0a090 !important; color: #6a5a48 !important; }
-          .quiet-row .run-name { color: #6a5a48 !important; }
-          .quiet-row:hover .run-name { color: #000 !important; }
-          .tl-time { color: #6a5a48 !important; }
+          [data-theme="hellripper"] .menu{ background: #f0e8d8 !important; color: #000 !important; }
+          [data-theme="hellripper"] .brand-title{ color: #000 !important; text-shadow: 0 0 10px #b01010, 0 0 25px #8b0000, 0 0 50px #5a0000 !important; }
+          [data-theme="hellripper"] .brand-subtitle{ color: #5a4a3a !important; }
+          [data-theme="hellripper"] .menu-separator{ background: linear-gradient(to right, transparent, #c0a090, transparent) !important; }
+          [data-theme="hellripper"] .repo-header{ color: #8b0000 !important; }
+          [data-theme="hellripper"] .run-name{ color: #000 !important; }
+          [data-theme="hellripper"] .run-item:hover{ background: rgba(139, 0, 0, 0.15) !important; }
+          [data-theme="hellripper"] .run-item:hover .run-name{ color: #000 !important; }
+          [data-theme="hellripper"] .run-time{ color: #4a3a28 !important; }
+          [data-theme="hellripper"] .status-icon{ filter: none !important; }
+          [data-theme="hellripper"] .menu-message{ color: #4a3a28 !important; }
+          [data-theme="hellripper"] .footer-item{ color: #000 !important; }
+          [data-theme="hellripper"] .footer-item:hover{ background: rgba(139, 0, 0, 0.15) !important; }
+          [data-theme="hellripper"] .repo-group + .repo-group{ border-top-color: #d0c0a8 !important; }
+          [data-theme="hellripper"] .menu-content::-webkit-scrollbar-track{ background: #e8dcc8 !important; }
+          [data-theme="hellripper"] .menu-content::-webkit-scrollbar-thumb{ background: #b09070 !important; }
+          [data-theme="hellripper"] .decor-scratch{ background: rgba(80, 50, 20, 0.04) !important; }
+          [data-theme="hellripper"] .menu-tabs{ border-bottom-color: #c0a090 !important; }
+          [data-theme="hellripper"] .menu-tab{ color: #6a5a48 !important; }
+          [data-theme="hellripper"] .menu-tab:hover{ color: #2a1a10 !important; background: rgba(139, 0, 0, 0.08) !important; }
+          [data-theme="hellripper"] .menu-tab.active{ color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
+          [data-theme="hellripper"] .menu-tab-badge{ background: #e0c8a8 !important; border-color: #b09070 !important; color: #2a1a10 !important; }
+          [data-theme="hellripper"] .menu-tab.active .menu-tab-badge{ background: #8b0000 !important; border-color: #8b0000 !important; color: #f0e8d8 !important; }
+          [data-theme="hellripper"] .repo-chip{ border-color: #c0a090 !important; color: #6a5a48 !important; }
+          [data-theme="hellripper"] .quiet-row .run-name{ color: #6a5a48 !important; }
+          [data-theme="hellripper"] .quiet-row:hover .run-name{ color: #000 !important; }
+          [data-theme="hellripper"] .tl-time{ color: #6a5a48 !important; }
         }
 
-        .panel-inner {
+        [data-theme="hellripper"] .panel-inner{
           padding: 16px 0 0;
           position: relative;
           z-index: 1;
@@ -98,7 +98,7 @@
           100% { transform: translateY(120px); }
         }
 
-        .decor-rain {
+        [data-theme="hellripper"] .decor-rain{
           position: absolute;
           top: 0;
           left: 0;
@@ -109,7 +109,7 @@
           z-index: 0;
         }
 
-        .decor-drop {
+        [data-theme="hellripper"] .decor-drop{
           position: absolute;
           top: -24px;
           border-radius: 0 0 1px 1px;
@@ -118,10 +118,10 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .decor-drop { animation: none; opacity: 0 !important; }
+          [data-theme="hellripper"] .decor-drop{ animation: none; opacity: 0 !important; }
         }
 
-        .brand-title {
+        [data-theme="hellripper"] .brand-title{
           font-family: 'UnifrakturMaguntia', cursive;
           font-size: calc(56px * var(--font-scale, 1));
           text-align: center;
@@ -134,7 +134,7 @@
           z-index: 1;
         }
 
-        .brand-subtitle {
+        [data-theme="hellripper"] .brand-subtitle{
           font-family: 'IM Fell English SC', serif;
           font-size: calc(11px * var(--font-scale, 1));
           text-align: center;
@@ -144,13 +144,13 @@
           margin-bottom: 10px;
         }
 
-        .menu-separator {
+        [data-theme="hellripper"] .menu-separator{
           height: 1px;
           background: linear-gradient(to right, transparent, #5a3030, transparent);
           margin: 0;
         }
 
-        .menu-tabs {
+        [data-theme="hellripper"] .menu-tabs{
           display: flex;
           gap: 4px;
           padding: 6px 8px 0;
@@ -158,7 +158,7 @@
           border-bottom: 1px solid #221816;
         }
 
-        .menu-tab {
+        [data-theme="hellripper"] .menu-tab{
           flex: 1;
           display: flex;
           align-items: center;
@@ -178,15 +178,15 @@
           margin-bottom: -1px;
         }
 
-        .menu-tab:hover { color: #b8a890; background: rgba(80, 0, 0, 0.1); }
+        [data-theme="hellripper"] .menu-tab:hover{ color: #b8a890; background: rgba(80, 0, 0, 0.1); }
 
-        .menu-tab.active {
+        [data-theme="hellripper"] .menu-tab.active{
           color: #e0d8c8;
           border-bottom-color: #8b0000;
           text-shadow: 0 0 6px rgba(180, 20, 20, 0.4);
         }
 
-        .menu-tab-badge {
+        [data-theme="hellripper"] .menu-tab-badge{
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -203,28 +203,28 @@
           letter-spacing: 0;
         }
 
-        .menu-tab.active .menu-tab-badge {
+        [data-theme="hellripper"] .menu-tab.active .menu-tab-badge{
           background: #4a1010;
           border-color: #8b0000;
           color: #ede6d8;
         }
 
-        .menu, .menu * {
+        [data-theme="hellripper"] .menu, [data-theme="hellripper"] .menu *{
           -webkit-user-select: none;
           user-select: none;
         }
 
-        .run-name, .repo-chip, .run-time, .tl-time, .repo-header {
+        [data-theme="hellripper"] .run-name, [data-theme="hellripper"] .repo-chip, [data-theme="hellripper"] .run-time, [data-theme="hellripper"] .tl-time, [data-theme="hellripper"] .repo-header{
           -webkit-user-select: text;
           user-select: text;
         }
 
-        .sect-fail, .sect-run, .sect-quiet, .calm-line {
+        [data-theme="hellripper"] .sect-fail, [data-theme="hellripper"] .sect-run, [data-theme="hellripper"] .sect-quiet, [data-theme="hellripper"] .calm-line{
           -webkit-user-select: none !important;
           user-select: none !important;
         }
 
-        .run-chevron {
+        [data-theme="hellripper"] .run-chevron{
           color: #6a5a48;
           font-size: 15px;
           line-height: 1;
@@ -234,20 +234,19 @@
           transition: transform 0.15s, color 0.2s;
         }
 
-        .run-chevron.open {
+        [data-theme="hellripper"] .run-chevron.open{
           transform: rotate(90deg);
         }
 
-        .run-item:hover .run-chevron {
+        [data-theme="hellripper"] .run-item:hover .run-chevron{
           color: #dd3030;
         }
 
-        .job-list {
+        [data-theme="hellripper"] .job-list{
           padding: 0 6px 4px;
         }
 
-        .job-row,
-        .step-row {
+        [data-theme="hellripper"] .job-row, [data-theme="hellripper"] .step-row{
           border: none;
           background: none;
           width: calc(100% - 12px);
@@ -264,23 +263,23 @@
           color: #c8c0b0;
         }
 
-        .job-row:hover {
+        [data-theme="hellripper"] .job-row:hover{
           background: #2a1a18;
         }
 
-        .step-row {
+        [data-theme="hellripper"] .step-row{
           padding-left: 52px;
           color: #8a7e6e;
           cursor: default;
         }
 
-        .step-mark {
+        [data-theme="hellripper"] .step-mark{
           width: 12px;
           text-align: center;
           flex-shrink: 0;
         }
 
-        .run-duration {
+        [data-theme="hellripper"] .run-duration{
           color: #6a5f50;
           font-size: calc(11px * var(--font-scale, 1));
           font-style: italic;
@@ -290,7 +289,7 @@
           font-variant-numeric: tabular-nums;
         }
 
-        .step-duration {
+        [data-theme="hellripper"] .step-duration{
           color: #6a5f50;
           font-size: calc(11px * var(--font-scale, 1));
           font-style: italic;
@@ -298,23 +297,23 @@
           font-variant-numeric: tabular-nums;
         }
 
-        .step-link {
+        [data-theme="hellripper"] .step-link{
           cursor: default;
         }
 
-        .step-link:hover {
+        [data-theme="hellripper"] .step-link:hover{
           background: #2a1a18;
           color: #e0d8c8;
         }
 
-        .job-note {
+        [data-theme="hellripper"] .job-note{
           padding: 3px 8px 5px 44px;
           color: #6a5f50;
           font-style: italic;
           font-size: calc(11px * var(--font-scale, 1));
         }
 
-        .calm-ghost {
+        [data-theme="hellripper"] .calm-ghost{
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -322,20 +321,20 @@
           padding: 18px 0 10px;
         }
 
-        .calm-line {
+        [data-theme="hellripper"] .calm-line{
           color: #8a7e6e;
           font-style: italic;
           font-size: calc(12px * var(--font-scale, 1));
         }
 
-        .pager-clip {
+        [data-theme="hellripper"] .pager-clip{
           overflow: hidden;
           min-height: 0;
           flex: 1;
           display: flex;
         }
 
-        .pager-strip {
+        [data-theme="hellripper"] .pager-strip{
           display: flex;
           width: 600%;
           flex: 0 0 600%;
@@ -343,16 +342,16 @@
           align-items: stretch;
         }
 
-        .pager-page {
+        [data-theme="hellripper"] .pager-page{
           width: 16.6667%;
           flex-shrink: 0;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .pager-strip { transition: none; }
+          [data-theme="hellripper"] .pager-strip{ transition: none; }
         }
 
-        .repo-link {
+        [data-theme="hellripper"] .repo-link{
           display: block;
           width: 100%;
           border: none;
@@ -364,12 +363,12 @@
           text-align: left;
         }
 
-        .repo-link:hover {
+        [data-theme="hellripper"] .repo-link:hover{
           color: #dd3030;
           text-shadow: 0 0 6px rgba(200, 20, 20, 0.3);
         }
 
-        .repo-chip {
+        [data-theme="hellripper"] .repo-chip{
           font-family: 'IM Fell English SC', serif;
           font-size: calc(10px * var(--font-scale, 1));
           letter-spacing: 1px;
@@ -385,33 +384,33 @@
           white-space: nowrap;
         }
 
-        .sect-run { color: #5577ee !important; }
-        .sect-wait { color: #cc8822 !important; }
-        .sect-quiet { color: #6a7a48 !important; }
+        [data-theme="hellripper"] .sect-run{ color: #5577ee !important; }
+        [data-theme="hellripper"] .sect-wait{ color: #cc8822 !important; }
+        [data-theme="hellripper"] .sect-quiet{ color: #6a7a48 !important; }
 
-        .quiet-row .run-name { color: #9a8e7e; }
-        .quiet-row:hover .run-name { color: #e0d8c8; }
+        [data-theme="hellripper"] .quiet-row .run-name{ color: #9a8e7e; }
+        [data-theme="hellripper"] .quiet-row:hover .run-name{ color: #e0d8c8; }
 
-        .hist {
+        [data-theme="hellripper"] .hist{
           display: inline-flex;
           gap: 2.5px;
           flex-shrink: 0;
         }
 
-        .hist i {
+        [data-theme="hellripper"] .hist i{
           width: 7px;
           height: 7px;
           display: block;
         }
 
-        .hist .hist-ok { background: #55aa22; }
-        .hist .hist-fail { background: #cc2020; }
-        .hist .hist-skip { background: #9a8a78; opacity: 0.6; }
-        .hist .hist-run { background: #5577ee; }
-        .hist .hist-wait { background: #cc8822; }
-        .hist .hist-dim { opacity: 0.4; }
+        [data-theme="hellripper"] .hist .hist-ok{ background: #55aa22; }
+        [data-theme="hellripper"] .hist .hist-fail{ background: #cc2020; }
+        [data-theme="hellripper"] .hist .hist-skip{ background: #9a8a78; opacity: 0.6; }
+        [data-theme="hellripper"] .hist .hist-run{ background: #5577ee; }
+        [data-theme="hellripper"] .hist .hist-wait{ background: #cc8822; }
+        [data-theme="hellripper"] .hist .hist-dim{ opacity: 0.4; }
 
-        .tl-time {
+        [data-theme="hellripper"] .tl-time{
           width: 40px;
           flex-shrink: 0;
           text-align: right;
@@ -420,14 +419,14 @@
           font-variant-numeric: tabular-nums;
         }
 
-        .tl-now {
+        [data-theme="hellripper"] .tl-now{
           display: flex;
           align-items: center;
           gap: 8px;
           margin: 2px 14px 2px 56px;
         }
 
-        .tl-now-label {
+        [data-theme="hellripper"] .tl-now-label{
           font-family: 'IM Fell English SC', serif;
           font-size: calc(9px * var(--font-scale, 1));
           letter-spacing: 2px;
@@ -436,31 +435,31 @@
           white-space: nowrap;
         }
 
-        .tl-now-line {
+        [data-theme="hellripper"] .tl-now-line{
           flex: 1;
           height: 1px;
           background: linear-gradient(to right, #8b0000, transparent);
         }
 
-        .menu-content {
+        [data-theme="hellripper"] .menu-content{
           flex: 1;
           overflow-y: auto;
           min-height: 0;
           padding: 6px 0;
         }
 
-        .menu-content::-webkit-scrollbar { width: 6px; }
-        .menu-content::-webkit-scrollbar-track { background: #1a1210; }
-        .menu-content::-webkit-scrollbar-thumb { background: #6a3030; border-radius: 3px; }
-        .menu-content::-webkit-scrollbar-thumb:hover { background: #8b4040; }
+        [data-theme="hellripper"] .menu-content::-webkit-scrollbar{ width: 6px; }
+        [data-theme="hellripper"] .menu-content::-webkit-scrollbar-track{ background: #1a1210; }
+        [data-theme="hellripper"] .menu-content::-webkit-scrollbar-thumb{ background: #6a3030; border-radius: 3px; }
+        [data-theme="hellripper"] .menu-content::-webkit-scrollbar-thumb:hover{ background: #8b4040; }
 
-        .repo-group + .repo-group {
+        [data-theme="hellripper"] .repo-group + .repo-group{
           border-top: 1px solid #1a1210;
           margin-top: 6px;
           padding-top: 6px;
         }
 
-        .repo-header {
+        [data-theme="hellripper"] .repo-header{
           font-family: 'IM Fell English SC', serif;
           font-size: calc(10px * var(--font-scale, 1));
           letter-spacing: 2px;
@@ -474,7 +473,7 @@
           50% { filter: drop-shadow(0 0 2px var(--glow)) drop-shadow(0 0 5px var(--glow)); opacity: 1; }
         }
 
-        .run-item {
+        [data-theme="hellripper"] .run-item{
           -webkit-appearance: none;
           appearance: none;
           border: none;
@@ -495,27 +494,27 @@
           animation: fadeSlideIn 0.2s ease-out both;
         }
 
-        .run-item:hover {
+        [data-theme="hellripper"] .run-item:hover{
           background: #2a1a18;
         }
 
-        .status-icon {
+        [data-theme="hellripper"] .status-icon{
           width: 16px;
           height: 16px;
           flex-shrink: 0;
           filter: drop-shadow(0 0 1px var(--glow));
         }
 
-        .icon-trigger {
+        [data-theme="hellripper"] .icon-trigger{
           display: inline-flex;
           flex-shrink: 0;
         }
 
-        .icon-pulse {
+        [data-theme="hellripper"] .icon-pulse{
           animation: iconPulse 1.8s ease-in-out infinite;
         }
 
-        .run-name {
+        [data-theme="hellripper"] .run-name{
           flex: 1;
           font-size: calc(14px * var(--font-scale, 1));
           color: #e0d8c8;
@@ -524,11 +523,11 @@
           white-space: nowrap;
         }
 
-        .run-item:hover .run-name {
+        [data-theme="hellripper"] .run-item:hover .run-name{
           color: #e8e0d0;
         }
 
-        .run-time {
+        [data-theme="hellripper"] .run-time{
           font-size: calc(12px * var(--font-scale, 1));
           color: #8a7e6e;
           flex-shrink: 0;
@@ -538,7 +537,7 @@
           font-variant-numeric: tabular-nums;
         }
 
-        .menu-message {
+        [data-theme="hellripper"] .menu-message{
           padding: 16px 14px;
           color: #605848;
           font-size: calc(12px * var(--font-scale, 1));
@@ -546,11 +545,11 @@
           text-align: center;
         }
 
-        .menu-footer {
+        [data-theme="hellripper"] .menu-footer{
           padding: 4px 0 6px;
         }
 
-        .footer-item {
+        [data-theme="hellripper"] .footer-item{
           display: block;
           width: calc(100% - 12px);
           padding: 6px 8px;
@@ -566,18 +565,18 @@
           border-radius: 5px;
         }
 
-        .footer-item:hover {
+        [data-theme="hellripper"] .footer-item:hover{
           background: #2a1a18;
           color: #e8e0d0;
         }
 
-        .footer-sigil {
+        [data-theme="hellripper"] .footer-sigil{
           text-align: center;
           padding: 6px 0;
           opacity: 0.3;
         }
 
-        .decor-scratches {
+        [data-theme="hellripper"] .decor-scratches{
           position: absolute;
           inset: 0;
           pointer-events: none;
@@ -585,11 +584,12 @@
           z-index: 2;
         }
 
-        .decor-scratch {
+        [data-theme="hellripper"] .decor-scratch{
           position: absolute;
           background: rgba(200, 192, 176, 0.03);
         }
 
+[data-theme="hellripper"] .sect-wait { -webkit-user-select: none !important; user-select: none !important; }
 
 /* ------- generated: attribute-driven iconography ------- */
 [data-theme="hellripper"] .status-icon {
@@ -696,6 +696,7 @@
 [data-theme="hellripper"] .brand-text .brand-drip:nth-of-type(2) { bottom: -14px; left: 60%; width: 2px; height: 18px; }
 [data-theme="hellripper"] .brand-text .brand-drip:nth-of-type(3) { bottom: -6px; left: 80%; width: 1.5px; height: 9px; }
 [data-theme="hellripper"] .brand-text { position: relative; display: inline-block; }
+
 
 
 [data-theme="hellripper"] .tooltip-content {
