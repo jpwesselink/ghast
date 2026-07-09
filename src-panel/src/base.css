@@ -3,8 +3,8 @@
   /* --accent-system is set from AppKit's controlAccentColor at runtime;
      the CSS AccentColor keyword renders stock blue in WKWebView. */
   --bg-hover: var(--accent-system, #0064e0);
-  --text-primary: #262626;
-  --text-secondary: #8c8c8c;
+  --text-primary: #1d1d1f;
+  --text-secondary: #59595f;
   --text-hover: #ffffff;
   --separator: #dedede;
   --shadow: 0 6px 20px rgba(0, 0, 0, 0.18), 0 0 0 0.5px #c8c8c8;

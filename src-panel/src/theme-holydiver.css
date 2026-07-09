@@ -219,7 +219,7 @@
   font-size: 0.8em;
   padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(127, 127, 127, 0.16);
+  background: rgba(120, 120, 128, 0.22);
   color: var(--text-secondary);
   flex-shrink: 0;
   width: calc(100px * var(--font-scale, 1));
