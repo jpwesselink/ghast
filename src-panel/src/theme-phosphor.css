@@ -130,13 +130,13 @@
 [data-theme="phosphor"] .pager-clip { overflow: hidden; min-height: 0; }
 [data-theme="phosphor"] .pager-strip {
   display: flex;
-  width: 600%;
+  width: 700%;
   height: 100%;
   transition: transform 160ms steps(6);
   align-items: stretch;
 }
 [data-theme="phosphor"] .pager-page {
-  width: 16.6667%;
+  width: 14.2857%;
   flex-shrink: 0;
   height: 100%;
 }
@@ -422,3 +422,39 @@
   font-family: ui-monospace, "SF Mono", Menlo, monospace !important;
   text-shadow: 0 0 4px rgba(51, 255, 102, 0.3);
 }
+
+
+/* repo grid */
+[data-theme="phosphor"] .repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 6px;
+  padding: 8px 12px;
+}
+[data-theme="phosphor"] .repo-cell {
+  border: 1px solid #103d20;
+  background: #06180d;
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  font-size: calc(10px * var(--font-scale, 1));
+  text-transform: lowercase;
+  color: #4d9e66;
+  padding: 10px 6px;
+  cursor: default;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  --cell: #4d9e66;
+}
+[data-theme="phosphor"] .repo-cell[data-state="ok"] { --cell: #33ff66; }
+[data-theme="phosphor"] .repo-cell[data-state="fail"] { --cell: #ff4d4d; }
+[data-theme="phosphor"] .repo-cell[data-state="run"] { --cell: #4dc3ff; }
+[data-theme="phosphor"] .repo-cell[data-state="wait"] { --cell: #ffb347; }
+[data-theme="phosphor"] .repo-cell {
+  border-color: var(--cell);
+  color: var(--cell);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--cell) 40%, transparent);
+}
+[data-theme="phosphor"] .repo-cell:hover { background: #0a2413; }

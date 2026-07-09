@@ -23,6 +23,7 @@ const PANES = [
   { id: "repos", label: "Repos" },
   { id: "focus", label: "Focus" },
   { id: "timeline", label: "Timeline" },
+  { id: "grid", label: "Grid" },
   { id: "reviews", label: "Reviews" },
   { id: "prs", label: "My PRs" },
   { id: "comments", label: "Comments" },
@@ -298,6 +299,56 @@ function TimelineView({ themeId, data }: { themeId: ThemeId; data: PanelPayload 
   );
 }
 
+type RepoState = "fail" | "wait" | "run" | "ok" | "idle";
+
+/// Worst state among each workflow's latest run; ranked bad-first.
+function repoState(runs: PanelWorkflowRun[] | undefined): RepoState {
+  if (!runs || runs.length === 0) return "idle";
+  let state: RepoState = "idle";
+  const rank: Record<RepoState, number> = { fail: 4, wait: 3, run: 2, ok: 1, idle: 0 };
+  const latest = new Map<string, PanelWorkflowRun>();
+  for (const r of runs) {
+    const prev = latest.get(r.workflow_name);
+    if (!prev || r.created_at > prev.created_at) latest.set(r.workflow_name, r);
+  }
+  for (const r of latest.values()) {
+    let s: RepoState = "idle";
+    if (r.status === "waiting") s = "wait";
+    else if (r.status !== "completed") s = "run";
+    else if (
+      r.conclusion === "failure" ||
+      r.conclusion === "timed_out" ||
+      r.conclusion === "action_required"
+    )
+      s = "fail";
+    else if (r.conclusion === "success") s = "ok";
+    if (rank[s] > rank[state]) state = s;
+  }
+  return state;
+}
+
+function GridView({ themeId, data }: { themeId: ThemeId; data: PanelPayload }) {
+  const copy = PANEL_COPY[themeId];
+  if (data.repos.length === 0) {
+    return <CalmGhost themeId={themeId} line={copy.noRepos} />;
+  }
+  return (
+    <div className="repo-grid">
+      {data.repos.map((repo) => (
+        <button
+          key={repo}
+          className="repo-cell"
+          data-state={repoState(data.runs[repo])}
+          title={repo}
+          onClick={() => openRepoUrl(repo)}
+        >
+          {chipLabel(repo)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function ReviewRow({ review }: { review: PanelPendingReview }) {
   return (
     <div
@@ -364,6 +415,7 @@ export default function Panel({
     repos: 0,
     focus: failing.length + waiting.length + running.length,
     timeline: 0,
+    grid: 0,
     reviews: data.pending_reviews.length,
     prs: data.my_prs.length,
     comments: data.mentions.length,
@@ -451,6 +503,9 @@ export default function Panel({
               </div>
               <div className="pager-page menu-content">
                 <TimelineView themeId={themeId} data={data} />
+              </div>
+              <div className="pager-page menu-content">
+                <GridView themeId={themeId} data={data} />
               </div>
               <div className="pager-page menu-content">
                 {data.pending_reviews.length === 0 ? (
