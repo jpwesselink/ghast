@@ -36,20 +36,14 @@ function usePrTitle(repo: string, number: number | null): string {
 
 /// "#124" (PR, with the PR title on hover) or a branch chip; nothing for
 /// default-branch runs.
-export default function SourceChip({
-  run,
-  variant,
-}: {
-  run: PanelWorkflowRun;
-  variant: "clean" | "blackmetal";
-}) {
+export default function SourceChip({ run }: { run: PanelWorkflowRun }) {
   const src = sourceChip(run);
   const title = usePrTitle(run.repo, src ? run.pr_number : null);
   if (!src) return null;
 
   const chip = (
     <span
-      className={variant === "clean" ? "repo-chip" : "bm-chip"}
+      className="repo-chip"
       onClick={(e) => {
         e.stopPropagation();
         if (window.getSelection()?.toString()) return;
@@ -65,7 +59,7 @@ export default function SourceChip({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{chip}</TooltipTrigger>
-      <TooltipContent variant={variant === "blackmetal" ? "blackmetal" : undefined}>
+      <TooltipContent>
         {title || `${run.repo} #${run.pr_number}`}
       </TooltipContent>
     </Tooltip>

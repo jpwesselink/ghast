@@ -1,65 +1,4 @@
-:root {
-  --bg: rgba(246, 246, 246, 0.85);
-  /* --accent-system is set from AppKit's controlAccentColor at runtime;
-     the CSS AccentColor keyword renders stock blue in WKWebView. */
-  --bg-hover: var(--accent-system, #0064e0);
-  --text-primary: #262626;
-  --text-secondary: #8c8c8c;
-  --text-hover: #ffffff;
-  --separator: #dedede;
-  --shadow: 0 6px 20px rgba(0, 0, 0, 0.18), 0 0 0 0.5px #c8c8c8;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: rgba(40, 40, 40, 0.85);
-    --bg-hover: var(--accent-system, #0a84ff);
-    --text-primary: #ffffff;
-    --text-secondary: #9a9aa2;
-    --text-hover: #ffffff;
-    --separator: rgba(255, 255, 255, 0.14);
-    --shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 0 0.5px #3a3a3a;
-    --panel-tint: rgba(8, 8, 10, 0.62);
-  }
-
-  html:has(.menu) #root {
-    background: var(--panel-tint);
-  }
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html, body, #root {
-  height: 100%;
-  background: transparent;
-}
-
-html:has(.menu), html:has(.bm-container) {
-  overflow: hidden;
-  border-radius: 14px;
-}
-
-html:has(.menu) body, html:has(.bm-container) body {
-  overflow: hidden;
-  border-radius: 14px;
-}
-
-html:has(.menu) #root, html:has(.bm-container) #root {
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-body {
-  font: menu;
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-}
-
-.menu {
+[data-theme="holydiver"] .menu {
   font-size: calc(13px * var(--font-scale, 1));
   background: transparent;
   border-radius: 0;
@@ -74,34 +13,34 @@ body {
 /* content grows into whatever height the user gives the window;
    the footer stays pinned to the bottom */
 .menu > .menu-content,
-.menu > .pager-clip {
+[data-theme="holydiver"] .menu > .pager-clip {
   flex: 1;
 }
 
-.menu > .menu-separator:nth-last-child(2) {
+[data-theme="holydiver"] .panel-inner > .menu-separator.sep-bottom {
   margin-top: auto;
 }
 
-.menu-content {
+[data-theme="holydiver"] .menu-content {
   overflow-y: auto;
   padding: 2px 0;
 }
 
-.menu-content::-webkit-scrollbar {
+[data-theme="holydiver"] .menu-content::-webkit-scrollbar {
   width: 0;
 }
 
-.repo-group {
+[data-theme="holydiver"] .repo-group {
   padding: 0;
 }
 
-.menu-tabs {
+[data-theme="holydiver"] .menu-tabs {
   display: flex;
   padding: 6px 6px 0;
   gap: 4px;
 }
 
-.menu-tab {
+[data-theme="holydiver"] .menu-tab {
   flex: 1;
   display: flex;
   align-items: center;
@@ -119,18 +58,18 @@ body {
   transition: background 0.1s, color 0.1s;
 }
 
-.menu-tab:hover {
+[data-theme="holydiver"] .menu-tab:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
 
-.menu-tab.active {
+[data-theme="holydiver"] .menu-tab.active {
   background: var(--bg-hover);
   color: var(--text-primary);
   font-weight: 600;
 }
 
-.menu-tab-badge {
+[data-theme="holydiver"] .menu-tab-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -144,17 +83,17 @@ body {
   font-weight: 600;
 }
 
-.menu-tab.active .menu-tab-badge {
+[data-theme="holydiver"] .menu-tab.active .menu-tab-badge {
   background: rgba(127, 127, 127, 0.4);
 }
 
-.repo-group + .repo-group {
+[data-theme="holydiver"] .repo-group + .repo-group {
   margin-top: 6px;
   padding-top: 6px;
   position: relative;
 }
 
-.repo-group + .repo-group::before {
+[data-theme="holydiver"] .repo-group + .repo-group::before {
   content: "";
   position: absolute;
   top: 0;
@@ -164,7 +103,7 @@ body {
   background: var(--separator);
 }
 
-.repo-header {
+[data-theme="holydiver"] .repo-header {
   padding: 4px 14px 4px;
   font-size: 0.85em;
   font-weight: 600;
@@ -176,7 +115,7 @@ body {
   text-transform: none;
 }
 
-.run-item {
+[data-theme="holydiver"] .run-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -192,30 +131,30 @@ body {
   border-radius: 5px;
 }
 
-.run-item:hover {
+[data-theme="holydiver"] .run-item:hover {
   background: var(--bg-hover);
   color: var(--text-hover);
 }
 
-.run-item:hover .run-time {
+[data-theme="holydiver"] .run-item:hover .run-time {
   color: var(--text-hover);
 }
 
-.run-dot {
+[data-theme="holydiver"] .run-dot {
   width: 9px;
   height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.run-name {
+[data-theme="holydiver"] .run-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.run-time {
+[data-theme="holydiver"] .run-time {
   color: var(--text-secondary);
   font-size: 0.92em;
   flex-shrink: 0;
@@ -224,30 +163,30 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.run-loading {
+[data-theme="holydiver"] .run-loading {
   padding: 6px 14px 6px 32px;
   color: var(--text-secondary);
   font-size: 0.92em;
 }
 
-.menu-message {
+[data-theme="holydiver"] .menu-message {
   padding: 14px 14px;
   color: var(--text-secondary);
   font-size: 0.92em;
   text-align: center;
 }
 
-.menu-separator {
+[data-theme="holydiver"] .menu-separator {
   height: 0.5px;
   background: var(--separator);
   margin: 6px 14px;
 }
 
-.menu-footer {
+[data-theme="holydiver"] .menu-footer {
   padding: 2px 0;
 }
 
-.footer-item {
+[data-theme="holydiver"] .footer-item {
   display: block;
   width: calc(100% - 12px);
   padding: 6px 8px;
@@ -261,7 +200,7 @@ body {
   border-radius: 5px;
 }
 
-.footer-item:hover {
+[data-theme="holydiver"] .footer-item:hover {
   background: var(--bg-hover);
   color: var(--text-hover);
 }
@@ -276,25 +215,15 @@ body {
   user-select: none;
   animation: tooltip-in 120ms ease-out;
 }
-.tooltip-content--default {
+[data-theme="holydiver"] .tooltip-content {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   background: rgba(40, 40, 40, 0.95);
   color: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
-.tooltip-arrow--default { fill: rgba(40, 40, 40, 0.95); }
+[data-theme="holydiver"] .tooltip-arrow { fill: rgba(40, 40, 40, 0.95); }
 
-.tooltip-content--blackmetal {
-  background: linear-gradient(180deg, #1a0808 0%, #050000 100%);
-  color: #ddc0a0;
-  border: 1px solid #4a1010;
-  font-family: 'IM Fell English', serif;
-  font-style: italic;
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  box-shadow: 0 0 10px rgba(120, 0, 0, 0.5);
-}
-.tooltip-arrow--blackmetal { fill: #1a0808; }
+
 
 @keyframes tooltip-in {
   from { opacity: 0; transform: translateY(2px); }
@@ -488,7 +417,7 @@ body {
 /* section labels reuse .repo-header but are chrome */
 .sect-fail,
 .sect-run,
-.sect-label,
+.sect-quiet,
 .tl-day {
   -webkit-user-select: none !important;
   user-select: none !important;
@@ -624,4 +553,58 @@ body {
 .icon-trigger {
   display: inline-flex;
   flex-shrink: 0;
+}
+
+
+/* ------- generated: attribute-driven iconography ------- */
+[data-theme="holydiver"] .status-icon {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background-color: rgb(142, 142, 147);
+}
+[data-theme="holydiver"] .status-icon[data-status="queued"] { background-color: rgb(255, 204, 0); }
+[data-theme="holydiver"] .status-icon[data-status="waiting"] { background-color: rgb(255, 149, 0); }
+[data-theme="holydiver"] .status-icon[data-status="in_progress"] { background-color: rgb(0, 122, 255); }
+[data-theme="holydiver"] .status-icon[data-status="completed"][data-conclusion="success"] { background-color: rgb(52, 199, 89); }
+[data-theme="holydiver"] .status-icon[data-status="completed"][data-conclusion="failure"] { background-color: rgb(255, 59, 48); }
+[data-theme="holydiver"] .status-icon[data-status="in_progress"],
+[data-theme="holydiver"] .status-icon[data-status="waiting"] {
+  animation: dot-pulse 1.6s ease-in-out infinite;
+}
+
+[data-theme="holydiver"] .pr-icon {
+  width: 13px; height: 13px; flex-shrink: 0;
+  background-size: contain; background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 16 16'%3E%3Cpath fill%3D'rgb(63%2C185%2C80)' d%3D'M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z'%2F%3E%3C%2Fsvg%3E");
+}
+[data-theme="holydiver"] .pr-icon[data-draft="true"] { background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 16 16'%3E%3Cpath fill%3D'rgb(142%2C142%2C147)' d%3D'M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z'%2F%3E%3C%2Fsvg%3E"); }
+[data-theme="holydiver"] .comment-icon {
+  width: 13px; height: 13px; flex-shrink: 0;
+  background-size: contain; background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 16 16'%3E%3Cpath fill%3D'rgb(70%2C150%2C220)' d%3D'M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z'%2F%3E%3C%2Fsvg%3E");
+}
+
+[data-theme="holydiver"] .step-mark[data-state="success"]::before { content: "✓"; color: rgb(52, 199, 89); }
+[data-theme="holydiver"] .step-mark[data-state="fail"]::before { content: "✕"; color: rgb(255, 59, 48); }
+[data-theme="holydiver"] .step-mark[data-state="running"]::before { content: "◌"; color: rgb(0, 122, 255); }
+[data-theme="holydiver"] .step-mark[data-state="pending"]::before { content: "·"; color: rgb(142, 142, 147); }
+[data-theme="holydiver"] .step-mark[data-state="neutral"]::before { content: "–"; color: rgb(142, 142, 147); }
+
+/* hellripper-only chrome stays dark */
+[data-theme="holydiver"] .decor-noise,
+[data-theme="holydiver"] .decor-scratches,
+[data-theme="holydiver"] .decor-rain,
+[data-theme="holydiver"] .brand-title,
+[data-theme="holydiver"] .brand-subtitle,
+[data-theme="holydiver"] .footer-sigil {
+  display: none;
+}
+
+[data-theme="holydiver"] .panel-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }

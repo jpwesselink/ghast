@@ -2,7 +2,9 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import type { PanelMention, PanelPayload, PanelPendingReview, PanelWorkflowRun } from "./types";
-import type { PanelTheme } from "./panelTheme";
+import { PANEL_COPY, CALM_GHOST, ThemeId } from "./panelCopy";
+import { RAIN, SCRATCHES } from "./decor";
+import Ghost from "./Ghost";
 import JobSteps, { WorkflowDuration } from "./JobSteps";
 import SourceChip from "./SourceChip";
 import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
@@ -11,7 +13,6 @@ import {
   chipLabel,
   dayLabel,
   formatTimeAgo,
-  isBad,
   statusLabel,
   timeLabel,
   timelineEntries,
@@ -41,34 +42,37 @@ function openRepoUrl(repo: string) {
   invoke("open_url", { url: `https://github.com/${repo}` });
 }
 
-function histClass(prefix: string, run: PanelWorkflowRun): string {
-  if (run.status === "waiting") return `${prefix}-wait`;
-  if (run.status !== "completed") return `${prefix}-run`;
-  if (run.conclusion === "success") return `${prefix}-ok`;
-  if (isBad(run)) return `${prefix}-fail`;
-  return `${prefix}-skip`;
+function histClass(run: PanelWorkflowRun): string {
+  if (run.status === "waiting") return "hist-wait";
+  if (run.status !== "completed") return "hist-run";
+  if (run.conclusion === "success") return "hist-ok";
+  if (
+    run.conclusion === "failure" ||
+    run.conclusion === "timed_out" ||
+    run.conclusion === "action_required"
+  )
+    return "hist-fail";
+  return "hist-skip";
 }
 
-function HistoryStrip({ t, runs }: { t: PanelTheme; runs: PanelWorkflowRun[] }) {
+function HistoryStrip({ runs }: { runs: PanelWorkflowRun[] }) {
   const last = runs.slice(-5);
   return (
-    <span className={t.c.histPrefix}>
+    <span className="hist">
       {last.map((r, i) => (
         <i
           key={r.html_url}
-          className={`${histClass(t.c.histPrefix, r)}${
-            i < last.length - 1 ? ` ${t.c.histPrefix}-dim` : ""
-          }`}
+          className={`${histClass(r)}${i < last.length - 1 ? " hist-dim" : ""}`}
         />
       ))}
     </span>
   );
 }
 
-function RepoChip({ t, repo }: { t: PanelTheme; repo: string }) {
+function RepoChip({ repo }: { repo: string }) {
   return (
     <span
-      className={t.c.chip}
+      className="repo-chip"
       onClick={(e) => {
         e.stopPropagation();
         openRepoUrl(repo);
@@ -79,11 +83,11 @@ function RepoChip({ t, repo }: { t: PanelTheme; repo: string }) {
   );
 }
 
-function ExpandChevron({ t, runId }: { t: PanelTheme; runId: number }) {
+function ExpandChevron({ runId }: { runId: number }) {
   const open = useExpandedRuns().includes(runId);
   return (
     <span
-      className={`${t.c.chevron}${open ? " open" : ""}`}
+      className={`run-chevron${open ? " open" : ""}`}
       onClick={(e) => {
         e.stopPropagation();
         toggleRunExpanded(runId);
@@ -94,27 +98,32 @@ function ExpandChevron({ t, runId }: { t: PanelTheme; runId: number }) {
   );
 }
 
-function StatusIconTip({ t, run }: { t: PanelTheme; run: PanelWorkflowRun }) {
+/// Status is rendered as an attribute-addressed span; each theme's CSS
+/// decides whether that means a colored dot or a summoned glyph.
+function StatusIconTip({ run }: { run: PanelWorkflowRun }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className={t.c.iconTrigger}>{t.StatusIcon(run)}</span>
+        <span className="icon-trigger">
+          <span
+            className="status-icon"
+            data-status={run.status}
+            data-conclusion={run.conclusion ?? ""}
+          />
+        </span>
       </TooltipTrigger>
-      <TooltipContent variant={t.variant === "blackmetal" ? "blackmetal" : undefined}>
-        {statusLabel(run)}
-      </TooltipContent>
+      <TooltipContent>{statusLabel(run)}</TooltipContent>
     </Tooltip>
   );
 }
 
-/// One workflow run row; `showRepo` adds the repo chip (focus/timeline).
 function RunRow({
-  t,
+  themeId,
   run,
   showRepo = false,
   showTime = true,
 }: {
-  t: PanelTheme;
+  themeId: ThemeId;
   run: PanelWorkflowRun;
   showRepo?: boolean;
   showTime?: boolean;
@@ -122,49 +131,47 @@ function RunRow({
   const expanded = useExpandedRuns().includes(run.run_id);
   return (
     <>
-      <div
-        className={t.c.row}
-        onClick={() => invoke("open_url", { url: run.html_url })}
-      >
-        <ExpandChevron t={t} runId={run.run_id} />
-        <StatusIconTip t={t} run={run} />
-        <span className={t.c.name}>{run.workflow_name}</span>
-        <SourceChip run={run} variant={t.variant} />
-        {showRepo && <RepoChip t={t} repo={run.repo} />}
-        <WorkflowDuration run={run} className={t.c.duration} />
-        {showTime && (
-          <span className={t.c.time}>{formatTimeAgo(run.created_at)}</span>
-        )}
+      <div className="run-item" onClick={() => invoke("open_url", { url: run.html_url })}>
+        <ExpandChevron runId={run.run_id} />
+        <StatusIconTip run={run} />
+        <span className="run-name">{run.workflow_name}</span>
+        <SourceChip run={run} />
+        {showRepo && <RepoChip repo={run.repo} />}
+        <WorkflowDuration run={run} className="run-duration" />
+        {showTime && <span className="run-time">{formatTimeAgo(run.created_at)}</span>}
       </div>
-      {expanded && <JobSteps run={run} variant={t.variant} />}
+      {expanded && <JobSteps run={run} themeId={themeId} />}
     </>
   );
 }
 
-function CalmGhost({ t, line }: { t: PanelTheme; line: string }) {
+function CalmGhost({ themeId, line }: { themeId: ThemeId; line: string }) {
   return (
-    <div className={t.c.calm}>
-      {t.CalmGhost()}
-      <div className={t.c.calmLine}>{line}</div>
+    <div className="calm-ghost">
+      <Ghost size={56} {...CALM_GHOST[themeId]} />
+      <div className="calm-line">{line}</div>
     </div>
   );
 }
 
-function ReposView({ t, data }: { t: PanelTheme; data: PanelPayload }) {
+function ReposView({ themeId, data }: { themeId: ThemeId; data: PanelPayload }) {
+  const copy = PANEL_COPY[themeId];
   if (data.repos.length === 0) {
-    return <CalmGhost t={t} line={t.copy.noRepos} />;
+    return <CalmGhost themeId={themeId} line={copy.noRepos} />;
   }
   return (
     <>
       {data.repos.map((repo) => (
-        <div key={repo} className={t.c.group}>
-          <button className={t.c.headerLink} onClick={() => openRepoUrl(repo)}>
+        <div key={repo} className="repo-group">
+          <button className="repo-header repo-link" onClick={() => openRepoUrl(repo)}>
             {repo}
           </button>
           {data.runs[repo] ? (
-            data.runs[repo].map((run) => <RunRow key={run.html_url} t={t} run={run} />)
+            data.runs[repo].map((run) => (
+              <RunRow key={run.html_url} themeId={themeId} run={run} />
+            ))
           ) : (
-            <div className={t.c.loading}>{t.copy.loadingRuns}</div>
+            <div className="run-loading">{copy.loadingRuns}</div>
           )}
         </div>
       ))}
@@ -173,14 +180,15 @@ function ReposView({ t, data }: { t: PanelTheme; data: PanelPayload }) {
 }
 
 function FocusView({
-  t,
+  themeId,
   data,
   expandRuns,
 }: {
-  t: PanelTheme;
+  themeId: ThemeId;
   data: PanelPayload;
   expandRuns: number;
 }) {
+  const copy = PANEL_COPY[themeId];
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const { failing, waiting, running, quiet } = bucketRepos(data.repos, data.runs);
 
@@ -194,43 +202,45 @@ function FocusView({
   const calm = failing.length === 0 && waiting.length === 0 && running.length === 0;
 
   if (calm && quiet.length === 0) {
-    return <CalmGhost t={t} line={t.copy.noRepos} />;
+    return <CalmGhost themeId={themeId} line={copy.noRepos} />;
   }
 
   const section = (cls: string, label: string, items: typeof failing) =>
     items.length > 0 && (
-      <div className={t.c.group}>
-        <div className={cls}>{label}</div>
+      <div className="repo-group">
+        <div className={`repo-header ${cls}`}>{label}</div>
         {items.map(({ run }) => (
-          <RunRow key={run.html_url} t={t} run={run} showRepo />
+          <RunRow key={run.html_url} themeId={themeId} run={run} showRepo />
         ))}
       </div>
     );
 
   return (
     <>
-      {calm && <CalmGhost t={t} line={t.copy.calm} />}
-      {section(t.c.sectFail, t.copy.failing, failing)}
-      {section(t.c.sectWait, t.copy.waiting, waiting)}
-      {section(t.c.sectRun, t.copy.running, running)}
+      {calm && <CalmGhost themeId={themeId} line={copy.calm} />}
+      {section("sect-fail", copy.failing, failing)}
+      {section("sect-wait", copy.waiting, waiting)}
+      {section("sect-run", copy.running, running)}
       {quiet.length > 0 && (
-        <div className={t.c.group}>
-          <div className={t.c.sectQuiet}>{t.copy.quiet}</div>
+        <div className="repo-group">
+          <div className="repo-header sect-quiet">{copy.quiet}</div>
           {quiet.map(({ repo, latest, history }) => (
             <div key={repo}>
-              <button className={t.c.quietRow} onClick={() => toggle(repo)}>
-                <span className={`${t.c.chevron}${expanded.has(repo) ? " open" : ""}`}>
+              <button className="run-item quiet-row" onClick={() => toggle(repo)}>
+                <span className={`run-chevron${expanded.has(repo) ? " open" : ""}`}>
                   ›
                 </span>
-                <span className={t.c.name}>{repo}</span>
-                <HistoryStrip t={t} runs={history} />
-                <span className={t.c.time}>{formatTimeAgo(latest.created_at)}</span>
+                <span className="run-name">{repo}</span>
+                <HistoryStrip runs={history} />
+                <span className="run-time">{formatTimeAgo(latest.created_at)}</span>
               </button>
               {expanded.has(repo) &&
                 [...history]
                   .reverse()
                   .slice(0, expandRuns)
-                  .map((run) => <RunRow key={run.html_url} t={t} run={run} />)}
+                  .map((run) => (
+                    <RunRow key={run.html_url} themeId={themeId} run={run} />
+                  ))}
             </div>
           ))}
         </div>
@@ -239,11 +249,12 @@ function FocusView({
   );
 }
 
-function TimelineView({ t, data }: { t: PanelTheme; data: PanelPayload }) {
+function TimelineView({ themeId, data }: { themeId: ThemeId; data: PanelPayload }) {
+  const copy = PANEL_COPY[themeId];
   const entries = timelineEntries(data.runs);
   const expandedRuns = useExpandedRuns();
   if (entries.length === 0) {
-    return <CalmGhost t={t} line={t.copy.noRepos} />;
+    return <CalmGhost themeId={themeId} line={copy.noRepos} />;
   }
 
   let lastDay = "";
@@ -258,26 +269,26 @@ function TimelineView({ t, data }: { t: PanelTheme; data: PanelPayload }) {
         const showNow = hasActive && i === 0;
         return (
           <div key={run.html_url}>
-            {showDay && <div className={t.c.tlDay}>{day}</div>}
+            {showDay && <div className="repo-header tl-day">{day}</div>}
             {showNow && (
-              <div className={t.c.tlNow}>
-                <span className={t.c.tlNowLabel}>{t.copy.nowLabel}</span>
-                <span className={t.c.tlNowLine} />
+              <div className="tl-now">
+                <span className="tl-now-label">{copy.nowLabel}</span>
+                <span className="tl-now-line" />
               </div>
             )}
             <div
-              className={t.c.row}
+              className="run-item tl-row"
               onClick={() => invoke("open_url", { url: run.html_url })}
             >
-              <span className={t.c.tlTime}>{timeLabel(run.created_at)}</span>
-              <ExpandChevron t={t} runId={run.run_id} />
-              <StatusIconTip t={t} run={run} />
-              <span className={t.c.name}>{run.workflow_name}</span>
-              <SourceChip run={run} variant={t.variant} />
-              <RepoChip t={t} repo={run.repo} />
+              <span className="tl-time">{timeLabel(run.created_at)}</span>
+              <ExpandChevron runId={run.run_id} />
+              <StatusIconTip run={run} />
+              <span className="run-name">{run.workflow_name}</span>
+              <SourceChip run={run} />
+              <RepoChip repo={run.repo} />
             </div>
             {expandedRuns.includes(run.run_id) && (
-              <JobSteps run={run} variant={t.variant} />
+              <JobSteps run={run} themeId={themeId} />
             )}
           </div>
         );
@@ -286,57 +297,60 @@ function TimelineView({ t, data }: { t: PanelTheme; data: PanelPayload }) {
   );
 }
 
-function ReviewRow({ t, review }: { t: PanelTheme; review: PanelPendingReview }) {
+function ReviewRow({ review }: { review: PanelPendingReview }) {
   return (
     <div
-      className={t.c.row}
+      className="run-item"
       onClick={() => invoke("open_url", { url: review.html_url })}
     >
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className={t.c.iconTrigger}>{t.ReviewIcon(review.draft)}</span>
+          <span className="icon-trigger">
+            <span className="pr-icon" data-draft={review.draft ? "true" : "false"} />
+          </span>
         </TooltipTrigger>
-        <TooltipContent variant={t.variant === "blackmetal" ? "blackmetal" : undefined}>
+        <TooltipContent>
           {`${review.repo} #${review.number} — @${review.author}${review.draft ? " (draft)" : ""}`}
         </TooltipContent>
       </Tooltip>
-      <span className={t.c.name}>{review.title}</span>
-      <RepoChip t={t} repo={review.repo} />
-      <span className={t.c.time}>{formatTimeAgo(review.created_at)}</span>
+      <span className="run-name">{review.title}</span>
+      <RepoChip repo={review.repo} />
+      <span className="run-time">{formatTimeAgo(review.created_at)}</span>
     </div>
   );
 }
 
-function MentionRow({ t, mention }: { t: PanelTheme; mention: PanelMention }) {
+function MentionRow({ mention }: { mention: PanelMention }) {
   return (
     <div
-      className={t.c.row}
+      className="run-item"
       onClick={() => invoke("open_url", { url: mention.html_url })}
     >
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className={t.c.iconTrigger}>{t.MentionIcon()}</span>
+          <span className="icon-trigger">
+            <span className="comment-icon" />
+          </span>
         </TooltipTrigger>
-        <TooltipContent variant={t.variant === "blackmetal" ? "blackmetal" : undefined}>
-          {`${mention.repo} — ${mention.subject_type}`}
-        </TooltipContent>
+        <TooltipContent>{`${mention.repo} — ${mention.subject_type}`}</TooltipContent>
       </Tooltip>
-      <span className={t.c.name}>{mention.title}</span>
-      <RepoChip t={t} repo={mention.repo} />
-      <span className={t.c.time}>{formatTimeAgo(mention.updated_at)}</span>
+      <span className="run-name">{mention.title}</span>
+      <RepoChip repo={mention.repo} />
+      <span className="run-time">{formatTimeAgo(mention.updated_at)}</span>
     </div>
   );
 }
 
 export default function Panel({
-  theme: t,
+  themeId,
   data,
   focusExpandRuns,
 }: {
-  theme: PanelTheme;
+  themeId: ThemeId;
   data: PanelPayload;
   focusExpandRuns: number;
 }) {
+  const copy = PANEL_COPY[themeId];
   const [paneIdx, setPaneIdx] = useState(loadPane);
 
   const goto = (i: number) => {
@@ -357,81 +371,126 @@ export default function Panel({
   const ready = !data.auth_error && data.has_pat;
 
   return (
-    <t.Shell>
-      <div className={t.c.tabs}>
-        {PANES.map((p, i) => (
-          <button
-            key={p.id}
-            className={`${t.c.tab}${i === paneIdx ? " active" : ""}`}
-            onClick={() => goto(i)}
-          >
-            <span>{p.label}</span>
-            {counts[p.id] > 0 && <span className={t.c.tabBadge}>{counts[p.id]}</span>}
-          </button>
+    <div className="menu">
+      <div className="decor-noise" />
+      <div className="decor-scratches">
+        {SCRATCHES.map((d, i) => (
+          <div
+            key={i}
+            className="decor-scratch"
+            style={{
+              width: d.w,
+              height: d.h,
+              left: `${d.left}%`,
+              top: `${d.top}%`,
+              transform: `rotate(${d.rot}deg)`,
+              opacity: d.o,
+            }}
+          />
         ))}
       </div>
-      {t.SepTop()}
-      {!ready ? (
-        <div className={t.c.content}>
-          <div className={t.c.message}>
-            {data.auth_error ? t.copy.authError : t.copy.noPat}
-          </div>
+
+      <div className="panel-inner">
+        <div className="decor-rain">
+          {RAIN.map((d, i) => (
+            <div
+              key={i}
+              className="decor-drop"
+              style={{
+                left: `${d.left}%`,
+                width: d.w,
+                height: d.h,
+                opacity: d.o,
+                animationDelay: `${d.delay}s`,
+                animationDuration: `${d.dur}s`,
+              }}
+            />
+          ))}
         </div>
-      ) : (
-        <div className={t.c.clip}>
-          <div
-            className={t.c.strip}
-            style={{ transform: `translateX(-${paneIdx * (100 / PANES.length)}%)` }}
-          >
-            <div className={`${t.c.page} ${t.c.content}`}>
-              <ReposView t={t} data={data} />
-            </div>
-            <div className={`${t.c.page} ${t.c.content}`}>
-              <FocusView t={t} data={data} expandRuns={focusExpandRuns} />
-            </div>
-            <div className={`${t.c.page} ${t.c.content}`}>
-              <TimelineView t={t} data={data} />
-            </div>
-            <div className={`${t.c.page} ${t.c.content}`}>
-              {data.pending_reviews.length === 0 ? (
-                <div className={t.c.message}>{t.copy.noReviews}</div>
-              ) : (
-                data.pending_reviews.map((r) => (
-                  <ReviewRow key={r.html_url} t={t} review={r} />
-                ))
-              )}
-            </div>
-            <div className={`${t.c.page} ${t.c.content}`}>
-              {data.my_prs.length === 0 ? (
-                <div className={t.c.message}>{t.copy.noPrs}</div>
-              ) : (
-                data.my_prs.map((r) => <ReviewRow key={r.html_url} t={t} review={r} />)
-              )}
-            </div>
-            <div className={`${t.c.page} ${t.c.content}`}>
-              {data.mentions.length === 0 ? (
-                <div className={t.c.message}>{t.copy.noMentions}</div>
-              ) : (
-                data.mentions.map((m) => (
-                  <MentionRow key={m.html_url} t={t} mention={m} />
-                ))
-              )}
+        <div className="brand-title">
+          <span className="brand-text">
+            Ghast
+            <span className="brand-drip" />
+            <span className="brand-drip" />
+            <span className="brand-drip" />
+          </span>
+        </div>
+        <div className="brand-subtitle">The GitHub Actions Ghost</div>
+
+        <div className="menu-tabs">
+          {PANES.map((p, i) => (
+            <button
+              key={p.id}
+              className={`menu-tab${i === paneIdx ? " active" : ""}`}
+              onClick={() => goto(i)}
+            >
+              <span>{p.label}</span>
+              {counts[p.id] > 0 && <span className="menu-tab-badge">{counts[p.id]}</span>}
+            </button>
+          ))}
+        </div>
+        <div className="menu-separator sep-top" />
+        {!ready ? (
+          <div className="menu-content">
+            <div className="menu-message">
+              {data.auth_error ? copy.authError : copy.noPat}
             </div>
           </div>
+        ) : (
+          <div className="pager-clip">
+            <div
+              className="pager-strip"
+              style={{ transform: `translateX(-${paneIdx * (100 / PANES.length)}%)` }}
+            >
+              <div className="pager-page menu-content">
+                <ReposView themeId={themeId} data={data} />
+              </div>
+              <div className="pager-page menu-content">
+                <FocusView themeId={themeId} data={data} expandRuns={focusExpandRuns} />
+              </div>
+              <div className="pager-page menu-content">
+                <TimelineView themeId={themeId} data={data} />
+              </div>
+              <div className="pager-page menu-content">
+                {data.pending_reviews.length === 0 ? (
+                  <div className="menu-message">{copy.noReviews}</div>
+                ) : (
+                  data.pending_reviews.map((r) => <ReviewRow key={r.html_url} review={r} />)
+                )}
+              </div>
+              <div className="pager-page menu-content">
+                {data.my_prs.length === 0 ? (
+                  <div className="menu-message">{copy.noPrs}</div>
+                ) : (
+                  data.my_prs.map((r) => <ReviewRow key={r.html_url} review={r} />)
+                )}
+              </div>
+              <div className="pager-page menu-content">
+                {data.mentions.length === 0 ? (
+                  <div className="menu-message">{copy.noMentions}</div>
+                ) : (
+                  data.mentions.map((m) => <MentionRow key={m.html_url} mention={m} />)
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="menu-separator sep-bottom" />
+        <div className="menu-footer">
+          <button className="footer-item" onClick={() => invoke("open_about")}>
+            About ghast...
+          </button>
+          <button className="footer-item" onClick={() => invoke("open_settings")}>
+            Settings...
+          </button>
+          <button className="footer-item" onClick={() => invoke("quit_app")}>
+            Quit ghast
+          </button>
         </div>
-      )}
-      {t.SepBottom()}
-      <div className={t.c.footer}>
-        <button className={t.c.footerItem} onClick={() => invoke("open_about")}>
-          About ghast...
-        </button>
-        <button className={t.c.footerItem} onClick={() => invoke("open_settings")}>
-          Settings...
-        </button>
-        <button className={t.c.footerItem} onClick={() => invoke("quit_app")}>
-          Quit ghast
-        </button>
+        <div className="footer-sigil">
+          <span className="footer-sigil-mark" />
+        </div>
       </div>
-    </t.Shell>
+    </div>
   );
 }

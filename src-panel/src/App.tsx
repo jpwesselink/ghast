@@ -2,8 +2,6 @@ import { useEffect, useState, useCallback, type ReactElement } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import Panel from "./Panel";
-import { cleanTheme } from "./panelTheme";
-import { blackmetalTheme } from "./panelThemeBlackmetal";
 import SettingsPanel from "./SettingsPanel";
 import { cleanSettingsTheme, blackmetalSettingsTheme } from "./settingsTheme";
 import About from "./About";
@@ -13,6 +11,10 @@ import type { PanelPayload } from "./types";
 const view = new URLSearchParams(window.location.search).get("view");
 const isSettings = view === "settings";
 const isAbout = view === "about";
+
+// set before first paint so themed CSS applies immediately
+document.documentElement.dataset.theme =
+  localStorage.getItem("ghast-theme") === "blackmetal" ? "hellripper" : "holydiver";
 
 const ACTIVATE = "hellripper";
 const DEACTIVATE = "holydiver";
@@ -116,6 +118,7 @@ export default function App() {
       const isBm = t === "blackmetal";
       setBlackMetal(isBm);
       localStorage.setItem("ghast-theme", isBm ? "blackmetal" : "normal");
+      document.documentElement.dataset.theme = isBm ? "hellripper" : "holydiver";
     };
 
     invoke<string>("get_theme").then(applyTheme);
@@ -175,7 +178,7 @@ export default function App() {
   } else if (data) {
     content = (
       <Panel
-        theme={blackMetal ? blackmetalTheme : cleanTheme}
+        themeId={blackMetal ? "hellripper" : "holydiver"}
         data={data}
         focusExpandRuns={focusExpandRuns}
       />
