@@ -11,10 +11,11 @@ const view = new URLSearchParams(window.location.search).get("view");
 const isSettings = view === "settings";
 const isAbout = view === "about";
 
-const THEME_IDS: Record<string, "holydiver" | "hellripper" | "phosphor"> = {
+const THEME_IDS: Record<string, "holydiver" | "hellripper" | "phosphor" | "pathe"> = {
   normal: "holydiver",
   blackmetal: "hellripper",
   phosphor: "phosphor",
+  pathe: "pathe",
 };
 
 // incantation -> config theme value
@@ -22,6 +23,7 @@ const INCANTATIONS: Record<string, string> = {
   holydiver: "normal",
   hellripper: "blackmetal",
   phosphor: "phosphor",
+  pathe: "pathe",
 };
 
 // set before first paint so themed CSS applies immediately

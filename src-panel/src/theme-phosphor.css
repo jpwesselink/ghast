@@ -411,3 +411,14 @@
     animation: none;
   }
 }
+
+
+/* about window on the CRT */
+[data-theme="phosphor"] .about {
+  --about-bg: #04140a;
+  --about-text: #7dffa3;
+  --about-secondary: #4d9e66;
+  --about-link: #33ff66;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace !important;
+  text-shadow: 0 0 4px rgba(51, 255, 102, 0.3);
+}

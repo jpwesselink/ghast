@@ -354,6 +354,15 @@ export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
                     <div className="s-theme-thumb crt">▮</div>
                     <div className="s-theme-name">Phosphor</div>
                   </button>
+                  <button
+                    className={`s-theme-card${
+                      currentTheme === "pathe" ? " active" : ""
+                    }`}
+                    onClick={() => pickTheme("pathe")}
+                  >
+                    <div className="s-theme-thumb popcorn">!</div>
+                    <div className="s-theme-name">Pathé</div>
+                  </button>
                 </div>
               </div>
             )}

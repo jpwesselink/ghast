@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import Ghost from "./Ghost";
+import { CALM_GHOST, ThemeId } from "./panelCopy";
 
 const year = new Date().getFullYear();
 
@@ -64,7 +65,8 @@ function Link({ url, children }: { url: string; children: React.ReactNode }) {
   );
 }
 
-function CleanAbout() {
+function CleanAbout({ themeId }: { themeId: ThemeId }) {
+  const ghost = CALM_GHOST[themeId];
   return (
     <>
       <style>{`
@@ -134,7 +136,11 @@ function CleanAbout() {
       `}</style>
       <div className="about">
         <div className="about-ghost">
-          <Ghost size={96} eyeMilkScale={0.7} eyeMilkColor="#dcd6c8" />
+          {themeId === "holydiver" ? (
+            <Ghost size={96} eyeMilkScale={0.7} eyeMilkColor="#dcd6c8" />
+          ) : (
+            <Ghost size={96} {...ghost} />
+          )}
         </div>
         <div className="about-name">ghast</div>
         <div className="about-tagline">GitHub Actions Status Tracker</div>
@@ -403,16 +409,24 @@ function HellripperAbout() {
   );
 }
 
+const ABOUT_THEME_IDS: Record<string, string> = {
+  normal: "holydiver",
+  blackmetal: "hellripper",
+  phosphor: "phosphor",
+  pathe: "pathe",
+};
+
 export default function About() {
-  const [blackMetal, setBlackMetal] = useState(
-    () => localStorage.getItem("ghast-theme") === "blackmetal"
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("ghast-theme") ?? "normal"
   );
 
   useEffect(() => {
     const applyTheme = (t: string) => {
-      const isBm = t === "blackmetal";
-      setBlackMetal(isBm);
-      localStorage.setItem("ghast-theme", isBm ? "blackmetal" : "normal");
+      const known = ABOUT_THEME_IDS[t] ? t : "normal";
+      setTheme(known);
+      localStorage.setItem("ghast-theme", known);
+      document.documentElement.dataset.theme = ABOUT_THEME_IDS[known];
     };
 
     invoke<string>("get_theme").then(applyTheme);
@@ -426,5 +440,11 @@ export default function About() {
     };
   }, []);
 
-  return blackMetal ? <HellripperAbout /> : <CleanAbout />;
+  // hellripper keeps its bespoke layout; every other theme reuses the
+  // clean layout and lets its data-theme CSS recolor it
+  return theme === "blackmetal" ? (
+    <HellripperAbout />
+  ) : (
+    <CleanAbout themeId={ABOUT_THEME_IDS[theme] as ThemeId} />
+  );
 }

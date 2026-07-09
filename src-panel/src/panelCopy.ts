@@ -1,4 +1,4 @@
-export type ThemeId = "holydiver" | "hellripper" | "phosphor";
+export type ThemeId = "holydiver" | "hellripper" | "phosphor" | "pathe";
 
 export interface PanelCopy {
   authError: string;
@@ -20,6 +20,24 @@ export interface PanelCopy {
 }
 
 export const PANEL_COPY: Record<ThemeId, PanelCopy> = {
+  pathe: {
+    authError: "Authenticatie mislukt - check instellingen",
+    noPat: "Koppel je GitHub token via instellingen",
+    noRepos: "Geen repos gekozen - check instellingen",
+    loadingRuns: "laden...",
+    noReviews: "Geen reviews in de wacht",
+    noPrs: "Geen open PRs van jou",
+    noMentions: "Geen ongelezen mentions",
+    calm: "Alles draait!",
+    failing: "Geflopt",
+    waiting: "Wacht op goedkeuring",
+    running: "Draait nu",
+    quiet: "Rustig",
+    nowLabel: "nu",
+    jobsLoading: "jobs laden...",
+    jobsError: "jobs niet beschikbaar",
+    jobsEmpty: "geen jobs gevonden",
+  },
   phosphor: {
     authError: "auth error :: check settings",
     noPat: "no token bound :: open settings",
@@ -86,6 +104,11 @@ export const CALM_GHOST: Record<
     glow?: string;
   }
 > = {
+  pathe: {
+    bodyColor: "#141414",
+    eyeMilkColor: "#f0b32b",
+    eyeMilkScale: 1.0,
+  },
   phosphor: {
     bodyColor: "#0d2b17",
     eyeMilkColor: "#33ff66",

@@ -30,6 +30,48 @@ export interface SettingsCopy {
 }
 
 export const SETTINGS_COPY: Record<ThemeId, SettingsCopy> = {
+  pathe: {
+    nav: {
+      account: "Account",
+      repositories: "Repos",
+      appearance: "Weergave",
+      general: "Algemeen",
+    },
+    titles: {
+      account: "Account",
+      repositories: "Repositories",
+      appearance: "Weergave",
+      general: "Algemeen",
+    },
+    tokenPlaceholder: "GitHub token (ghp_...)",
+    connect: "Koppel",
+    connecting: "Koppelen",
+    connected: "Gekoppeld",
+    connectedAs: (login) => `Gekoppeld als ${login}`,
+    failed: (e) => `Mislukt: ${e}`,
+    searchPlaceholder: "Zoeken...",
+    emptyUnbound: "Koppel eerst je GitHub token onder Account",
+    emptyNone: "Geen repositories gevonden",
+    noMatches: "Geen resultaten",
+    loadingRepos: "Repositories ophalen...",
+    privateBadge: "privé",
+    fontSizeLabel: "Tekstgrootte",
+    fontSizeHint: "Schaalt de tekst in het paneel",
+    fontSizes: [
+      { label: "S", value: 0.9 },
+      { label: "M", value: 1.0 },
+      { label: "L", value: 1.15 },
+      { label: "XL", value: 1.3 },
+    ],
+    perRepoLabel: "Builds per repo",
+    perRepoHint: "Aantal recente runs per repo in de Repos-weergave",
+    expandLabel: "Runs per rustige repo",
+    expandHint: "Aantal runs bij het uitklappen van een rustige repo in Focus",
+    colRepository: "Repository",
+    colWorkflows: "Workflows",
+    colReviews: "Reviews",
+    colMentions: "Mentions",
+  },
   phosphor: {
     nav: {
       account: "auth",

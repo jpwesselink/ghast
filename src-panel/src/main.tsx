@@ -6,6 +6,8 @@ import "./theme-holydiver.css";
 import "./theme-hellripper.css";
 import "./theme-phosphor.css";
 import "./theme-phosphor-settings.css";
+import "./theme-pathe.css";
+import "./theme-pathe-settings.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
