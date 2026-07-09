@@ -106,7 +106,7 @@ export const CALM_GHOST: Record<
 > = {
   pathe: {
     bodyColor: "#141414",
-    eyeMilkColor: "#f0b32b",
+    eyeMilkColor: "#ffc426",
     eyeMilkScale: 1.0,
   },
   phosphor: {

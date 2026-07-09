@@ -1,11 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&display=swap');
-
 /* Pathé — brand yellow, black pills, popcorn blobs. Single-look theme. */
 
 [data-theme="pathe"] .menu {
   font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
   font-size: calc(13px * var(--font-scale, 1));
-  background: #f0b32b;
+  background: #ffc426;
   color: #141414;
   height: 100vh;
   display: flex;
@@ -124,7 +122,7 @@
   height: 15px;
   padding: 0 5px;
   border-radius: 8px;
-  background: #f0b32b;
+  background: #ffc426;
   color: #141414;
   font-size: calc(10px * var(--font-scale, 1));
   font-weight: 800;
@@ -230,7 +228,7 @@
   transition: transform 0.12s;
 }
 [data-theme="pathe"] .run-chevron.open { transform: rotate(90deg); }
-[data-theme="pathe"] .run-item:hover .run-chevron { color: #f0b32b; }
+[data-theme="pathe"] .run-item:hover .run-chevron { color: #ffc426; }
 
 [data-theme="pathe"] .icon-trigger { display: inline-flex; flex-shrink: 0; }
 
@@ -280,7 +278,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-[data-theme="pathe"] .run-item:hover .repo-chip { background: #f0b32b; }
+[data-theme="pathe"] .run-item:hover .repo-chip { background: #ffc426; }
 
 [data-theme="pathe"] .run-duration,
 [data-theme="pathe"] .step-duration {
@@ -472,7 +470,7 @@
 
 /* about window, Pathé'd */
 [data-theme="pathe"] .about {
-  --about-bg: #f0b32b;
+  --about-bg: #ffc426;
   --about-text: #141414;
   --about-secondary: rgba(20, 20, 20, 0.6);
   --about-link: #141414;
@@ -481,69 +479,14 @@
 [data-theme="pathe"] .about-name { text-transform: uppercase; font-weight: 900; }
 
 
-/* the bubble logo, but ours */
+/* the original bubble, house rooster included */
 [data-theme="pathe"] .brand-title {
-  padding: 4px 14px 16px;
-  position: relative;
+  height: 84px;
+  margin: 2px 0 4px;
+  background: url("./pathe-logo.png") center / contain no-repeat;
 }
 
-[data-theme="pathe"] .brand-text {
-  font-family: 'Amatic SC', cursive;
-  font-weight: 700;
-  font-size: calc(32px * var(--font-scale, 1));
-  line-height: 1;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #141414;
-  background: #fff;
-  padding: 8px 26px 12px;
-  border-radius: 48% 52% 55% 45% / 62% 58% 42% 38%;
-  transform: rotate(-2deg);
-  display: inline-block;
-  position: relative;
-  -webkit-text-stroke: 0;
-  text-shadow: none;
-}
-
-/* speech-bubble tail, pointing down toward the rooster */
-[data-theme="pathe"] .brand-text::before {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 12%;
-  width: 18px;
-  height: 16px;
-  background: #fff;
-  border-radius: 10% 90% 80% 20% / 20% 40% 60% 80%;
-  transform: rotate(32deg);
-}
-
-/* the separate ! bubble */
-[data-theme="pathe"] .brand-text::after {
-  content: "!";
-  position: absolute;
-  right: -26px;
-  top: 0;
-  width: 24px;
-  height: 27px;
-  background: #fff;
-  color: #141414;
-  border-radius: 52% 48% 46% 54% / 56% 54% 46% 44%;
-  font-size: calc(24px * var(--font-scale, 1));
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: rotate(4deg);
-}
-
-/* the rooster, silhouetted */
-[data-theme="pathe"] .brand-title::after {
-  content: "🐓";
-  position: absolute;
-  left: calc(50% - 92px);
-  bottom: -2px;
-  font-size: 17px;
-  filter: brightness(0);
-  transform: scaleX(-1);
+[data-theme="pathe"] .brand-text,
+[data-theme="pathe"] .brand-drip {
+  display: none;
 }
