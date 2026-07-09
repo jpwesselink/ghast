@@ -3,7 +3,6 @@ import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import Panel from "./Panel";
 import SettingsPanel from "./SettingsPanel";
-import { cleanSettingsTheme, blackmetalSettingsTheme } from "./settingsTheme";
 import About from "./About";
 import { TooltipProvider } from "./Tooltip";
 import type { PanelPayload } from "./types";
@@ -172,9 +171,7 @@ export default function App() {
   if (isAbout) {
     content = <About />;
   } else if (isSettings) {
-    content = (
-      <SettingsPanel theme={blackMetal ? blackmetalSettingsTheme : cleanSettingsTheme} />
-    );
+    content = <SettingsPanel themeId={blackMetal ? "hellripper" : "holydiver"} />;
   } else if (data) {
     content = (
       <Panel

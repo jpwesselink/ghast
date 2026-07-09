@@ -1,4 +1,4 @@
-.s-shell {
+[data-theme="holydiver"] .s-shell {
           font: menu;
           display: flex;
           height: 100vh;
@@ -18,7 +18,7 @@
         }
 
         @media (prefers-color-scheme: dark) {
-          .s-shell {
+          [data-theme="holydiver"] .s-shell {
             --s-bg: #1e1e20;
             --s-sidebar: #232326;
             --s-text: #f5f5f7;
@@ -33,7 +33,7 @@
           }
         }
 
-        .s-sidebar {
+        [data-theme="holydiver"] .s-sidebar {
           width: 185px;
           flex-shrink: 0;
           background: var(--s-sidebar);
@@ -44,7 +44,7 @@
           gap: 2px;
         }
 
-        .s-nav-item {
+        [data-theme="holydiver"] .s-nav-item {
           display: flex;
           align-items: center;
           gap: 9px;
@@ -290,3 +290,12 @@
           color: var(--s-secondary);
           font-size: 13px;
         }
+
+
+/* hellripper-only chrome hidden here */
+[data-theme="holydiver"] .s-side-title,
+[data-theme="holydiver"] .s-theme-cards,
+[data-theme="holydiver"] .s-eye-toggle,
+[data-theme="holydiver"] .decor-noise {
+  display: none;
+}

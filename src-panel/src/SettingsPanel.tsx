@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import type { Section, SettingsTheme } from "./settingsTheme";
-import "./settingsClean.css";
-import "./settingsBlackmetal.css";
+import type { ThemeId } from "./panelCopy";
+import { SETTINGS_COPY } from "./settingsCopy";
+import "./theme-holydiver-settings.css";
+import "./theme-hellripper-settings.css";
+
+export type Section = "account" | "repositories" | "appearance" | "general";
 
 interface GitHubRepo {
   full_name: string;
@@ -11,6 +14,7 @@ interface GitHubRepo {
 }
 
 const SECTIONS: Section[] = ["account", "repositories", "appearance", "general"];
+
 
 const NAV_TINTS: Record<Section, string> = {
   account: "#0a84ff",
@@ -26,7 +30,8 @@ const NAV_GLYPHS: Record<Section, string> = {
   general: "⚙",
 };
 
-export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
+export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
+  const copy = SETTINGS_COPY[themeId];
   const [section, setSection] = useState<Section>("account");
   const [token, setToken] = useState("");
   const [bound, setBound] = useState(false);
@@ -63,7 +68,7 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
       setRunsPerRepo(config.runs_per_repo);
       if (config.has_pat) {
         setBound(true);
-        setPatStatus(t.copy.connected);
+        setPatStatus(copy.connected);
         setWatchedSet(new Set(config.watched_repos));
         setReviewSet(new Set(config.review_repos));
         setMentionSet(new Set(config.mention_repos));
@@ -79,7 +84,7 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
       const repos = await invoke<GitHubRepo[]>("get_repos");
       setAllRepos(repos);
     } catch (e) {
-      setPatStatus(t.copy.failed(e));
+      setPatStatus(copy.failed(e));
       setPatError(true);
     } finally {
       setLoadingRepos(false);
@@ -116,16 +121,14 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
     const pat = token.trim();
     if (!pat) return;
     setConnecting(true);
-    setPatStatus(`${t.copy.connecting}...`);
+    setPatStatus(`${copy.connecting}...`);
     setPatError(false);
     try {
       const login = await invoke<string>("save_pat", { pat });
       setBound(true);
-      setPatStatus(t.copy.connectedAs(login));
-      if (t.variant === "blackmetal") {
-        setFlicker(true);
-        setTimeout(() => setFlicker(false), 600);
-      }
+      setPatStatus(copy.connectedAs(login));
+      setFlicker(true);
+      setTimeout(() => setFlicker(false), 600);
       await loadRepos();
     } catch (e) {
       setPatStatus(`${e}`);
@@ -176,7 +179,7 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
     current: number,
     pick: (v: number) => void
   ) => (
-    <div className={t.c.seg}>
+    <div className="s-seg">
       {options.map((o) => (
         <button
           key={o.value}
@@ -190,65 +193,62 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
   );
 
   const prefRow = (label: string, hint: string, control: React.ReactNode) => (
-    <div className={t.c.row}>
-      <span className={t.c.rowLabel}>
+    <div className="s-row">
+      <span className="s-row-label">
         {label}
-        <span className={t.c.rowHint}>{hint}</span>
+        <span className="s-row-hint">{hint}</span>
       </span>
       {control}
     </div>
   );
 
   return (
-    <t.Shell flicker={flicker}>
-      <nav className={t.c.sidebar}>
-        {t.SidebarHeader()}
+    <div className={`s-shell${flicker ? " screen-flicker" : ""}`}>
+      <div className="decor-noise" />
+      <nav className="s-sidebar">
+        <div className="s-side-title">Ghast</div>
         {SECTIONS.map((id) => (
           <button
             key={id}
-            className={`${t.c.navItem}${section === id ? " active" : ""}`}
+            className={`s-nav-item${section === id ? " active" : ""}`}
             onClick={() => setSection(id)}
           >
-            {t.variant === "clean" && (
-              <span className="s-nav-glyph" style={{ background: NAV_TINTS[id] }}>
-                {NAV_GLYPHS[id]}
-              </span>
-            )}
-            {t.copy.nav[id]}
+            <span className="s-nav-glyph" style={{ background: NAV_TINTS[id] }}>
+              {NAV_GLYPHS[id]}
+            </span>
+            {copy.nav[id]}
           </button>
         ))}
       </nav>
 
-      <main className={t.c.pane}>
+      <main className="s-pane">
         {section === "account" && (
           <>
-            <div className={t.c.paneTitle}>{t.copy.titles.account}</div>
-            <div className={t.c.group}>
-              <div className={t.c.row}>
+            <div className="s-pane-title">{copy.titles.account}</div>
+            <div className="s-group">
+              <div className="s-row">
                 <input
-                  className={t.c.input}
-                  type={t.tokenReveal && showToken ? "text" : "password"}
+                  className="s-input"
+                  type={showToken ? "text" : "password"}
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
-                  placeholder={t.copy.tokenPlaceholder}
+                  placeholder={copy.tokenPlaceholder}
                   spellCheck={false}
                 />
-                {t.tokenReveal && (
-                  <button
-                    className={t.c.eyeToggle}
-                    onClick={() => setShowToken(!showToken)}
-                    title={showToken ? "Conceal" : "Reveal"}
-                  >
-                    {showToken ? "◉" : "◎"}
-                  </button>
-                )}
-                <button className={t.c.btn} onClick={handleConnect} disabled={connecting}>
-                  {connecting && t.Spinner()}
-                  {connecting ? t.copy.connecting : t.copy.connect}
+                <button
+                  className="s-eye-toggle"
+                  onClick={() => setShowToken(!showToken)}
+                  title={showToken ? "Conceal" : "Reveal"}
+                >
+                  {showToken ? "◉" : "◎"}
+                </button>
+                <button className="s-btn" onClick={handleConnect} disabled={connecting}>
+                  {connecting && <span className="s-spinner" />}
+                  {connecting ? copy.connecting : copy.connect}
                 </button>
               </div>
               {patStatus && (
-                <div className={patError ? t.c.statusError : t.c.status}>{patStatus}</div>
+                <div className={patError ? "s-status error" : "s-status"}>{patStatus}</div>
               )}
             </div>
           </>
@@ -256,45 +256,45 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
 
         {section === "repositories" && (
           <>
-            <div className={t.c.paneTitle}>{t.copy.titles.repositories}</div>
-            <div className={t.c.group}>
-              <div className={t.c.row}>
+            <div className="s-pane-title">{copy.titles.repositories}</div>
+            <div className="s-group">
+              <div className="s-row">
                 <input
-                  className={t.c.input}
-                  placeholder={t.copy.searchPlaceholder}
+                  className="s-input"
+                  placeholder={copy.searchPlaceholder}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   disabled={allRepos.length === 0}
                 />
-                {loadingRepos && t.Spinner()}
+                {loadingRepos && <span className="s-spinner" />}
               </div>
             </div>
-            <div className={t.c.group}>
+            <div className="s-group">
               {loadingRepos && allRepos.length === 0 ? (
-                <div className={t.c.loadingRow}>
-                  {t.Spinner()}
-                  {t.copy.loadingRepos}
+                <div className="s-loading-row">
+                  <span className="s-spinner" />
+                  {copy.loadingRepos}
                 </div>
               ) : allRepos.length === 0 ? (
-                <div className={t.c.empty}>
-                  {bound ? t.copy.emptyNone : t.copy.emptyUnbound}
+                <div className="s-empty">
+                  {bound ? copy.emptyNone : copy.emptyUnbound}
                 </div>
               ) : (
                 <>
-                  <div className={t.c.colHeaders}>
-                    <span className={t.c.colSpacer}>{t.copy.colRepository}</span>
-                    <span className={t.c.colH}>{t.copy.colWorkflows}</span>
-                    <span className={t.c.colH}>{t.copy.colReviews}</span>
-                    <span className={t.c.colH}>{t.copy.colMentions}</span>
+                  <div className="s-col-headers">
+                    <span className="s-col-spacer">{copy.colRepository}</span>
+                    <span className="s-col-h">{copy.colWorkflows}</span>
+                    <span className="s-col-h">{copy.colReviews}</span>
+                    <span className="s-col-h">{copy.colMentions}</span>
                   </div>
                   {filtered.length === 0 ? (
-                    <div className={t.c.empty}>{t.copy.noMatches}</div>
+                    <div className="s-empty">{copy.noMatches}</div>
                   ) : (
                     filtered.map((repo) => (
-                      <div key={repo.full_name} className={t.c.repoItem}>
-                        <span className={t.c.repoName}>{repo.full_name}</span>
+                      <div key={repo.full_name} className="s-repo-item">
+                        <span className="s-repo-name">{repo.full_name}</span>
                         {repo.private && (
-                          <span className={t.c.badge}>{t.copy.privateBadge}</span>
+                          <span className="s-badge">{copy.privateBadge}</span>
                         )}
                         {[toggleRepo, toggleReviewRepo, toggleMentionRepo].map(
                           (toggle, i) => {
@@ -302,11 +302,11 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
                             return (
                               <div
                                 key={i}
-                                className={t.c.repoCol}
+                                className="s-repo-col"
                                 onClick={() => toggle(repo.full_name)}
                               >
                                 <div
-                                  className={`${t.c.checkbox} ${
+                                  className={`s-checkbox ${
                                     set.has(repo.full_name) ? "checked" : ""
                                   }`}
                                 />
@@ -325,34 +325,34 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
 
         {section === "appearance" && (
           <>
-            <div className={t.c.paneTitle}>{t.copy.titles.appearance}</div>
-            {t.showThemeCards && (
-              <div className={t.c.group}>
-                <div className={t.c.themeCards}>
+            <div className="s-pane-title">{copy.titles.appearance}</div>
+            {(
+              <div className="s-group">
+                <div className="s-theme-cards">
                   <button
-                    className={`${t.c.themeCard}${currentTheme === "normal" ? " active" : ""}`}
+                    className={`s-theme-card${currentTheme === "normal" ? " active" : ""}`}
                     onClick={() => pickTheme("normal")}
                   >
-                    <div className={t.c.themeThumbHoly}>☼</div>
-                    <div className={t.c.themeName}>Holy Diver</div>
+                    <div className="s-theme-thumb holy">☼</div>
+                    <div className="s-theme-name">Holy Diver</div>
                   </button>
                   <button
-                    className={`${t.c.themeCard}${
+                    className={`s-theme-card${
                       currentTheme === "blackmetal" ? " active" : ""
                     }`}
                     onClick={() => pickTheme("blackmetal")}
                   >
-                    <div className={t.c.themeThumbHell}>⛧</div>
-                    <div className={t.c.themeName}>Hellripper</div>
+                    <div className="s-theme-thumb hell">⛧</div>
+                    <div className="s-theme-name">Hellripper</div>
                   </button>
                 </div>
               </div>
             )}
-            <div className={t.c.group}>
+            <div className="s-group">
               {prefRow(
-                t.copy.fontSizeLabel,
-                t.copy.fontSizeHint,
-                seg(t.copy.fontSizes, fontScale, pickFontScale)
+                copy.fontSizeLabel,
+                copy.fontSizeHint,
+                seg(copy.fontSizes, fontScale, pickFontScale)
               )}
             </div>
           </>
@@ -360,11 +360,11 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
 
         {section === "general" && (
           <>
-            <div className={t.c.paneTitle}>{t.copy.titles.general}</div>
-            <div className={t.c.group}>
+            <div className="s-pane-title">{copy.titles.general}</div>
+            <div className="s-group">
               {prefRow(
-                t.copy.perRepoLabel,
-                t.copy.perRepoHint,
+                copy.perRepoLabel,
+                copy.perRepoHint,
                 seg(
                   [1, 2, 3, 5, 10].map((n) => ({ label: String(n), value: n })),
                   runsPerRepo,
@@ -372,8 +372,8 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
                 )
               )}
               {prefRow(
-                t.copy.expandLabel,
-                t.copy.expandHint,
+                copy.expandLabel,
+                copy.expandHint,
                 seg(
                   [1, 2, 3, 4, 5].map((n) => ({ label: String(n), value: n })),
                   expandRuns,
@@ -384,6 +384,6 @@ export default function SettingsPanel({ theme: t }: { theme: SettingsTheme }) {
           </>
         )}
       </main>
-    </t.Shell>
+    </div>
   );
 }

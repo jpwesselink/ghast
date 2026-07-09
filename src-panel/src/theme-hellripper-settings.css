@@ -1,12 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&display=swap');
 
-        @keyframes candleGlow {
+        @keyframes settingsCandleGlow {
           0%, 100% { text-shadow: 0 0 10px #b01010, 0 0 25px #8b0000, 0 0 50px #5a0000; }
           33% { text-shadow: 0 0 14px #cc2020, 0 0 30px #a00000, 0 0 60px #5a0000; }
           66% { text-shadow: 0 0 8px #901010, 0 0 20px #8b0000, 0 0 45px #4a0000; }
         }
 
-        @keyframes screenFlicker {
+        @keyframes settingsFlicker {
           0% { filter: brightness(1) contrast(1); }
           5% { filter: brightness(3) contrast(0.5); }
           10% { filter: brightness(0.3) contrast(2); }
@@ -17,18 +17,18 @@
 
         @keyframes sigilSpin { to { transform: rotate(360deg); } }
 
-        .bms-sigil-spin {
+        .s-sigil-spin {
           animation: sigilSpin 1.4s linear infinite;
           flex-shrink: 0;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .bms-sigil-spin { animation-duration: 3s; }
+          .s-sigil-spin { animation-duration: 3s; }
         }
 
-        .screen-flicker { animation: screenFlicker 0.6s ease-out; }
+        .screen-flicker { animation: settingsFlicker 0.6s ease-out; }
 
-        .bms-shell {
+        .s-shell {
           font-family: 'IM Fell English', serif;
           display: flex;
           height: 100vh;
@@ -37,7 +37,7 @@
           position: relative;
         }
 
-        .bms-shell::before {
+        .s-shell::before {
           content: '';
           position: absolute;
           inset: 0;
@@ -47,7 +47,7 @@
           pointer-events: none;
         }
 
-        .bms-sidebar {
+        .s-sidebar {
           width: 185px;
           flex-shrink: 0;
           border-right: 1px solid #2a1a18;
@@ -60,18 +60,18 @@
           z-index: 1;
         }
 
-        .bms-side-title {
+        .s-side-title {
           font-family: 'UnifrakturMaguntia', cursive;
           font-size: 30px;
           text-align: center;
           color: #ede6d8;
           letter-spacing: 3px;
-          animation: candleGlow 4s ease-in-out infinite;
+          animation: settingsCandleGlow 4s ease-in-out infinite;
           margin-bottom: 14px;
           line-height: 1;
         }
 
-        .bms-nav-item {
+        .s-nav-item {
           display: block;
           width: 100%;
           border: none;
@@ -88,15 +88,15 @@
           transition: color 0.2s, border-color 0.2s;
         }
 
-        .bms-nav-item:hover { color: #d0c4b0; }
+        .s-nav-item:hover { color: #d0c4b0; }
 
-        .bms-nav-item.active {
+        .s-nav-item.active {
           color: #ede6d8;
           border-left-color: #b01010;
           text-shadow: 0 0 8px rgba(180, 20, 20, 0.4);
         }
 
-        .bms-pane {
+        .s-pane {
           flex: 1;
           min-width: 0;
           overflow-y: auto;
@@ -105,11 +105,11 @@
           z-index: 1;
         }
 
-        .bms-pane::-webkit-scrollbar { width: 6px; }
-        .bms-pane::-webkit-scrollbar-track { background: #0a0806; }
-        .bms-pane::-webkit-scrollbar-thumb { background: #3a2525; border-radius: 3px; }
+        .s-pane::-webkit-scrollbar { width: 6px; }
+        .s-pane::-webkit-scrollbar-track { background: #0a0806; }
+        .s-pane::-webkit-scrollbar-thumb { background: #3a2525; border-radius: 3px; }
 
-        .bms-pane-title {
+        .s-pane-title {
           font-family: 'IM Fell English SC', serif;
           font-size: 17px;
           letter-spacing: 5px;
@@ -118,23 +118,23 @@
           margin-bottom: 18px;
         }
 
-        .bms-group {
+        .s-group {
           border: 1px solid #2a1a18;
           background: #0c0908;
           margin-bottom: 18px;
         }
 
-        .bms-row {
+        .s-row {
           display: flex;
           align-items: center;
           gap: 12px;
           padding: 12px 14px;
         }
 
-        .bms-row + .bms-row { border-top: 1px solid #221816; }
+        .s-row + .s-row { border-top: 1px solid #221816; }
 
-        .bms-row-label { flex: 1; font-size: 14px; color: #b8b0a0; }
-        .bms-row-label .bms-row-hint {
+        .s-row-label { flex: 1; font-size: 14px; color: #b8b0a0; }
+        .s-row-label .s-row-hint {
           display: block;
           font-size: 12px;
           font-style: italic;
@@ -142,7 +142,7 @@
           margin-top: 2px;
         }
 
-        .bms-input {
+        .s-input {
           flex: 1;
           box-sizing: border-box;
           background: #0c0a08;
@@ -156,14 +156,14 @@
           min-width: 0;
         }
 
-        .bms-input:focus {
+        .s-input:focus {
           border-color: #b01010;
           box-shadow: 0 0 15px rgba(160, 10, 10, 0.3);
         }
 
-        .bms-input::placeholder { color: #584e44; font-style: italic; }
+        .s-input::placeholder { color: #584e44; font-style: italic; }
 
-        .bms-btn {
+        .s-btn {
           font-family: 'IM Fell English SC', serif;
           font-size: 12px;
           letter-spacing: 3px;
@@ -180,15 +180,15 @@
           white-space: nowrap;
         }
 
-        .bms-btn:hover {
+        .s-btn:hover {
           border-color: #b01010;
           color: #dd3030;
           box-shadow: 0 0 25px rgba(160, 10, 10, 0.4);
         }
 
-        .bms-btn:disabled { opacity: 0.6; }
+        .s-btn:disabled { opacity: 0.6; }
 
-        .bms-status {
+        .s-status {
           font-size: 12px;
           font-style: italic;
           color: #78b830;
@@ -196,9 +196,9 @@
           letter-spacing: 1px;
         }
 
-        .bms-status.error { color: #cc3333; }
+        .s-status.error { color: #cc3333; }
 
-        .bms-loading-row {
+        .s-loading-row {
           display: flex;
           align-items: center;
           justify-content: center;
@@ -209,9 +209,9 @@
           font-size: 13px;
         }
 
-        .bms-seg { display: inline-flex; gap: 4px; }
+        .s-seg { display: inline-flex; gap: 4px; }
 
-        .bms-seg button {
+        .s-seg button {
           border: 1px solid #3a2525;
           background: #0a0604;
           color: #8a7e6e;
@@ -224,16 +224,16 @@
           transition: all 0.2s;
         }
 
-        .bms-seg button:hover { color: #d0c4b0; }
+        .s-seg button:hover { color: #d0c4b0; }
 
-        .bms-seg button.active {
+        .s-seg button.active {
           background: #200c0c;
           border-color: #b01010;
           color: #ede6d8;
           box-shadow: 0 0 10px rgba(160, 10, 10, 0.35);
         }
 
-        .bms-col-headers {
+        .s-col-headers {
           display: flex;
           align-items: center;
           padding: 9px 14px;
@@ -246,10 +246,10 @@
           border-bottom: 1px solid #221816;
           background: #0e0a08;
         }
-        .bms-col-headers .bms-col-spacer { flex: 1; }
-        .bms-col-headers .bms-col-h { width: 68px; text-align: center; flex-shrink: 0; }
+        .s-col-headers .s-col-spacer { flex: 1; }
+        .s-col-headers .s-col-h { width: 68px; text-align: center; flex-shrink: 0; }
 
-        .bms-repo-item {
+        .s-repo-item {
           display: flex;
           align-items: center;
           padding: 11px 14px;
@@ -258,10 +258,10 @@
           gap: 10px;
         }
 
-        .bms-repo-item:hover { background: #1a1210; }
-        .bms-repo-item:last-child { border-bottom: none; }
+        .s-repo-item:hover { background: #1a1210; }
+        .s-repo-item:last-child { border-bottom: none; }
 
-        .bms-repo-col {
+        .s-repo-col {
           width: 68px;
           flex-shrink: 0;
           display: flex;
@@ -269,7 +269,7 @@
           cursor: default;
         }
 
-        .bms-checkbox {
+        .s-checkbox {
           width: 17px;
           height: 17px;
           border: 1px solid #4a2828;
@@ -281,13 +281,13 @@
           transition: all 0.2s;
         }
 
-        .bms-checkbox.checked {
+        .s-checkbox.checked {
           background: #200c0c;
           border-color: #b01010;
           box-shadow: 0 0 10px rgba(160, 10, 10, 0.35);
         }
 
-        .bms-checkbox.checked::after {
+        .s-checkbox.checked::after {
           content: '†';
           color: #cc2020;
           font-size: 15px;
@@ -295,7 +295,7 @@
           line-height: 1;
         }
 
-        .bms-repo-name {
+        .s-repo-name {
           flex: 1;
           font-size: 14px;
           color: #b8b0a0;
@@ -305,9 +305,9 @@
           white-space: nowrap;
         }
 
-        .bms-repo-item:hover .bms-repo-name { color: #e8e0d0; }
+        .s-repo-item:hover .s-repo-name { color: #e8e0d0; }
 
-        .bms-badge {
+        .s-badge {
           font-family: 'IM Fell English SC', serif;
           font-size: 9px;
           letter-spacing: 3px;
@@ -318,14 +318,14 @@
           flex-shrink: 0;
         }
 
-        .bms-empty {
+        .s-empty {
           padding: 30px 20px;
           text-align: center;
           color: #584e44;
           font-style: italic;
         }
 
-        .bms-eye-toggle {
+        .s-eye-toggle {
           background: none;
           border: none;
           color: #504030;
@@ -336,11 +336,11 @@
           flex-shrink: 0;
         }
 
-        .bms-eye-toggle:hover { color: #cc2020; }
+        .s-eye-toggle:hover { color: #cc2020; }
 
-        .bms-theme-cards { display: flex; gap: 12px; padding: 14px; }
+        .s-theme-cards { display: flex; gap: 12px; padding: 14px; }
 
-        .bms-theme-card {
+        .s-theme-card {
           flex: 1;
           border: 1px solid #3a2525;
           padding: 0;
@@ -353,19 +353,19 @@
           transition: all 0.3s;
         }
 
-        .bms-theme-card:hover { border-color: #6a3030; }
+        .s-theme-card:hover { border-color: #6a3030; }
 
-        .bms-theme-card.active {
+        .s-theme-card.active {
           border-color: #b01010;
           box-shadow: 0 0 15px rgba(160, 10, 10, 0.35);
           color: #ede6d8;
         }
 
-        .bms-theme-thumb { height: 58px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-        .bms-theme-thumb.holy { background: linear-gradient(180deg, #f4f4f6, #dcdce2); color: #444; }
-        .bms-theme-thumb.hell { background: linear-gradient(180deg, #17090a, #050000); color: #c01818; }
+        .s-theme-thumb { height: 58px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .s-theme-thumb.holy { background: linear-gradient(180deg, #f4f4f6, #dcdce2); color: #444; }
+        .s-theme-thumb.hell { background: linear-gradient(180deg, #17090a, #050000); color: #c01818; }
 
-        .bms-theme-name {
+        .s-theme-name {
           font-family: 'IM Fell English SC', serif;
           font-size: 11px;
           letter-spacing: 2px;
@@ -374,33 +374,51 @@
         }
 
         @media (prefers-color-scheme: light) {
-          .bms-shell { background: #f0e8d8; color: #2a1a10; }
-          .bms-sidebar { background: #e8dcc8; border-right-color: #c0a090; }
-          .bms-side-title { color: #1a0808; }
-          .bms-nav-item { color: #6a5a48; }
-          .bms-nav-item:hover { color: #2a1a10; }
-          .bms-nav-item.active { color: #1a0808; border-left-color: #8b0000; }
-          .bms-pane-title { color: #8b0000; }
-          .bms-group { background: #e8dcc8; border-color: #c0a090; }
-          .bms-row + .bms-row { border-top-color: #d0c0a8; }
-          .bms-row-label { color: #2a1a10; }
-          .bms-row-label .bms-row-hint { color: #6a5a48; }
-          .bms-input { background: #f0e8d8; border-color: #b09070; color: #000; }
-          .bms-input::placeholder { color: #9a8a78; }
-          .bms-btn { background: #e0d0b8; color: #8b0000; border-color: #b09070; }
-          .bms-status { color: #2d8a2d; }
-          .bms-col-headers { background: #e0d4c0; border-bottom-color: #d0c0a8; color: #6a5a48; }
-          .bms-repo-item { border-bottom-color: #d0c0a8; }
-          .bms-repo-item:hover { background: rgba(139, 0, 0, 0.08); }
-          .bms-repo-name { color: #000; }
-          .bms-checkbox { background: #f0e8d8; border-color: #b09070; }
-          .bms-badge { color: #6a5a48; border-color: #c0a090; }
-          .bms-empty { color: #6a5a48; }
-          .bms-loading-row { color: #6a5a48; }
-          .bms-seg button { background: #f0e8d8; border-color: #b09070; color: #6a5a48; }
-          .bms-seg button.active { background: #8b0000; border-color: #8b0000; color: #f0e8d8; }
-          .bms-theme-card { border-color: #b09070; color: #2a1a10; }
-          .bms-theme-card.active { border-color: #8b0000; }
-          .bms-pane::-webkit-scrollbar-track { background: #e0d4c0; }
-          .bms-pane::-webkit-scrollbar-thumb { background: #b09070; }
+          .s-shell { background: #f0e8d8; color: #2a1a10; }
+          .s-sidebar { background: #e8dcc8; border-right-color: #c0a090; }
+          .s-side-title { color: #1a0808; }
+          .s-nav-item { color: #6a5a48; }
+          .s-nav-item:hover { color: #2a1a10; }
+          .s-nav-item.active { color: #1a0808; border-left-color: #8b0000; }
+          .s-pane-title { color: #8b0000; }
+          .s-group { background: #e8dcc8; border-color: #c0a090; }
+          .s-row + .s-row { border-top-color: #d0c0a8; }
+          .s-row-label { color: #2a1a10; }
+          .s-row-label .s-row-hint { color: #6a5a48; }
+          .s-input { background: #f0e8d8; border-color: #b09070; color: #000; }
+          .s-input::placeholder { color: #9a8a78; }
+          .s-btn { background: #e0d0b8; color: #8b0000; border-color: #b09070; }
+          .s-status { color: #2d8a2d; }
+          .s-col-headers { background: #e0d4c0; border-bottom-color: #d0c0a8; color: #6a5a48; }
+          .s-repo-item { border-bottom-color: #d0c0a8; }
+          .s-repo-item:hover { background: rgba(139, 0, 0, 0.08); }
+          .s-repo-name { color: #000; }
+          .s-checkbox { background: #f0e8d8; border-color: #b09070; }
+          .s-badge { color: #6a5a48; border-color: #c0a090; }
+          .s-empty { color: #6a5a48; }
+          .s-loading-row { color: #6a5a48; }
+          .s-seg button { background: #f0e8d8; border-color: #b09070; color: #6a5a48; }
+          .s-seg button.active { background: #8b0000; border-color: #8b0000; color: #f0e8d8; }
+          .s-theme-card { border-color: #b09070; color: #2a1a10; }
+          .s-theme-card.active { border-color: #8b0000; }
+          .s-pane::-webkit-scrollbar-track { background: #e0d4c0; }
+          .s-pane::-webkit-scrollbar-thumb { background: #b09070; }
         }
+
+
+/* spinner is a spinning pentagram here */
+[data-theme="hellripper"] .s-spinner {
+  width: 15px;
+  height: 15px;
+  border: none;
+  border-radius: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 100 100'%3E%3Cpolygon points%3D'50.0%2C5.0 76.5%2C86.4 7.2%2C36.1 92.8%2C36.1 23.5%2C86.4' fill%3D'none' stroke%3D'%23cc2020' stroke-width%3D'3'%2F%3E%3Ccircle cx%3D'50' cy%3D'50' r%3D'47' fill%3D'none' stroke%3D'%23cc2020' stroke-width%3D'2'%2F%3E%3C%2Fsvg%3E");
+  animation: sigilSpin 1.4s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes sigilSpin { to { transform: rotate(360deg); } }
+[data-theme="hellripper"] .s-nav-glyph {
+  display: none;
+}
