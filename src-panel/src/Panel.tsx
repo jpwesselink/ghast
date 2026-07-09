@@ -415,7 +415,7 @@ export default function Panel({
             <span className="brand-drip" />
           </span>
         </div>
-        <div className="brand-subtitle">The GitHub Actions Ghost</div>
+        <div className="brand-subtitle">{copy.subtitle}</div>
 
         <div className="menu-tabs">
           {PANES.map((p, i) => (

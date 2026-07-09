@@ -1,6 +1,7 @@
 export type ThemeId = "holydiver" | "hellripper" | "phosphor" | "pathe";
 
 export interface PanelCopy {
+  subtitle: string;
   authError: string;
   noPat: string;
   noRepos: string;
@@ -21,6 +22,7 @@ export interface PanelCopy {
 
 export const PANEL_COPY: Record<ThemeId, PanelCopy> = {
   pathe: {
+    subtitle: "GitHub Actions Status Tracker",
     authError: "Authenticatie mislukt - check instellingen",
     noPat: "Koppel je GitHub token via instellingen",
     noRepos: "Geen repos gekozen - check instellingen",
@@ -39,6 +41,7 @@ export const PANEL_COPY: Record<ThemeId, PanelCopy> = {
     jobsEmpty: "geen jobs gevonden",
   },
   phosphor: {
+    subtitle: "github actions status tracker",
     authError: "auth error :: check settings",
     noPat: "no token bound :: open settings",
     noRepos: "no repos configured",
@@ -57,6 +60,7 @@ export const PANEL_COPY: Record<ThemeId, PanelCopy> = {
     jobsEmpty: "no jobs recorded",
   },
   holydiver: {
+    subtitle: "GitHub Actions Status Tracker",
     authError: "Auth error - check Settings",
     noPat: "Open Settings to connect GitHub",
     noRepos: "No repos watched - check Settings",
@@ -75,6 +79,7 @@ export const PANEL_COPY: Record<ThemeId, PanelCopy> = {
     jobsEmpty: "no jobs reported",
   },
   hellripper: {
+    subtitle: "The GitHub Actions Ghost",
     authError: "The binding has failed... check Settings",
     noPat: "No soul has been bound... open Settings",
     noRepos: "No repositories have been haunted",
