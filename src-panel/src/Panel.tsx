@@ -301,16 +301,20 @@ function TimelineView({ themeId, data }: { themeId: ThemeId; data: PanelPayload 
 
 type RepoState = "fail" | "wait" | "run" | "ok" | "idle";
 
-/// Worst state among each workflow's latest run; ranked bad-first.
-function repoState(runs: PanelWorkflowRun[] | undefined): RepoState {
-  if (!runs || runs.length === 0) return "idle";
-  let state: RepoState = "idle";
+/// Worst state among each workflow's latest run, plus the run that set it
+/// (newest within that state) — the run a click should land on.
+function repoState(
+  runs: PanelWorkflowRun[] | undefined
+): { state: RepoState; run?: PanelWorkflowRun } {
+  if (!runs || runs.length === 0) return { state: "idle" };
   const rank: Record<RepoState, number> = { fail: 4, wait: 3, run: 2, ok: 1, idle: 0 };
   const latest = new Map<string, PanelWorkflowRun>();
   for (const r of runs) {
     const prev = latest.get(r.workflow_name);
     if (!prev || r.created_at > prev.created_at) latest.set(r.workflow_name, r);
   }
+  let state: RepoState = "idle";
+  let run: PanelWorkflowRun | undefined;
   for (const r of latest.values()) {
     let s: RepoState = "idle";
     if (r.status === "waiting") s = "wait";
@@ -322,9 +326,12 @@ function repoState(runs: PanelWorkflowRun[] | undefined): RepoState {
     )
       s = "fail";
     else if (r.conclusion === "success") s = "ok";
-    if (rank[s] > rank[state]) state = s;
+    if (rank[s] > rank[state] || (s === state && run && r.created_at > run.created_at)) {
+      state = s;
+      run = r;
+    }
   }
-  return state;
+  return { state, run };
 }
 
 function GridView({ themeId, data }: { themeId: ThemeId; data: PanelPayload }) {
@@ -334,17 +341,22 @@ function GridView({ themeId, data }: { themeId: ThemeId; data: PanelPayload }) {
   }
   return (
     <div className="repo-grid">
-      {data.repos.map((repo) => (
-        <button
-          key={repo}
-          className="repo-cell"
-          data-state={repoState(data.runs[repo])}
-          title={repo}
-          onClick={() => openRepoUrl(repo)}
-        >
-          {chipLabel(repo)}
-        </button>
-      ))}
+      {data.repos.map((repo) => {
+        const { state, run } = repoState(data.runs[repo]);
+        return (
+          <button
+            key={repo}
+            className="repo-cell"
+            data-state={state}
+            title={run ? `${repo} — ${run.workflow_name}` : repo}
+            onClick={() =>
+              run ? openExternal(run.html_url, repo) : openRepoUrl(repo)
+            }
+          >
+            {chipLabel(repo)}
+          </button>
+        );
+      })}
     </div>
   );
 }
