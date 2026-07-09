@@ -1,18 +1,5 @@
 import type { PanelWorkflowRun } from "./types";
 
-export type BuildsView = "repos" | "focus" | "timeline";
-
-const VIEW_KEY = "ghast-builds-view";
-
-export function loadBuildsView(): BuildsView {
-  const v = localStorage.getItem(VIEW_KEY);
-  return v === "focus" || v === "timeline" ? v : "repos";
-}
-
-export function saveBuildsView(view: BuildsView) {
-  localStorage.setItem(VIEW_KEY, view);
-}
-
 const BAD_CONCLUSIONS = new Set(["failure", "timed_out", "action_required"]);
 
 export function isBad(run: PanelWorkflowRun): boolean {

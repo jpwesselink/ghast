@@ -309,6 +309,15 @@ function MentionRow({ mention }: { mention: PanelMention }) {
         </TooltipContent>
       </Tooltip>
       <span className="bm-run-name">{mention.title}</span>
+      <span
+        className="bm-chip"
+        onClick={(e) => {
+          e.stopPropagation();
+          openRepoUrl(mention.repo);
+        }}
+      >
+        {chipLabel(mention.repo)}
+      </span>
       <span className="bm-run-time">{formatTimeAgo(mention.updated_at)}</span>
     </div>
   );
@@ -455,6 +464,7 @@ function BmFocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
       >
         {chipLabel(repo)}
       </span>
+      <WorkflowDuration run={run} className="bm-run-duration" />
       <span className="bm-run-time">{formatTimeAgo(run.created_at)}</span>
     </div>
     {expanded && <JobSteps run={run} variant="blackmetal" />}
@@ -559,7 +569,12 @@ function BmTimelineView({ data }: { data: PanelPayload }) {
   const entries = timelineEntries(data.runs);
   const expandedRuns = useExpandedRuns();
   if (entries.length === 0) {
-    return <div className="bm-message">No repositories have been haunted</div>;
+    return (
+      <div className="bm-calm">
+        <Ghost size={56} bodyOpacity={0.85} eyeMilkColor="#e6e0d2" eyeMilkScale={1.1} glow="#aa1010" />
+        <div className="bm-calm-line">No repositories have been haunted</div>
+      </div>
+    );
   }
 
   let lastDay = "";
@@ -757,12 +772,6 @@ export default function BlackMetal({
           .bm-tab.active { color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
           .bm-tab-badge { background: #e0c8a8 !important; border-color: #b09070 !important; color: #2a1a10 !important; }
           .bm-tab.active .bm-tab-badge { background: #8b0000 !important; border-color: #8b0000 !important; color: #f0e8d8 !important; }
-          .bm-pg-title { color: #1a0808 !important; }
-          .bm-pg-arrow { color: #6a5a48 !important; }
-          .bm-pg-arrow:hover { color: #8b0000 !important; }
-          .bm-view-btn { color: #8a7a68 !important; }
-          .bm-view-btn:hover { color: #2a1a10 !important; }
-          .bm-view-btn.active { color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
           .bm-chip { border-color: #c0a090 !important; color: #6a5a48 !important; }
           .bm-quiet-row .bm-run-name { color: #6a5a48 !important; }
           .bm-quiet-row:hover .bm-run-name { color: #000 !important; }
@@ -858,7 +867,7 @@ export default function BlackMetal({
           font-size: calc(12px * var(--font-scale, 1));
           letter-spacing: 2px;
           text-transform: uppercase;
-          cursor: pointer;
+          cursor: default;
           transition: color 0.15s, background 0.15s;
           border-bottom: 2px solid transparent;
           margin-bottom: -1px;
@@ -942,10 +951,10 @@ export default function BlackMetal({
           display: flex;
           align-items: center;
           gap: 9px;
-          padding: 3px 8px 3px 38px;
+          padding: 3px 8px 3px 34px;
           margin: 0 6px;
           border-radius: 5px;
-          cursor: pointer;
+          cursor: default;
           font-size: calc(13px * var(--font-scale, 1));
           color: #c8c0b0;
         }
@@ -955,7 +964,7 @@ export default function BlackMetal({
         }
 
         .bm-step-row {
-          padding-left: 56px;
+          padding-left: 52px;
           color: #8a7e6e;
           cursor: default;
         }
@@ -985,7 +994,7 @@ export default function BlackMetal({
         }
 
         .bm-step-link {
-          cursor: pointer;
+          cursor: default;
         }
 
         .bm-step-link:hover {
@@ -1012,46 +1021,6 @@ export default function BlackMetal({
           color: #8a7e6e;
           font-style: italic;
           font-size: calc(12px * var(--font-scale, 1));
-        }
-
-        .bm-pager-head {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 2px 8px;
-          position: relative;
-        }
-
-        .bm-pg-arrow {
-          border: none;
-          background: transparent;
-          color: #8a7e6e;
-          font-family: 'IM Fell English', serif;
-          font-size: 20px;
-          line-height: 1;
-          padding: 0 12px 3px;
-          cursor: pointer;
-          transition: color 0.2s, text-shadow 0.2s;
-        }
-
-        .bm-pg-arrow:hover {
-          color: #dd3030;
-          text-shadow: 0 0 8px rgba(180, 20, 20, 0.5);
-        }
-
-        .bm-pg-title {
-          flex: none;
-          min-width: 120px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          font-family: 'IM Fell English SC', serif;
-          font-size: calc(13px * var(--font-scale, 1));
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          color: #ede6d8;
-          text-shadow: 0 0 6px rgba(180, 20, 20, 0.4);
         }
 
         .bm-pager-clip {
@@ -1086,7 +1055,7 @@ export default function BlackMetal({
           -webkit-appearance: none;
           appearance: none;
           border-radius: 0;
-          cursor: pointer;
+          cursor: default;
           text-align: left;
         }
 
@@ -1095,61 +1064,11 @@ export default function BlackMetal({
           text-shadow: 0 0 6px rgba(200, 20, 20, 0.3);
         }
 
-        .bm-view-pager {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 2px;
-          padding: 2px 10px 0;
-        }
-
-        .bm-pg-arrow-sm {
-          font-size: 15px;
-          padding: 0 9px 2px;
-        }
-
-        .bm-view-pager-label {
-          color: #8a7e6e;
-          font-family: 'IM Fell English SC', serif;
-          font-size: calc(10px * var(--font-scale, 1));
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          min-width: 84px;
-          text-align: center;
-        }
-
-        .bm-view-switch {
-          display: flex;
-          gap: 4px;
-          padding: 4px 10px 0;
-          justify-content: center;
-        }
-
-        .bm-view-btn {
-          border: none;
-          background: transparent;
-          color: #6a5a48;
-          font-family: 'IM Fell English SC', serif;
-          font-size: calc(10px * var(--font-scale, 1));
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          padding: 2px 10px;
-          cursor: pointer;
-          border-bottom: 1px solid transparent;
-        }
-
-        .bm-view-btn:hover { color: #b8a890; }
-
-        .bm-view-btn.active {
-          color: #ddc0a0;
-          border-bottom-color: #8b0000;
-        }
-
         .bm-chip {
           font-family: 'IM Fell English SC', serif;
           font-size: calc(10px * var(--font-scale, 1));
           letter-spacing: 1px;
-          padding: 1px 7px;
+          padding: 1px 6px;
           border: 1px solid #3a2a1a;
           color: #8a7e6e;
           flex-shrink: 0;
@@ -1167,14 +1086,6 @@ export default function BlackMetal({
 
         .bm-quiet-row .bm-run-name { color: #9a8e7e; }
         .bm-quiet-row:hover .bm-run-name { color: #e0d8c8; }
-
-        .bm-quiet-check {
-          color: #55aa22;
-          font-size: calc(13px * var(--font-scale, 1));
-          width: 16px;
-          text-align: center;
-          flex-shrink: 0;
-        }
 
         .bm-hist {
           display: inline-flex;
@@ -1267,7 +1178,7 @@ export default function BlackMetal({
           width: calc(100% - 12px);
           box-sizing: border-box;
           border-radius: 5px;
-          cursor: pointer;
+          cursor: default;
           transition: background 0.15s;
           animation: fadeSlideIn 0.2s ease-out both;
         }
@@ -1310,7 +1221,7 @@ export default function BlackMetal({
           color: #8a7e6e;
           flex-shrink: 0;
           font-style: italic;
-          min-width: calc(62px * var(--font-scale, 1));
+          min-width: calc(60px * var(--font-scale, 1));
           text-align: right;
           font-variant-numeric: tabular-nums;
         }
@@ -1337,7 +1248,7 @@ export default function BlackMetal({
           color: #b8b0a0;
           font: inherit;
           font-size: calc(13px * var(--font-scale, 1));
-          cursor: pointer;
+          cursor: default;
           text-align: left;
           transition: background 0.15s;
           border-radius: 5px;
@@ -1441,7 +1352,10 @@ export default function BlackMetal({
               >
                 <div className="bm-pager-page bm-content">
                   {data.repos.length === 0 ? (
-                    <div className="bm-message">No repositories have been haunted</div>
+                    <div className="bm-calm">
+                      <Ghost size={56} bodyOpacity={0.85} eyeMilkColor="#e6e0d2" eyeMilkScale={1.1} glow="#aa1010" />
+                      <div className="bm-calm-line">No repositories have been haunted</div>
+                    </div>
                   ) : (
                     data.repos.map((repo) => (
                       <div key={repo} className="bm-repo-group">

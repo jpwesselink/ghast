@@ -4,7 +4,7 @@ import RunItem from "./RunItem";
 import ReviewItem from "./ReviewItem";
 import MentionItem from "./MentionItem";
 import Ghost from "./Ghost";
-import JobSteps from "./JobSteps";
+import JobSteps, { WorkflowDuration } from "./JobSteps";
 import { toggleRunExpanded, useExpandedRuns } from "./runJobs";
 import type { PanelPayload, PanelWorkflowRun } from "./types";
 import SourceChip from "./SourceChip";
@@ -85,6 +85,7 @@ function FocusRunRow({ repo, run }: { repo: string; run: PanelWorkflowRun }) {
       >
         {chipLabel(repo)}
       </span>
+      <WorkflowDuration run={run} className="run-duration" />
       <span className="run-time">{formatTimeAgo(run.created_at)}</span>
     </div>
     {expanded && <JobSteps run={run} variant="clean" />}
@@ -189,7 +190,12 @@ function TimelineView({ data }: { data: PanelPayload }) {
   const entries = timelineEntries(data.runs);
   const expandedRuns = useExpandedRuns();
   if (entries.length === 0) {
-    return <div className="menu-message">No repos watched - check Settings</div>;
+    return (
+      <div className="calm-ghost">
+        <Ghost size={56} bodyColor="var(--ghost-body)" eyeMilkColor="#ffffff" eyeMilkScale={0.8} />
+        <div className="calm-line">No repos watched - check Settings</div>
+      </div>
+    );
   }
 
   let lastDay = "";
@@ -264,7 +270,12 @@ function TimelineView({ data }: { data: PanelPayload }) {
 
 function ReposView({ data }: { data: PanelPayload }) {
   if (data.repos.length === 0) {
-    return <div className="menu-message">No repos watched - check Settings</div>;
+    return (
+      <div className="calm-ghost">
+        <Ghost size={56} bodyColor="var(--ghost-body)" eyeMilkColor="#ffffff" eyeMilkScale={0.8} />
+        <div className="calm-line">No repos watched - check Settings</div>
+      </div>
+    );
   }
   return (
     <>

@@ -306,7 +306,7 @@ export default function BlackMetalSettings() {
           letter-spacing: 2px;
           text-transform: uppercase;
           padding: 8px 10px;
-          cursor: pointer;
+          cursor: default;
           text-align: left;
           border-left: 2px solid transparent;
           transition: color 0.2s, border-color 0.2s;
@@ -396,7 +396,7 @@ export default function BlackMetalSettings() {
           color: #b01010;
           border: 1px solid #4a2020;
           padding: 8px 20px;
-          cursor: pointer;
+          cursor: default;
           transition: all 0.3s;
           display: inline-flex;
           align-items: center;
@@ -444,7 +444,7 @@ export default function BlackMetalSettings() {
           letter-spacing: 1px;
           text-transform: uppercase;
           padding: 4px 10px;
-          cursor: pointer;
+          cursor: default;
           transition: all 0.2s;
         }
 
@@ -490,7 +490,7 @@ export default function BlackMetalSettings() {
           flex-shrink: 0;
           display: flex;
           justify-content: center;
-          cursor: pointer;
+          cursor: default;
         }
 
         .bms-checkbox {
@@ -553,7 +553,7 @@ export default function BlackMetalSettings() {
           background: none;
           border: none;
           color: #504030;
-          cursor: pointer;
+          cursor: default;
           font-size: 14px;
           padding: 4px 8px;
           transition: color 0.2s;
@@ -569,7 +569,7 @@ export default function BlackMetalSettings() {
           border: 1px solid #3a2525;
           padding: 0;
           overflow: hidden;
-          cursor: pointer;
+          cursor: default;
           background: none;
           font: inherit;
           color: #b8b0a0;
