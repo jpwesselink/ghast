@@ -491,16 +491,16 @@
   display: none;
 }
 
-/* repo grid */
+/* repo grid — campaign blocks with a title strip */
 [data-theme="pathe"] .repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
-  gap: 9px;
-  padding: 10px 14px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  padding: 12px 14px;
 }
 [data-theme="pathe"] .repo-cell {
   position: relative;
-  height: 44px;
+  height: 74px;
   overflow: visible;
 }
 [data-theme="pathe"] .repo-cell-segs {
@@ -508,7 +508,8 @@
   inset: 0;
   display: flex;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 14px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
 }
 [data-theme="pathe"] .repo-seg {
   flex: 1;
@@ -518,41 +519,60 @@
   cursor: default;
   position: relative;
   padding: 0;
+  background: #8d8d8d;
 }
+[data-theme="pathe"] .repo-seg + .repo-seg { border-left: 3px solid rgba(255, 255, 255, 0.7); }
+[data-theme="pathe"] .repo-seg[data-state="ok"] { background: #3e9b4f; }
+[data-theme="pathe"] .repo-seg[data-state="fail"] { background: #d7292e; }
+[data-theme="pathe"] .repo-seg[data-state="run"] { background: #4693c8; }
+[data-theme="pathe"] .repo-seg[data-state="wait"] { background: #e0762f; }
+[data-theme="pathe"] .repo-seg:hover { filter: brightness(1.08); }
+[data-theme="pathe"] .repo-seg:active { filter: brightness(0.92); }
 [data-theme="pathe"] .repo-seg-count {
   position: absolute;
-  top: 3px;
-  right: 5px;
-  font-size: 9px;
+  top: 5px;
+  right: 6px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
-  padding: 2px 4px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #141414;
+  color: #ffc426;
 }
 [data-theme="pathe"] .repo-cell-label {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  font-size: calc(10.5px * var(--font-scale, 1));
+  z-index: 1;
+  font-size: calc(10px * var(--font-scale, 1));
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #141414;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0 0 14px 14px;
   overflow: hidden;
-  padding: 0 6px;
+  padding: 0 8px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 [data-theme="pathe"] .repo-pop {
   position: absolute;
-  top: calc(100% + 3px);
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
   z-index: 60;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 [data-theme="pathe"] .repo-pop-item {
   display: flex;
@@ -562,32 +582,15 @@
   border: none;
   -webkit-appearance: none;
   appearance: none;
+  background: none;
   font: inherit;
-  font-size: calc(10.5px * var(--font-scale, 1));
+  font-size: calc(11px * var(--font-scale, 1));
+  font-weight: 700;
+  color: #141414;
   cursor: default;
   text-align: left;
-  padding: 6px 9px;
+  padding: 7px 10px;
 }
-[data-theme="pathe"] .repo-pop-name {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-[data-theme="pathe"] .repo-pop-time { flex-shrink: 0; opacity: 0.65; font-size: 0.9em; }
-
-[data-theme="pathe"] .repo-seg { background: #8d8d8d; }
-[data-theme="pathe"] .repo-seg + .repo-seg { border-left: 2px solid rgba(255, 255, 255, 0.6); }
-[data-theme="pathe"] .repo-seg[data-state="ok"] { background: #3e9b4f; }
-[data-theme="pathe"] .repo-seg[data-state="fail"] { background: #d7292e; }
-[data-theme="pathe"] .repo-seg[data-state="run"] { background: #4693c8; }
-[data-theme="pathe"] .repo-seg[data-state="wait"] { background: #e0762f; }
-[data-theme="pathe"] .repo-cell-label {
-  color: #fff;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-[data-theme="pathe"] .repo-pop { background: #fff; }
-[data-theme="pathe"] .repo-pop-item { background: none; color: #141414; font-weight: 700; }
 [data-theme="pathe"] .repo-pop-item:hover { background: #ffe9b8; }
+[data-theme="pathe"] .repo-pop-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-theme="pathe"] .repo-pop-time { flex-shrink: 0; opacity: 0.6; font-size: 0.9em; }
