@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./base.css";
-import "./theme-holydiver.css";
+import "./theme-steve.css";
 import "./theme-hellripper.css";
 import "./theme-phosphor.css";
 import "./theme-phosphor-settings.css";

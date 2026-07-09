@@ -136,7 +136,7 @@ function CleanAbout({ themeId }: { themeId: ThemeId }) {
       `}</style>
       <div className="about">
         <div className="about-ghost">
-          {themeId === "holydiver" ? (
+          {themeId === "steve" ? (
             <Ghost size={96} eyeMilkScale={0.7} eyeMilkColor="#dcd6c8" />
           ) : (
             <Ghost size={96} {...ghost} />
@@ -410,7 +410,7 @@ function HellripperAbout() {
 }
 
 const ABOUT_THEME_IDS: Record<string, string> = {
-  normal: "holydiver",
+  normal: "steve",
   blackmetal: "hellripper",
   phosphor: "phosphor",
   pathe: "pathe",

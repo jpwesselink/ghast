@@ -11,8 +11,8 @@ const view = new URLSearchParams(window.location.search).get("view");
 const isSettings = view === "settings";
 const isAbout = view === "about";
 
-const THEME_IDS: Record<string, "holydiver" | "hellripper" | "phosphor" | "pathe"> = {
-  normal: "holydiver",
+const THEME_IDS: Record<string, "steve" | "hellripper" | "phosphor" | "pathe"> = {
+  normal: "steve",
   blackmetal: "hellripper",
   phosphor: "phosphor",
   pathe: "pathe",
@@ -20,7 +20,7 @@ const THEME_IDS: Record<string, "holydiver" | "hellripper" | "phosphor" | "pathe
 
 // incantation -> config theme value
 const INCANTATIONS: Record<string, string> = {
-  holydiver: "normal",
+  steve: "normal",
   hellripper: "blackmetal",
   phosphor: "phosphor",
   pathe: "pathe",
@@ -28,7 +28,7 @@ const INCANTATIONS: Record<string, string> = {
 
 // set before first paint so themed CSS applies immediately
 document.documentElement.dataset.theme =
-  THEME_IDS[localStorage.getItem("ghast-theme") ?? "normal"] ?? "holydiver";
+  THEME_IDS[localStorage.getItem("ghast-theme") ?? "normal"] ?? "steve";
 
 interface UiPrefs {
   font_scale: number;

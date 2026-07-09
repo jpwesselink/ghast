@@ -1,4 +1,4 @@
-export type ThemeId = "holydiver" | "hellripper" | "phosphor" | "pathe";
+export type ThemeId = "steve" | "hellripper" | "phosphor" | "pathe";
 
 export interface PanelCopy {
   subtitle: string;
@@ -59,7 +59,7 @@ export const PANEL_COPY: Record<ThemeId, PanelCopy> = {
     jobsError: "job table unavailable",
     jobsEmpty: "no jobs recorded",
   },
-  holydiver: {
+  steve: {
     subtitle: "GitHub Actions Status Tracker",
     authError: "Auth error - check Settings",
     noPat: "Open Settings to connect GitHub",
@@ -120,7 +120,7 @@ export const CALM_GHOST: Record<
     eyeMilkScale: 0.9,
     glow: "#1aff5c",
   },
-  holydiver: {
+  steve: {
     bodyColor: "var(--ghost-body)",
     eyeMilkColor: "#ffffff",
     eyeMilkScale: 0.8,

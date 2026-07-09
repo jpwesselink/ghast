@@ -126,7 +126,7 @@ export const SETTINGS_COPY: Record<ThemeId, SettingsCopy> = {
     colReviews: "reviews",
     colMentions: "mentions",
   },
-  holydiver: {
+  steve: {
     repoTabsLabel: "Reuse a browser tab per repo",
     repoTabsHint: "Links from the same repo open in one tab",
     onLabel: "On",

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type { ThemeId } from "./panelCopy";
 import { SETTINGS_COPY } from "./settingsCopy";
-import "./theme-holydiver-settings.css";
+import "./theme-steve-settings.css";
 import "./theme-hellripper-settings.css";
 
 export type Section = "account" | "repositories" | "appearance" | "general";
@@ -347,8 +347,8 @@ export default function SettingsPanel({ themeId }: { themeId: ThemeId }) {
                     className={`s-theme-card${currentTheme === "normal" ? " active" : ""}`}
                     onClick={() => pickTheme("normal")}
                   >
-                    <div className="s-theme-thumb holy">☼</div>
-                    <div className="s-theme-name">Holy Diver</div>
+                    <div className="s-theme-thumb holy"></div>
+                    <div className="s-theme-name">Steve</div>
                   </button>
                   <button
                     className={`s-theme-card${
