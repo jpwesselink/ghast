@@ -185,6 +185,7 @@ pub struct Mention {
     pub subject_type: String,
     pub html_url: String,
     pub updated_at: DateTime<Utc>,
+    pub unread: bool,
 }
 
 impl Mention {
@@ -195,6 +196,7 @@ impl Mention {
             subject_type: api.subject_type.clone(),
             html_url: api.html_url.clone(),
             updated_at: api.updated_at,
+            unread: api.unread,
         }
     }
 }
@@ -206,6 +208,7 @@ pub struct PanelMention {
     pub subject_type: String,
     pub html_url: String,
     pub updated_at: String,
+    pub unread: bool,
 }
 
 impl From<&Mention> for PanelMention {
@@ -216,6 +219,7 @@ impl From<&Mention> for PanelMention {
             subject_type: m.subject_type.clone(),
             html_url: m.html_url.clone(),
             updated_at: m.updated_at.to_rfc3339(),
+            unread: m.unread,
         }
     }
 }
@@ -305,7 +309,8 @@ impl AppState {
 
         let mentions: Vec<PanelMention> = {
             let mut sorted: Vec<&Mention> = self.mentions.iter().collect();
-            sorted.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+            // unread first, then newest
+            sorted.sort_by(|a, b| b.unread.cmp(&a.unread).then(b.updated_at.cmp(&a.updated_at)));
             sorted.iter().map(|m| PanelMention::from(*m)).collect()
         };
 

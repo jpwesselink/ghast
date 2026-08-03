@@ -179,6 +179,7 @@ mod tests {
             subject_type: "Issue".to_string(),
             html_url: url.to_string(),
             updated_at: chrono::DateTime::from_timestamp(updated_secs, 0).unwrap(),
+            unread: true,
         }
     }
 

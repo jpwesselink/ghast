@@ -216,6 +216,9 @@ async fn poll_mentions(
             Vec::new()
         } else {
             notify::detect_new_mentions(&s.mentions, &new_mentions)
+                .into_iter()
+                .filter(|m| m.unread)
+                .collect()
         }
     };
     for mention in &to_notify {

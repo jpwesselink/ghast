@@ -436,6 +436,7 @@ function MentionRow({ mention }: { mention: PanelMention }) {
   return (
     <div
       className="run-item"
+      style={mention.unread ? undefined : { opacity: 0.55 }}
       onClick={() => openExternal(mention.html_url, mention.repo)}
     >
       <Tooltip>
@@ -478,7 +479,7 @@ export default function Panel({
     grid: 0,
     reviews: data.pending_reviews.length,
     prs: data.my_prs.length,
-    comments: data.mentions.length,
+    comments: data.mentions.filter((m) => m.unread).length,
   };
 
   const ready = !data.auth_error && data.has_pat;

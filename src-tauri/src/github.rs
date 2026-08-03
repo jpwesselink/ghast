@@ -60,6 +60,19 @@ fn api_err(e: octocrab::Error) -> String {
     }
 }
 
+/// Newest comment in an API comment list whose body @-mentions `needle`
+/// (lowercased "@login"). Lists arrive oldest-first, so scan from the back.
+fn last_mentioning_comment(comments: &serde_json::Value, needle: &str) -> Option<u64> {
+    comments.as_array()?.iter().rev().find_map(|c| {
+        let body = c["body"].as_str()?.to_lowercase();
+        if body.contains(needle) {
+            c["id"].as_u64()
+        } else {
+            None
+        }
+    })
+}
+
 fn enum_str<T: serde::Serialize>(v: &T) -> String {
     serde_json::to_value(v)
         .ok()
@@ -85,6 +98,7 @@ pub struct Mention {
     pub subject_type: String,
     pub html_url: String,
     pub updated_at: DateTime<Utc>,
+    pub unread: bool,
 }
 
 /// Rewrites a notification subject API URL to its browser URL, e.g.
@@ -342,6 +356,7 @@ impl GitHubClient {
             .activity()
             .notifications()
             .list()
+            .all(true) // include read threads so older mentions stay visible
             .per_page(50)
             .send()
             .await
@@ -369,9 +384,60 @@ impl GitHubClient {
                 subject_type: n.subject.r#type,
                 html_url,
                 updated_at: n.updated_at,
+                unread: n.unread,
             });
         }
+
+        self.resolve_missing_anchors(&mut out).await;
         Ok(out)
+    }
+
+    /// The notifications API often sends `latest_comment_url: null` even when
+    /// the mention came from a comment, which strands the link at the top of
+    /// the issue/PR. For those, walk the thread's comments and deep-link to
+    /// the newest one that @-mentions the current user.
+    async fn resolve_missing_anchors(&self, mentions: &mut [Mention]) {
+        if mentions.iter().all(|m| !m.unread || m.html_url.contains('#')) {
+            return;
+        }
+        let Ok(user) = self.octo.current().user().await else {
+            return;
+        };
+        let needle = format!("@{}", user.login.to_lowercase());
+
+        for m in mentions.iter_mut() {
+            // Read threads skip resolution: it would re-fetch comment lists on
+            // every poll for threads the user has already seen.
+            if !m.unread || m.html_url.contains('#') {
+                continue;
+            }
+            // number from ".../{issues|pull}/{n}"
+            let Some(number) = m
+                .html_url
+                .rsplit_once('/')
+                .and_then(|(_, n)| n.parse::<u64>().ok())
+            else {
+                continue;
+            };
+
+            // Conversation comments cover both issues and PR discussions.
+            let convo = format!("/repos/{}/issues/{number}/comments?per_page=100", m.repo);
+            if let Ok(v) = self.octo.get::<serde_json::Value, _, _>(convo, None::<&()>).await {
+                if let Some(id) = last_mentioning_comment(&v, &needle) {
+                    m.html_url = format!("{}#issuecomment-{id}", m.html_url);
+                    continue;
+                }
+            }
+            // PR review (diff) comments live on a separate endpoint.
+            if m.subject_type == "PullRequest" {
+                let review = format!("/repos/{}/pulls/{number}/comments?per_page=100", m.repo);
+                if let Ok(v) = self.octo.get::<serde_json::Value, _, _>(review, None::<&()>).await {
+                    if let Some(id) = last_mentioning_comment(&v, &needle) {
+                        m.html_url = format!("{}#discussion_r{id}", m.html_url);
+                    }
+                }
+            }
+        }
     }
 
     pub async fn get_run_jobs(

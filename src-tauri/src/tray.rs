@@ -214,7 +214,7 @@ pub fn update_tray_badge(
         (
             s.active_run_count(),
             s.pending_reviews.len(),
-            s.mentions.len(),
+            s.mentions.iter().filter(|m| m.unread).count(),
             s.has_failing(),
         )
     };
