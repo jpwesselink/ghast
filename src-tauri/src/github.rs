@@ -44,6 +44,22 @@ pub struct RunJob {
     pub steps: Vec<RunStep>,
 }
 
+/// octocrab's Display for API errors is just "GitHub"; the status code and
+/// message live in the error source. Flatten them into one useful line.
+fn api_err(e: octocrab::Error) -> String {
+    let msg = match &e {
+        octocrab::Error::GitHub { source, .. } => {
+            format!("GitHub {}: {}", source.status_code, source.message)
+        }
+        other => other.to_string(),
+    };
+    if msg.contains("401") {
+        "auth_error".to_string()
+    } else {
+        msg
+    }
+}
+
 fn enum_str<T: serde::Serialize>(v: &T) -> String {
     serde_json::to_value(v)
         .ok()
@@ -172,14 +188,7 @@ impl GitHubClient {
                 None::<&()>,
             )
             .await
-            .map_err(|e| {
-                let msg = e.to_string();
-                if msg.contains("401") {
-                    "auth_error".to_string()
-                } else {
-                    msg
-                }
-            })?;
+            .map_err(api_err)?;
 
         let runs = body["workflow_runs"]
             .as_array()
@@ -255,14 +264,7 @@ impl GitHubClient {
             .per_page(50)
             .send()
             .await
-            .map_err(|e| {
-                let msg = e.to_string();
-                if msg.contains("401") {
-                    "auth_error".to_string()
-                } else {
-                    msg
-                }
-            })?;
+            .map_err(api_err)?;
 
         // The search results don't carry a draft flag, so ask which of these
         // are drafts in a second, narrower search.
@@ -343,14 +345,7 @@ impl GitHubClient {
             .per_page(50)
             .send()
             .await
-            .map_err(|e| {
-                let msg = e.to_string();
-                if msg.contains("401") {
-                    "auth_error".to_string()
-                } else {
-                    msg
-                }
-            })?;
+            .map_err(api_err)?;
 
         let mut out = Vec::new();
         for n in page.items {
@@ -392,14 +387,7 @@ impl GitHubClient {
             .per_page(50)
             .send()
             .await
-            .map_err(|e| {
-                let msg = e.to_string();
-                if msg.contains("401") {
-                    "auth_error".to_string()
-                } else {
-                    msg
-                }
-            })?;
+            .map_err(api_err)?;
 
         Ok(page
             .items

@@ -106,7 +106,7 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
                 break;
             }
             Err(_) => {
-                // Network error — skip this repo, retry next cycle
+                // Network error - skip this repo, retry next cycle
             }
         }
     }
@@ -156,7 +156,10 @@ async fn poll_review_requests(
             s.auth_error = true;
             return;
         }
-        Err(_) => return, // network error — keep last known list
+        Err(e) => {
+            eprintln!("[ghast] review-request poll failed, keeping last list: {}", e.split("\nFound at").next().unwrap_or(&e).replace('\n', " | "));
+            return;
+        }
     };
 
     let new_reviews: Vec<PendingReview> =
@@ -199,7 +202,10 @@ async fn poll_mentions(
             s.auth_error = true;
             return;
         }
-        Err(_) => return, // network error — keep last known list
+        Err(e) => {
+            eprintln!("[ghast] mention poll failed, keeping last list: {}", e.split("\nFound at").next().unwrap_or(&e).replace('\n', " | "));
+            return;
+        }
     };
 
     let new_mentions: Vec<Mention> = api_mentions.iter().map(Mention::from_api).collect();
@@ -237,7 +243,7 @@ async fn poll_my_prs(state: &SharedState, client: &GitHubClient, repos: &[String
             let mut s = state.lock().unwrap();
             s.auth_error = true;
         }
-        Err(_) => {} // network error — keep last known list
+        Err(e) => eprintln!("[ghast] my-PRs poll failed, keeping last list: {}", e.split("\nFound at").next().unwrap_or(&e).replace('\n', " | ")),
     }
 }
 
