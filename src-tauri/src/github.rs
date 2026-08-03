@@ -298,7 +298,35 @@ impl GitHubClient {
                 created_at: item.created_at,
             });
         }
-        Ok(out)
+
+        // The search index lags a few minutes behind merges/closes, so a
+        // just-merged PR can still come back from an is:open query. Confirm
+        // each hit against the live PR; a failed check keeps the item so a
+        // network blip doesn't drop a real review request.
+        let still_open = futures::future::join_all(out.iter().map(|r| {
+            let octo = self.octo.clone();
+            let repo = r.repo.clone();
+            let number = r.number;
+            async move {
+                match octo
+                    .get::<serde_json::Value, _, _>(
+                        format!("/repos/{repo}/pulls/{number}"),
+                        None::<&()>,
+                    )
+                    .await
+                {
+                    Ok(pr) => pr["state"].as_str().is_none_or(|s| s == "open"),
+                    Err(_) => true,
+                }
+            }
+        }))
+        .await;
+
+        Ok(out
+            .into_iter()
+            .zip(still_open)
+            .filter_map(|(r, open)| open.then_some(r))
+            .collect())
     }
 
     pub async fn get_mentions(&self, repos: &[String]) -> Result<Vec<Mention>, String> {
