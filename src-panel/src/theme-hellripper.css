@@ -1,0 +1,862 @@
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&display=swap');
+
+        @keyframes candleGlow {
+          0%, 100% { text-shadow: 0 0 10px #b01010, 0 0 25px #8b0000, 0 0 50px #5a0000; }
+          33% { text-shadow: 0 0 14px #cc2020, 0 0 30px #a00000, 0 0 60px #5a0000; }
+          66% { text-shadow: 0 0 8px #901010, 0 0 20px #8b0000, 0 0 45px #4a0000; }
+        }
+
+        @keyframes screenFlicker {
+          0% { filter: brightness(1) contrast(1); }
+          5% { filter: brightness(3) contrast(0.5); }
+          10% { filter: brightness(0.3) contrast(2); }
+          15% { filter: brightness(1) contrast(1); }
+          25% { filter: brightness(2) contrast(0.8); }
+          30% { filter: brightness(1) contrast(1); }
+        }
+
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        [data-theme="hellripper"] .screen-flicker{ animation: screenFlicker 0.6s ease-out; }
+
+        [data-theme="hellripper"] .menu{
+          font-family: 'IM Fell English', serif;
+          background: #0e0a08;
+          box-shadow: inset 0 0 60px 14px rgba(0, 0, 0, 0.55);
+          color: #ddd6c8;
+          height: 100vh;
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          border-radius: 14px;
+        }
+
+        [data-theme="hellripper"] .menu::before{
+          content: '';
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(ellipse at 50% -5%, rgba(96, 44, 120, 0.13) 0%, transparent 55%),
+            radial-gradient(ellipse at 50% 108%, rgba(224, 140, 40, 0.16) 0%, transparent 45%),
+            radial-gradient(ellipse at 18% 85%, rgba(200, 110, 30, 0.07) 0%, transparent 35%);
+          pointer-events: none;
+        }
+
+        @media (prefers-color-scheme: light) {
+          [data-theme="hellripper"] .menu{
+            background: #f0e8d8;
+            color: #2a1a10;
+          }
+          [data-theme="hellripper"] .menu::before{
+            background:
+              radial-gradient(ellipse at 50% 0%, rgba(160, 10, 10, 0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 50% 100%, rgba(160, 10, 10, 0.04) 0%, transparent 40%);
+          }
+          [data-theme="hellripper"] .menu{ background: #f0e8d8 !important; color: #000 !important; }
+          [data-theme="hellripper"] .brand-title{ color: #000 !important; text-shadow: 0 0 10px #b01010, 0 0 25px #8b0000, 0 0 50px #5a0000 !important; }
+          [data-theme="hellripper"] .brand-subtitle{ color: #5a4a3a !important; }
+          [data-theme="hellripper"] .menu-separator{ background: linear-gradient(to right, transparent, #c0a090, transparent) !important; }
+          [data-theme="hellripper"] .repo-header{ color: #8b0000 !important; }
+          [data-theme="hellripper"] .run-name{
+          text-shadow: 0 1px 1px rgba(0, 0, 0, 0.65); color: #000 !important; }
+          [data-theme="hellripper"] .run-item:hover{ background: rgba(139, 0, 0, 0.15) !important; }
+          [data-theme="hellripper"] .run-item:hover .run-name{ color: #000 !important; }
+          [data-theme="hellripper"] .run-time{ color: #4a3a28 !important; }
+          [data-theme="hellripper"] .status-icon{ filter: none !important; }
+          [data-theme="hellripper"] .menu-message{ color: #4a3a28 !important; }
+          [data-theme="hellripper"] .footer-item{ color: #000 !important; }
+          [data-theme="hellripper"] .footer-item:hover{ background: rgba(139, 0, 0, 0.15) !important; }
+          [data-theme="hellripper"] .repo-group + .repo-group{ border-top-color: #d0c0a8 !important; }
+          [data-theme="hellripper"] .menu-content::-webkit-scrollbar-track{ background: #e8dcc8 !important; }
+          [data-theme="hellripper"] .menu-content::-webkit-scrollbar-thumb{ background: #b09070 !important; }
+          [data-theme="hellripper"] .decor-scratch{ background: rgba(80, 50, 20, 0.04) !important; }
+          [data-theme="hellripper"] .menu-tabs{ border-bottom-color: #c0a090 !important; }
+          [data-theme="hellripper"] .menu-tab{ color: #6a5a48 !important; }
+          [data-theme="hellripper"] .menu-tab:hover{ color: #2a1a10 !important; background: rgba(139, 0, 0, 0.08) !important; }
+          [data-theme="hellripper"] .menu-tab.active{ color: #2a1a10 !important; border-bottom-color: #8b0000 !important; }
+          [data-theme="hellripper"] .menu-tab-badge{ background: #e0c8a8 !important; border-color: #b09070 !important; color: #2a1a10 !important; }
+          [data-theme="hellripper"] .menu-tab.active .menu-tab-badge{ background: #8b0000 !important; border-color: #8b0000 !important; color: #f0e8d8 !important; }
+          [data-theme="hellripper"] .repo-chip{ border-color: #c0a090 !important; color: #6a5a48 !important; }
+          [data-theme="hellripper"] .quiet-row .run-name{ color: #6a5a48 !important; }
+          [data-theme="hellripper"] .quiet-row:hover .run-name{ color: #000 !important; }
+          [data-theme="hellripper"] .tl-time{ color: #6a5a48 !important; }
+        }
+
+        [data-theme="hellripper"] .panel-inner{
+          padding: 16px 0 0;
+          position: relative;
+          z-index: 1;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
+        }
+
+        @keyframes bmBloodFall {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(120px); }
+        }
+
+        [data-theme="hellripper"] .decor-rain{
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 96px;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        [data-theme="hellripper"] .decor-drop{
+          position: absolute;
+          top: -24px;
+          border-radius: 0 0 1px 1px;
+          background: linear-gradient(to bottom, transparent 0%, #6b0000 30%, #8b0000 60%, transparent 100%);
+          animation: bmBloodFall linear infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          [data-theme="hellripper"] .decor-drop{ animation: none; opacity: 0 !important; }
+        }
+
+        [data-theme="hellripper"] .brand-title{
+          font-family: 'UnifrakturMaguntia', cursive;
+          font-size: calc(56px * var(--font-scale, 1));
+          text-align: center;
+          color: #ede6d8;
+          letter-spacing: 4px;
+          margin-bottom: 2px;
+          animation: candleGlow 4s ease-in-out infinite;
+          line-height: 1;
+          position: relative;
+          z-index: 1;
+        }
+
+        [data-theme="hellripper"] .brand-subtitle{
+          font-family: 'IM Fell English SC', serif;
+          font-size: calc(12px * var(--font-scale, 1));
+          text-align: center;
+          letter-spacing: 4px;
+          color: #948a7e;
+          text-transform: uppercase;
+          margin-bottom: 10px;
+        }
+
+        [data-theme="hellripper"] .menu-separator{
+          height: 1px;
+          background: linear-gradient(to right, transparent, #5a3030, transparent);
+          margin: 0;
+        }
+
+        [data-theme="hellripper"] .menu-tabs{
+          display: flex;
+          gap: 4px;
+          padding: 6px 8px 0;
+          margin-bottom: 6px;
+          border-bottom: 1px solid #221816;
+        }
+
+        [data-theme="hellripper"] .menu-tab{
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 6px 10px;
+          border: none;
+          background: transparent;
+          color: #6a5a48;
+          font-family: 'IM Fell English SC', serif;
+          font-size: calc(13px * var(--font-scale, 1));
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          cursor: default;
+          transition: color 0.15s, background 0.15s;
+          border-bottom: 2px solid transparent;
+          margin-bottom: -1px;
+        }
+
+        [data-theme="hellripper"] .menu-tab:hover{ color: #b8a890; background: rgba(80, 0, 0, 0.1); }
+
+        [data-theme="hellripper"] .menu-tab.active{
+          color: #ecd9a8;
+          border-bottom-color: #8b0000;
+          text-shadow: 0 0 7px rgba(212, 150, 50, 0.45), 0 0 14px rgba(180, 20, 20, 0.3);
+        }
+
+        [data-theme="hellripper"] .menu-tab-badge{
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 18px;
+          height: 16px;
+          padding: 0 5px;
+          border-radius: 8px;
+          background: #1d1026;
+          border: 1px solid #5a3d78;
+          color: #cbb3e0;
+          font-family: 'IM Fell English', serif;
+          font-style: italic;
+          font-size: calc(12px * var(--font-scale, 1));
+          letter-spacing: 0;
+        }
+
+        [data-theme="hellripper"] .menu-tab.active .menu-tab-badge{
+          background: #4a1010;
+          border-color: #8b0000;
+          color: #ede6d8;
+        }
+
+        [data-theme="hellripper"] .menu, [data-theme="hellripper"] .menu *{
+          -webkit-user-select: none;
+          user-select: none;
+        }
+
+        [data-theme="hellripper"] .run-name, [data-theme="hellripper"] .repo-chip, [data-theme="hellripper"] .run-time, [data-theme="hellripper"] .tl-time, [data-theme="hellripper"] .repo-header{
+          -webkit-user-select: text;
+          user-select: text;
+        }
+
+        [data-theme="hellripper"] .sect-fail, [data-theme="hellripper"] .sect-run, [data-theme="hellripper"] .sect-quiet, [data-theme="hellripper"] .calm-line{
+          -webkit-user-select: none !important;
+          user-select: none !important;
+        }
+
+        [data-theme="hellripper"] .run-chevron{
+          color: #6a5a48;
+          font-size: 15px;
+          line-height: 1;
+          width: 14px;
+          text-align: center;
+          flex-shrink: 0;
+          transition: transform 0.15s, color 0.2s;
+        }
+
+        [data-theme="hellripper"] .run-chevron.open{
+          transform: rotate(90deg);
+        }
+
+        [data-theme="hellripper"] .run-item:hover .run-chevron{
+          color: #dd3030;
+        }
+
+        [data-theme="hellripper"] .job-list{
+          padding: 0 6px 4px;
+        }
+
+        [data-theme="hellripper"] .job-row, [data-theme="hellripper"] .step-row{
+          border: none;
+          background: none;
+          width: calc(100% - 12px);
+          font-family: inherit;
+          text-align: left;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 3px 8px 3px 34px;
+          margin: 0 6px;
+          border-radius: 5px;
+          cursor: default;
+          font-size: calc(14px * var(--font-scale, 1));
+          color: #d4ccb8;
+        }
+
+        [data-theme="hellripper"] .job-row:hover{
+          background: #2a1a18;
+        }
+
+        [data-theme="hellripper"] .step-row{
+          padding-left: 52px;
+          color: #a89b85;
+          cursor: default;
+        }
+
+        [data-theme="hellripper"] .step-mark{
+          width: 12px;
+          text-align: center;
+          flex-shrink: 0;
+        }
+
+        [data-theme="hellripper"] .run-duration{
+          color: #8d8171;
+          font-size: calc(12px * var(--font-scale, 1));
+          font-style: italic;
+          flex-shrink: 0;
+          min-width: calc(52px * var(--font-scale, 1));
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+
+        [data-theme="hellripper"] .step-duration{
+          color: #8d8171;
+          font-size: calc(12px * var(--font-scale, 1));
+          font-style: italic;
+          flex-shrink: 0;
+          font-variant-numeric: tabular-nums;
+        }
+
+        [data-theme="hellripper"] .step-link{
+          cursor: default;
+        }
+
+        [data-theme="hellripper"] .step-link:hover{
+          background: #2a1a18;
+          color: #e0d8c8;
+        }
+
+        [data-theme="hellripper"] .job-note{
+          padding: 3px 8px 5px 44px;
+          color: #8d8171;
+          font-style: italic;
+          font-size: calc(12px * var(--font-scale, 1));
+        }
+
+        [data-theme="hellripper"] .calm-ghost{
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 18px 0 10px;
+        }
+
+        [data-theme="hellripper"] .calm-line{
+          color: #a89b85;
+          font-style: italic;
+          font-size: calc(13px * var(--font-scale, 1));
+        }
+
+        [data-theme="hellripper"] .pager-clip{
+          overflow: hidden;
+          min-height: 0;
+          flex: 1;
+          display: flex;
+        }
+
+        [data-theme="hellripper"] .pager-strip{
+          display: flex;
+          width: 700%;
+          flex: 0 0 700%;
+          transition: transform 240ms cubic-bezier(0.25, 0.8, 0.3, 1);
+          align-items: stretch;
+        }
+
+        [data-theme="hellripper"] .pager-page{
+          width: 14.2857%;
+          flex-shrink: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          [data-theme="hellripper"] .pager-strip{ transition: none; }
+        }
+
+        [data-theme="hellripper"] .repo-link{
+          display: block;
+          width: 100%;
+          border: none;
+          background: none;
+          -webkit-appearance: none;
+          appearance: none;
+          border-radius: 0;
+          cursor: default;
+          text-align: left;
+        }
+
+        [data-theme="hellripper"] .repo-link:hover{
+          color: #dd3030;
+          text-shadow: 0 0 6px rgba(200, 20, 20, 0.3);
+        }
+
+        [data-theme="hellripper"] .repo-chip{
+          font-family: 'IM Fell English SC', serif;
+          font-size: calc(11px * var(--font-scale, 1));
+          letter-spacing: 1px;
+          padding: 1px 6px;
+          border: 1px solid #3a2a1a;
+          color: #a89b85;
+          flex-shrink: 0;
+          width: calc(100px * var(--font-scale, 1));
+          box-sizing: border-box;
+          text-align: center;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        [data-theme="hellripper"] .sect-run{ color: #5577ee !important; }
+        [data-theme="hellripper"] .sect-wait{ color: #cc8822 !important; }
+        [data-theme="hellripper"] .sect-quiet{ color: #6a7a48 !important; }
+
+        [data-theme="hellripper"] .quiet-row .run-name{ color: #9a8e7e; }
+        [data-theme="hellripper"] .quiet-row:hover .run-name{ color: #e0d8c8; }
+
+        [data-theme="hellripper"] .hist{
+          display: inline-flex;
+          gap: 2.5px;
+          flex-shrink: 0;
+        }
+
+        [data-theme="hellripper"] .hist i{
+          width: 7px;
+          height: 7px;
+          display: block;
+        }
+
+        [data-theme="hellripper"] .hist .hist-ok{ background: #55aa22; }
+        [data-theme="hellripper"] .hist .hist-fail{ background: #cc2020; }
+        [data-theme="hellripper"] .hist .hist-skip{ background: #9a8a78; opacity: 0.6; }
+        [data-theme="hellripper"] .hist .hist-run{ background: #5577ee; }
+        [data-theme="hellripper"] .hist .hist-wait{ background: #cc8822; }
+        [data-theme="hellripper"] .hist .hist-dim{ opacity: 0.4; }
+
+        [data-theme="hellripper"] .tl-time{
+          width: 40px;
+          flex-shrink: 0;
+          text-align: right;
+          color: #a89b85;
+          font-size: calc(12px * var(--font-scale, 1));
+          font-variant-numeric: tabular-nums;
+        }
+
+        [data-theme="hellripper"] .tl-now{
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 2px 14px 2px 56px;
+        }
+
+        [data-theme="hellripper"] .tl-now-label{
+          font-family: 'IM Fell English SC', serif;
+          font-size: calc(9px * var(--font-scale, 1));
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          color: #c01818;
+          white-space: nowrap;
+        }
+
+        [data-theme="hellripper"] .tl-now-line{
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(to right, #8b0000, transparent);
+        }
+
+        [data-theme="hellripper"] .menu-content{
+          flex: 1;
+          overflow-y: auto;
+          min-height: 0;
+          padding: 6px 0;
+        }
+
+        [data-theme="hellripper"] .menu-content::-webkit-scrollbar{ width: 6px; }
+        [data-theme="hellripper"] .menu-content::-webkit-scrollbar-track{ background: #1a1210; }
+        [data-theme="hellripper"] .menu-content::-webkit-scrollbar-thumb{ background: #6a3030; border-radius: 3px; }
+        [data-theme="hellripper"] .menu-content::-webkit-scrollbar-thumb:hover{ background: #8b4040; }
+
+        [data-theme="hellripper"] .repo-group + .repo-group{
+          border-top: 1px solid #1a1210;
+          margin-top: 6px;
+          padding-top: 6px;
+        }
+
+        [data-theme="hellripper"] .repo-header{
+          font-family: 'IM Fell English SC', serif;
+          font-size: calc(11px * var(--font-scale, 1));
+          letter-spacing: 2px;
+          color: #c01818;
+          text-transform: uppercase;
+          padding: 6px 14px 4px;
+        }
+
+        @keyframes iconPulse {
+          0%, 100% { filter: drop-shadow(0 0 1px var(--glow)); opacity: 0.85; }
+          50% { filter: drop-shadow(0 0 2px var(--glow)) drop-shadow(0 0 5px var(--glow)); opacity: 1; }
+        }
+
+        [data-theme="hellripper"] .run-item{
+          -webkit-appearance: none;
+          appearance: none;
+          border: none;
+          background: none;
+          font: inherit;
+          color: inherit;
+          text-align: left;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 6px 8px;
+          margin: 0 6px;
+          width: calc(100% - 12px);
+          box-sizing: border-box;
+          border-radius: 5px;
+          cursor: default;
+          transition: background 0.15s;
+          animation: fadeSlideIn 0.2s ease-out both;
+        }
+
+        [data-theme="hellripper"] .run-item:hover{
+          background: linear-gradient(90deg, rgba(70, 36, 16, 0.85), rgba(42, 22, 14, 0.9) 55%, rgba(28, 16, 12, 0.85));
+          box-shadow: inset 0 0 12px rgba(224, 140, 40, 0.08);
+        }
+
+        [data-theme="hellripper"] .status-icon{
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+          filter: drop-shadow(0 0 1px var(--glow));
+        }
+
+        [data-theme="hellripper"] .icon-trigger{
+          display: inline-flex;
+          flex-shrink: 0;
+        }
+
+        [data-theme="hellripper"] .icon-pulse{
+          animation: iconPulse 1.8s ease-in-out infinite;
+        }
+
+        [data-theme="hellripper"] .run-name{
+          text-shadow: 0 1px 1px rgba(0, 0, 0, 0.65);
+          flex: 1;
+          font-size: calc(15px * var(--font-scale, 1));
+          color: #e0d8c8;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        [data-theme="hellripper"] .run-item:hover .run-name{
+          color: #f0dfb2;
+          text-shadow: 0 0 6px rgba(224, 170, 60, 0.25);
+        }
+
+        [data-theme="hellripper"] .run-time{
+          font-size: calc(13px * var(--font-scale, 1));
+          color: #a89b85;
+          flex-shrink: 0;
+          min-width: calc(60px * var(--font-scale, 1));
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+
+        [data-theme="hellripper"] .menu-message{
+          padding: 16px 14px;
+          color: #8d8171;
+          font-size: calc(13px * var(--font-scale, 1));
+          font-style: italic;
+          text-align: center;
+        }
+
+        [data-theme="hellripper"] .menu-footer{
+          padding: 4px 0 6px;
+        }
+
+        [data-theme="hellripper"] .footer-item{
+          display: block;
+          width: calc(100% - 12px);
+          padding: 6px 8px;
+          margin: 0 6px;
+          border: none;
+          background: none;
+          color: #b8b0a0;
+          font: inherit;
+          font-size: calc(13px * var(--font-scale, 1));
+          cursor: default;
+          text-align: left;
+          transition: background 0.15s;
+          border-radius: 5px;
+        }
+
+        [data-theme="hellripper"] .footer-item:hover{
+          background: linear-gradient(90deg, rgba(70, 36, 16, 0.85), rgba(28, 16, 12, 0.85));
+          color: #f0dfb2;
+        }
+
+        [data-theme="hellripper"] .footer-sigil{
+          text-align: center;
+          padding: 6px 0;
+          opacity: 0.3;
+        }
+
+        [data-theme="hellripper"] .decor-scratches{
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          overflow: hidden;
+          z-index: 2;
+        }
+
+        [data-theme="hellripper"] .decor-scratch{
+          position: absolute;
+          background: rgba(200, 192, 176, 0.03);
+        }
+
+[data-theme="hellripper"] .sect-wait { -webkit-user-select: none !important; user-select: none !important; }
+
+/* ------- generated: attribute-driven iconography ------- */
+[data-theme="hellripper"] .status-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-size: contain;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 1px var(--glow));
+}
+[data-theme="hellripper"] .status-icon[data-status="completed"][data-conclusion="success"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Ccircle cx%3D'12' cy%3D'12' r%3D'9' fill%3D'none' stroke%3D'%2355aa22' stroke-width%3D'1.4'%2F%3E%3Cpolygon points%3D'12.00%2C4.00 16.70%2C18.47 4.39%2C9.53 19.61%2C9.53 7.30%2C18.47' fill%3D'none' stroke%3D'%2355aa22' stroke-width%3D'1.4'%2F%3E%3C%2Fsvg%3E");
+  --glow: #55aa22;
+}
+[data-theme="hellripper"] .status-icon[data-status="completed"][data-conclusion="failure"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Cpath d%3D'M12 3C7.5 3 4.5 6 4.5 10.5c0 2.4 1 3.6 2 4.4V18h2v-1.5h2V18h3v-1.5h2V18h2v-3.1c1-.8 2-2 2-4.4C19.5 6 16.5 3 12 3z' fill%3D'%23cc2020'%2F%3E%3Ccircle cx%3D'9' cy%3D'11' r%3D'1.6' fill%3D'%230a0303'%2F%3E%3Ccircle cx%3D'15' cy%3D'11' r%3D'1.6' fill%3D'%230a0303'%2F%3E%3Cpath d%3D'M11.2 13.5h1.6v2h-1.6z' fill%3D'%230a0303'%2F%3E%3C%2Fsvg%3E");
+  --glow: #cc2020;
+}
+[data-theme="hellripper"] .status-icon[data-status="in_progress"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Cpath d%3D'M2.5 12C5 7.5 8.5 5.5 12 5.5s7 2 9.5 6.5c-2.5 4.5-6 6.5-9.5 6.5s-7-2-9.5-6.5z' fill%3D'none' stroke%3D'%235577ee' stroke-width%3D'1.5'%2F%3E%3Ccircle cx%3D'12' cy%3D'12' r%3D'3.4' fill%3D'%235577ee'%2F%3E%3Ccircle cx%3D'13' cy%3D'11' r%3D'0.9' fill%3D'%230a0303'%2F%3E%3C%2Fsvg%3E");
+  --glow: #5577ee;
+}
+[data-theme="hellripper"] .status-icon[data-status="queued"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Cpath d%3D'M6 4h12M6 20h12M7 4l5 8-5 8M17 4l-5 8 5 8' stroke%3D'%23b8a020' stroke-width%3D'1.5' stroke-linecap%3D'round' stroke-linejoin%3D'round' fill%3D'none'%2F%3E%3Cpath d%3D'M9 18l3-2 3 2v2H9z' fill%3D'%23b8a020'%2F%3E%3C%2Fsvg%3E");
+  --glow: #b8a020;
+}
+[data-theme="hellripper"] .status-icon[data-status="waiting"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Cpath d%3D'M6 4h12M6 20h12M7 4l5 8-5 8M17 4l-5 8 5 8' stroke%3D'%23cc8822' stroke-width%3D'1.5' stroke-linecap%3D'round' stroke-linejoin%3D'round' fill%3D'none'%2F%3E%3Cpath d%3D'M9 18l3-2 3 2v2H9z' fill%3D'%23cc8822'%2F%3E%3C%2Fsvg%3E");
+  --glow: #cc8822;
+}
+[data-theme="hellripper"] .status-icon[data-status="completed"][data-conclusion="cancelled"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Cpath d%3D'M6 21V11a6 6 0 0 1 12 0v10z' fill%3D'none' stroke%3D'%239a8a78' stroke-width%3D'1.5'%2F%3E%3Cpath d%3D'M12 9v6M9.5 11.5h5' stroke%3D'%239a8a78' stroke-width%3D'1.5' stroke-linecap%3D'round'%2F%3E%3C%2Fsvg%3E");
+  --glow: #9a8a78;
+}
+[data-theme="hellripper"] .status-icon[data-status="completed"][data-conclusion="skipped"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Cpath d%3D'M6 21V11a6 6 0 0 1 12 0v10z' fill%3D'none' stroke%3D'%239a8a78' stroke-width%3D'1.5'%2F%3E%3Cpath d%3D'M12 9v6M9.5 11.5h5' stroke%3D'%239a8a78' stroke-width%3D'1.5' stroke-linecap%3D'round'%2F%3E%3C%2Fsvg%3E");
+  --glow: #9a8a78;
+}
+[data-theme="hellripper"] .status-icon[data-status="completed"][data-conclusion="timed_out"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Ccircle cx%3D'12' cy%3D'12' r%3D'8.5' fill%3D'none' stroke%3D'%23cc6622' stroke-width%3D'1.5'%2F%3E%3Cpath d%3D'M12 12V7M12 12l3.5 2' stroke%3D'%23cc6622' stroke-width%3D'1.5' stroke-linecap%3D'round'%2F%3E%3Cpath d%3D'M5 5l14 14' stroke%3D'%23cc6622' stroke-width%3D'1.8' stroke-linecap%3D'round'%2F%3E%3C%2Fsvg%3E");
+  --glow: #cc6622;
+}
+[data-theme="hellripper"] .status-icon[data-status="completed"][data-conclusion="action_required"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Cpath d%3D'M12 3.5L22 20.5H2z' fill%3D'none' stroke%3D'%23cc8822' stroke-width%3D'1.5' stroke-linejoin%3D'round'%2F%3E%3Cpath d%3D'M12 9.5v5.5' stroke%3D'%23cc8822' stroke-width%3D'1.8' stroke-linecap%3D'round'%2F%3E%3Ccircle cx%3D'12' cy%3D'17.8' r%3D'1' fill%3D'%23cc8822'%2F%3E%3C%2Fsvg%3E");
+  --glow: #cc8822;
+}
+[data-theme="hellripper"] .status-icon[data-status="unknown"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 24 24'%3E%3Cpath d%3D'M5 5l14 14M19 5L5 19' stroke%3D'%239a8a78' stroke-width%3D'1.8' stroke-linecap%3D'round'%2F%3E%3Ccircle cx%3D'5' cy%3D'5' r%3D'1.6' fill%3D'%239a8a78'%2F%3E%3Ccircle cx%3D'19' cy%3D'5' r%3D'1.6' fill%3D'%239a8a78'%2F%3E%3Ccircle cx%3D'5' cy%3D'19' r%3D'1.6' fill%3D'%239a8a78'%2F%3E%3Ccircle cx%3D'19' cy%3D'19' r%3D'1.6' fill%3D'%239a8a78'%2F%3E%3C%2Fsvg%3E");
+  --glow: #9a8a78;
+}
+[data-theme="hellripper"] .status-icon[data-status="in_progress"],
+[data-theme="hellripper"] .status-icon[data-status="waiting"] {
+  animation: iconPulse 1.8s ease-in-out infinite;
+}
+
+[data-theme="hellripper"] .pr-icon {
+  width: 13px; height: 13px; flex-shrink: 0;
+  background-size: contain; background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 16 16'%3E%3Cpath fill%3D'%2355aa22' d%3D'M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z'%2F%3E%3C%2Fsvg%3E");
+}
+[data-theme="hellripper"] .pr-icon[data-draft="true"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 16 16'%3E%3Cpath fill%3D'%239a8a78' d%3D'M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z'%2F%3E%3C%2Fsvg%3E");
+}
+[data-theme="hellripper"] .comment-icon {
+  width: 13px; height: 13px; flex-shrink: 0;
+  background-size: contain; background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 16 16'%3E%3Cpath fill%3D'%234696dc' d%3D'M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z'%2F%3E%3C%2Fsvg%3E");
+}
+
+/* step marks: dagger for triumph */
+[data-theme="hellripper"] .step-mark[data-state="success"]::before { content: "†"; color: #55aa22; }
+[data-theme="hellripper"] .step-mark[data-state="fail"]::before { content: "✕"; color: #cc2020; }
+[data-theme="hellripper"] .step-mark[data-state="running"]::before { content: "◌"; color: #5577ee; }
+[data-theme="hellripper"] .step-mark[data-state="pending"]::before { content: "·"; color: #9a8a78; }
+[data-theme="hellripper"] .step-mark[data-state="neutral"]::before { content: "–"; color: #9a8a78; }
+
+/* decorations */
+[data-theme="hellripper"] .decor-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: overlay;
+  opacity: 0.065;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' width%3D'120' height%3D'120'%3E%3Cfilter id%3D'n'%3E%3CfeTurbulence type%3D'fractalNoise' baseFrequency%3D'0.9' numOctaves%3D'2'%2F%3E%3C%2Ffilter%3E%3Crect width%3D'120' height%3D'120' filter%3D'url(%2523n)'%2F%3E%3C%2Fsvg%3E");
+}
+[data-theme="hellripper"] .footer-sigil-mark {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 100 100'%3E%3Cpolygon points%3D'50.0%2C5.0 76.5%2C86.4 7.2%2C36.1 92.8%2C36.1 23.5%2C86.4' fill%3D'none' stroke%3D'%235a2828' stroke-width%3D'3'%2F%3E%3Ccircle cx%3D'50' cy%3D'50' r%3D'47' fill%3D'none' stroke%3D'%235a2828' stroke-width%3D'2'%2F%3E%3C%2Fsvg%3E");
+}
+[data-theme="hellripper"] .menu-separator.sep-top { display: none; }
+[data-theme="hellripper"] .brand-drip {
+  position: absolute;
+  background: linear-gradient(to bottom, #b01010, transparent);
+  border-radius: 0 0 1px 1px;
+}
+[data-theme="hellripper"] .brand-text .brand-drip:nth-of-type(1) { bottom: -8px; left: 20%; width: 2px; height: 12px; }
+[data-theme="hellripper"] .brand-text .brand-drip:nth-of-type(2) { bottom: -14px; left: 60%; width: 2px; height: 18px; }
+[data-theme="hellripper"] .brand-text .brand-drip:nth-of-type(3) { bottom: -6px; left: 80%; width: 1.5px; height: 9px; }
+[data-theme="hellripper"] .brand-text { position: relative; display: inline-block; }
+
+
+
+[data-theme="hellripper"] .tooltip-content {
+  background: linear-gradient(180deg, #1a0808 0%, #050000 100%);
+  color: #ddc0a0;
+  border: 1px solid #4a1010;
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 10px rgba(120, 0, 0, 0.5);
+}
+[data-theme="hellripper"] .tooltip-arrow { fill: #1a0808; }
+
+/* repo grid — Diablo buttons: beveled stone, state-colored face, name plaque */
+[data-theme="hellripper"] .repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  padding: 12px 14px;
+}
+[data-theme="hellripper"] .repo-cell {
+  position: relative;
+  height: 78px;
+  overflow: visible;
+}
+[data-theme="hellripper"] .repo-cell-segs {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  border-radius: 4px;
+  /* iron rim over black mortar */
+  box-shadow:
+    0 0 0 2px #43301c,
+    0 0 0 3px #000,
+    0 3px 8px rgba(0, 0, 0, 0.85);
+}
+[data-theme="hellripper"] .repo-seg {
+  flex: 1;
+  border: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: default;
+  position: relative;
+  padding: 0;
+  --face: #3a332b;
+  --face-lit: #55493c;
+  background:
+    radial-gradient(ellipse 130% 60% at 50% -10%, rgba(255, 240, 210, 0.14), transparent 55%),
+    linear-gradient(var(--face-lit), var(--face) 45%, color-mix(in srgb, var(--face) 55%, #000));
+  /* carved bevel */
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.16),
+    inset 2px 0 0 rgba(255, 255, 255, 0.07),
+    inset -2px 0 0 rgba(0, 0, 0, 0.45),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.55);
+}
+[data-theme="hellripper"] .repo-seg + .repo-seg { border-left: 2px solid #000; }
+[data-theme="hellripper"] .repo-seg:hover { filter: brightness(1.18); }
+[data-theme="hellripper"] .repo-seg:active {
+  filter: brightness(0.85);
+  box-shadow:
+    inset 0 3px 6px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+[data-theme="hellripper"] .repo-seg[data-state="ok"] { --face: #3f6a18; --face-lit: #5c8f2a; }
+[data-theme="hellripper"] .repo-seg[data-state="run"] { --face: #2c4a9e; --face-lit: #4266c4; }
+[data-theme="hellripper"] .repo-seg[data-state="wait"] { --face: #a3641a; --face-lit: #c5842e; }
+[data-theme="hellripper"] .repo-seg[data-state="fail"] {
+  --face: #8e1b12;
+  --face-lit: #b83324;
+  animation: faceSmolder 2.2s ease-in-out infinite;
+}
+@keyframes faceSmolder {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18) saturate(1.15); }
+}
+[data-theme="hellripper"] .repo-seg-count {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  font-family: 'IM Fell English', serif;
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 5px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #f0e6cc;
+}
+/* the name plaque: dark bar riveted across the base */
+[data-theme="hellripper"] .repo-cell-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+  font-family: 'IM Fell English SC', serif;
+  font-size: calc(13px * var(--font-scale, 1));
+  letter-spacing: 1px;
+  color: #f0e6cc;
+  background: rgba(8, 5, 3, 0.82);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0 0 4px 4px;
+  text-shadow: 0 1px 1px #000;
+  overflow: hidden;
+  padding: 0 8px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@media (prefers-color-scheme: light) {
+  [data-theme="hellripper"] .repo-cell-label {
+    background: rgba(240, 232, 216, 0.9);
+    color: #1a0808;
+    border-top-color: rgba(0, 0, 0, 0.25);
+    text-shadow: none;
+  }
+}
+[data-theme="hellripper"] .repo-pop {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: #100b07;
+  border: 1px solid #43301c;
+  box-shadow: 0 0 0 1px #000, 0 10px 26px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+[data-theme="hellripper"] .repo-pop-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  font-family: 'IM Fell English', serif;
+  font-size: calc(13px * var(--font-scale, 1));
+  color: #d4c8a8;
+  cursor: default;
+  text-align: left;
+  padding: 7px 10px;
+}
+[data-theme="hellripper"] .repo-pop-item:hover { background: #2a1a12; color: #f3e8c8; }
+[data-theme="hellripper"] .repo-pop-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-theme="hellripper"] .repo-pop-time { flex-shrink: 0; opacity: 0.65; font-style: italic; font-size: 0.9em; }

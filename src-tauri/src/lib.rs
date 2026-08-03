@@ -39,8 +39,14 @@ struct ConfigResponse {
     has_pat: bool,
     watched_repos: Vec<String>,
     review_repos: Vec<String>,
+    mention_repos: Vec<String>,
     poll_interval_secs: u64,
     theme: String,
+    font_scale: f64,
+    focus_expand_runs: u32,
+    runs_per_repo: u32,
+    repo_tabs: bool,
+    panel_width: Option<f64>,
 }
 
 #[tauri::command]
@@ -50,9 +56,53 @@ fn get_config(state: tauri::State<'_, SharedState>) -> ConfigResponse {
         has_pat: !s.github_pat.is_empty(),
         watched_repos: s.config.watched_repos.clone(),
         review_repos: s.config.review_repos.clone(),
+        mention_repos: s.config.mention_repos.clone(),
         poll_interval_secs: s.config.poll_interval_secs,
         theme: s.config.theme.clone(),
+        font_scale: s.config.font_scale,
+        focus_expand_runs: s.config.focus_expand_runs,
+        runs_per_repo: s.config.runs_per_repo,
+        repo_tabs: s.config.repo_tabs,
+        panel_width: s.config.panel_width,
     }
+}
+
+#[derive(serde::Serialize, Clone)]
+struct UiPrefs {
+    font_scale: f64,
+    focus_expand_runs: u32,
+}
+
+#[tauri::command]
+fn set_ui_prefs(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, SharedState>,
+    trigger: tauri::State<'_, Arc<Notify>>,
+    font_scale: f64,
+    focus_expand_runs: u32,
+    runs_per_repo: u32,
+    repo_tabs: bool,
+) -> Result<(), String> {
+    let font_scale = font_scale.clamp(0.7, 2.0);
+    let focus_expand_runs = focus_expand_runs.clamp(1, 5);
+    let runs_per_repo = runs_per_repo.clamp(1, 10);
+    let refetch = {
+        let mut s = state.lock().unwrap();
+        let refetch = s.config.runs_per_repo != runs_per_repo;
+        s.config.font_scale = font_scale;
+        s.config.focus_expand_runs = focus_expand_runs;
+        s.config.runs_per_repo = runs_per_repo;
+        s.config.repo_tabs = repo_tabs;
+        s.config.save(&s.config_dir)?;
+        refetch
+    };
+    if refetch {
+        trigger.notify_one();
+    }
+    use tauri::Emitter;
+    app.emit("ui-prefs-changed", UiPrefs { font_scale, focus_expand_runs })
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -127,9 +177,96 @@ fn set_review_repos(
 }
 
 #[tauri::command]
+fn set_mention_repos(
+    state: tauri::State<'_, SharedState>,
+    trigger: tauri::State<'_, Arc<Notify>>,
+    repos: Vec<String>,
+) -> Result<(), String> {
+    {
+        let mut s = state.lock().unwrap();
+        s.config.mention_repos = repos;
+        s.first_mention_poll = true; // reset baseline to avoid spurious notifications on next poll
+        s.config.save(&s.config_dir)?;
+    }
+    trigger.notify_one();
+    Ok(())
+}
+
+#[tauri::command]
 fn get_workflow_runs(state: tauri::State<'_, SharedState>) -> state::PanelPayload {
     let s = state.lock().unwrap();
     s.panel_payload()
+}
+
+#[tauri::command]
+async fn get_pr_title(
+    state: tauri::State<'_, SharedState>,
+    repo: String,
+    number: u64,
+) -> Result<String, String> {
+    let pat = {
+        let s = state.lock().unwrap();
+        s.github_pat.clone()
+    };
+    if pat.is_empty() {
+        return Err("No PAT configured".to_string());
+    }
+    let (owner, name) = repo
+        .split_once('/')
+        .ok_or_else(|| format!("bad repo: {repo}"))?;
+    let client = GitHubClient::new(&pat)?;
+    client.get_pr_title(owner, name, number).await
+}
+
+#[tauri::command]
+async fn get_run_jobs(
+    state: tauri::State<'_, SharedState>,
+    repo: String,
+    run_id: u64,
+) -> Result<Vec<github::RunJob>, String> {
+    let pat = {
+        let s = state.lock().unwrap();
+        s.github_pat.clone()
+    };
+    if pat.is_empty() {
+        return Err("No PAT configured".to_string());
+    }
+    let (owner, name) = repo
+        .split_once('/')
+        .ok_or_else(|| format!("bad repo: {repo}"))?;
+    let client = GitHubClient::new(&pat)?;
+    client.get_run_jobs(owner, name, run_id).await
+}
+
+/// System accent color (NSColor.controlAccentColor) as a hex string.
+/// The CSS `AccentColor` keyword resolves to stock blue inside WKWebView,
+/// so the frontend asks for the real value instead.
+#[tauri::command]
+fn get_accent_color() -> Option<String> {
+    #[cfg(target_os = "macos")]
+    {
+        use objc::runtime::Object;
+        use objc::{class, msg_send, sel, sel_impl};
+        unsafe {
+            let color: *mut Object = msg_send![class!(NSColor), controlAccentColor];
+            let srgb: *mut Object = msg_send![class!(NSColorSpace), sRGBColorSpace];
+            let color: *mut Object = msg_send![color, colorUsingColorSpace: srgb];
+            if color.is_null() {
+                return None;
+            }
+            let r: f64 = msg_send![color, redComponent];
+            let g: f64 = msg_send![color, greenComponent];
+            let b: f64 = msg_send![color, blueComponent];
+            return Some(format!(
+                "#{:02x}{:02x}{:02x}",
+                (r * 255.0).round() as u8,
+                (g * 255.0).round() as u8,
+                (b * 255.0).round() as u8
+            ));
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    None
 }
 
 #[tauri::command]
@@ -148,8 +285,15 @@ fn quit_app() {
 }
 
 #[tauri::command]
-fn open_url(url: String) {
-    tray::open_url_in_browser(&url);
+fn open_url(state: tauri::State<'_, SharedState>, url: String, repo: Option<String>) {
+    let repo_tabs = {
+        let s = state.lock().unwrap();
+        s.config.repo_tabs
+    };
+    match repo {
+        Some(r) if repo_tabs && !r.is_empty() => tray::open_url_in_repo_tab(&r, &url),
+        _ => tray::open_url_in_browser(&url),
+    }
 }
 
 #[tauri::command]
@@ -215,6 +359,7 @@ pub fn run() {
             let poll_trigger = Arc::new(Notify::new());
             app.manage(poll_trigger.clone());
 
+            app.manage(panel::PanelAnchor::default());
             let _tray_icon = tray::create_tray(app.handle())?;
             panel::setup_panel(app.handle());
 
@@ -230,6 +375,11 @@ pub fn run() {
             get_repos,
             set_watched_repos,
             set_review_repos,
+            set_mention_repos,
+            set_ui_prefs,
+            get_accent_color,
+            get_run_jobs,
+            get_pr_title,
             get_workflow_runs,
             open_settings,
             open_about,

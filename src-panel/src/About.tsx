@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import Ghost from "./Ghost";
+import { CALM_GHOST, ThemeId } from "./panelCopy";
 
 const year = new Date().getFullYear();
 
@@ -40,52 +42,6 @@ function NoiseCanvas({ opacity = 0.06 }: { opacity?: number }) {
   );
 }
 
-function Ghost({
-  size = 96,
-  bodyColor = "#1a1a1a",
-  bodyOpacity = 1,
-  eyeMilkColor = "#d8d2c4",
-  eyeMilkScale = 1,
-  glow,
-}: {
-  size?: number;
-  bodyColor?: string;
-  bodyOpacity?: number;
-  eyeMilkColor?: string;
-  eyeMilkScale?: number;
-  glow?: string;
-}) {
-  const milkRx = 3.2 * eyeMilkScale;
-  const milkRy = 4.4 * eyeMilkScale;
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      style={{ overflow: "visible", display: "block" }}
-    >
-      <defs>
-        <radialGradient id="ghastEyeMilk" cx="50%" cy="40%" r="60%">
-          <stop offset="0%" stopColor={eyeMilkColor} stopOpacity="0.95" />
-          <stop offset="70%" stopColor={eyeMilkColor} stopOpacity="0.6" />
-          <stop offset="100%" stopColor={eyeMilkColor} stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <path
-        d="M50 8 C30 8 18 24 18 50 L18 90 L25 84 L32 90 L40 84 L50 90 L60 84 L68 90 L75 84 L82 90 L82 50 C82 24 70 8 50 8 Z"
-        fill={bodyColor}
-        opacity={bodyOpacity}
-        style={glow ? { filter: `drop-shadow(0 0 18px ${glow}) drop-shadow(0 0 36px ${glow})` } : undefined}
-      />
-      <g>
-        <ellipse cx="40" cy="45" rx="5" ry="7" fill="#000" opacity="0.85" />
-        <ellipse cx="40" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
-        <ellipse cx="60" cy="45" rx="5" ry="7" fill="#000" opacity="0.85" />
-        <ellipse cx="60" cy="46.5" rx={milkRx} ry={milkRy} fill="url(#ghastEyeMilk)" />
-      </g>
-    </svg>
-  );
-}
 
 function Pentagram({ size = 20, color = "#8b0000" }: { size?: number; color?: string }) {
   const pts = [];
@@ -109,7 +65,8 @@ function Link({ url, children }: { url: string; children: React.ReactNode }) {
   );
 }
 
-function CleanAbout() {
+function CleanAbout({ themeId }: { themeId: ThemeId }) {
+  const ghost = CALM_GHOST[themeId];
   return (
     <>
       <style>{`
@@ -179,7 +136,11 @@ function CleanAbout() {
       `}</style>
       <div className="about">
         <div className="about-ghost">
-          <Ghost size={96} eyeMilkScale={0.7} eyeMilkColor="#dcd6c8" />
+          {themeId === "steve" ? (
+            <Ghost size={96} eyeMilkScale={0.7} eyeMilkColor="#dcd6c8" />
+          ) : (
+            <Ghost size={96} {...ghost} />
+          )}
         </div>
         <div className="about-name">ghast</div>
         <div className="about-tagline">GitHub Actions Status Tracker</div>
@@ -448,16 +409,24 @@ function HellripperAbout() {
   );
 }
 
+const ABOUT_THEME_IDS: Record<string, string> = {
+  normal: "steve",
+  blackmetal: "hellripper",
+  phosphor: "phosphor",
+  pathe: "pathe",
+};
+
 export default function About() {
-  const [blackMetal, setBlackMetal] = useState(
-    () => localStorage.getItem("ghast-theme") === "blackmetal"
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("ghast-theme") ?? "normal"
   );
 
   useEffect(() => {
     const applyTheme = (t: string) => {
-      const isBm = t === "blackmetal";
-      setBlackMetal(isBm);
-      localStorage.setItem("ghast-theme", isBm ? "blackmetal" : "normal");
+      const known = ABOUT_THEME_IDS[t] ? t : "normal";
+      setTheme(known);
+      localStorage.setItem("ghast-theme", known);
+      document.documentElement.dataset.theme = ABOUT_THEME_IDS[known];
     };
 
     invoke<string>("get_theme").then(applyTheme);
@@ -471,5 +440,11 @@ export default function About() {
     };
   }, []);
 
-  return blackMetal ? <HellripperAbout /> : <CleanAbout />;
+  // hellripper keeps its bespoke layout; every other theme reuses the
+  // clean layout and lets its data-theme CSS recolor it
+  return theme === "blackmetal" ? (
+    <HellripperAbout />
+  ) : (
+    <CleanAbout themeId={ABOUT_THEME_IDS[theme] as ThemeId} />
+  );
 }

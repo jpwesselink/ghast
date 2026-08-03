@@ -1,0 +1,76 @@
+:root {
+  --bg: rgba(246, 246, 246, 0.85);
+  /* --accent-system is set from AppKit's controlAccentColor at runtime;
+     the CSS AccentColor keyword renders stock blue in WKWebView. */
+  --bg-hover: var(--accent-system, #0064e0);
+  --text-primary: #1d1d1f;
+  --text-secondary: #59595f;
+  --text-hover: #ffffff;
+  --separator: #dedede;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.18), 0 0 0 0.5px #c8c8c8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: rgba(40, 40, 40, 0.85);
+    --bg-hover: var(--accent-system, #0a84ff);
+    --text-primary: #ffffff;
+    --text-secondary: #9a9aa2;
+    --text-hover: #ffffff;
+    --separator: rgba(255, 255, 255, 0.14);
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 0 0.5px #3a3a3a;
+    --panel-tint: rgba(8, 8, 10, 0.62);
+  }
+
+  html:has(.menu) #root {
+    background: var(--panel-tint);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  background: transparent;
+}
+
+html:has(.menu), html:has(.bm-container) {
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+html:has(.menu) body, html:has(.bm-container) body {
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+html:has(.menu) #root, html:has(.bm-container) #root {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+body {
+  font: menu;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+
+/* tooltip (radix) */
+.tooltip-content {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: 9999;
+  user-select: none;
+  animation: tooltip-in 120ms ease-out;
+}
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}

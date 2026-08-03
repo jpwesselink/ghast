@@ -8,10 +8,25 @@ pub struct Config {
     pub watched_repos: Vec<String>,
     #[serde(default)]
     pub review_repos: Vec<String>,
+    #[serde(default)]
+    pub mention_repos: Vec<String>,
     #[serde(default = "default_poll_interval")]
     pub poll_interval_secs: u64,
     #[serde(default = "default_theme")]
     pub theme: String,
+    #[serde(default = "default_font_scale")]
+    pub font_scale: f64,
+    #[serde(default = "default_focus_expand_runs")]
+    pub focus_expand_runs: u32,
+    #[serde(default = "default_runs_per_repo")]
+    pub runs_per_repo: u32,
+    #[serde(default = "default_repo_tabs")]
+    pub repo_tabs: bool,
+    /// Panel size in logical px, set once the user resizes the panel.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub panel_width: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub panel_height: Option<f64>,
 }
 
 fn default_poll_interval() -> u64 {
@@ -22,13 +37,36 @@ fn default_theme() -> String {
     "normal".to_string()
 }
 
+fn default_font_scale() -> f64 {
+    1.0
+}
+
+fn default_focus_expand_runs() -> u32 {
+    5
+}
+
+fn default_runs_per_repo() -> u32 {
+    5
+}
+
+fn default_repo_tabs() -> bool {
+    true
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
             watched_repos: Vec::new(),
             review_repos: Vec::new(),
+            mention_repos: Vec::new(),
             poll_interval_secs: 30,
             theme: default_theme(),
+            font_scale: 1.0,
+            focus_expand_runs: 5,
+            runs_per_repo: 5,
+            repo_tabs: true,
+            panel_width: None,
+            panel_height: None,
         }
     }
 }
@@ -73,6 +111,7 @@ mod tests {
         let config = Config::default();
         assert!(config.watched_repos.is_empty());
         assert!(config.review_repos.is_empty());
+        assert!(config.mention_repos.is_empty());
         assert_eq!(config.poll_interval_secs, 30);
     }
 
@@ -81,8 +120,15 @@ mod tests {
         let config = Config {
             watched_repos: vec!["owner/repo".to_string()],
             review_repos: vec!["owner/other".to_string()],
+            mention_repos: vec!["owner/third".to_string()],
             poll_interval_secs: 30,
             theme: "blackmetal".to_string(),
+            font_scale: 1.15,
+            focus_expand_runs: 3,
+            runs_per_repo: 10,
+            repo_tabs: false,
+            panel_width: Some(320.0),
+            panel_height: Some(480.0),
         };
         let json = serde_json::to_string(&config).unwrap();
         let loaded: Config = serde_json::from_str(&json).unwrap();
@@ -95,8 +141,13 @@ mod tests {
         let config: Config = serde_json::from_str(json).unwrap();
         assert!(config.watched_repos.is_empty());
         assert!(config.review_repos.is_empty());
+        assert!(config.mention_repos.is_empty());
         assert_eq!(config.poll_interval_secs, 30);
         assert_eq!(config.theme, "normal");
+        assert_eq!(config.font_scale, 1.0);
+        assert_eq!(config.focus_expand_runs, 5);
+        assert_eq!(config.runs_per_repo, 5);
+        assert!(config.repo_tabs);
     }
 
     #[test]
@@ -107,8 +158,15 @@ mod tests {
         let config = Config {
             watched_repos: vec!["owner/repo".to_string()],
             review_repos: vec!["owner/other".to_string()],
+            mention_repos: vec!["owner/third".to_string()],
             poll_interval_secs: 60,
             theme: "normal".to_string(),
+            font_scale: 1.0,
+            focus_expand_runs: 5,
+            runs_per_repo: 5,
+            repo_tabs: true,
+            panel_width: None,
+            panel_height: None,
         };
         config.save(&dir).unwrap();
 

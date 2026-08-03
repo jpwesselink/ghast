@@ -1,7 +1,14 @@
-use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, Rect};
+use crate::state::SharedState;
+use std::sync::Mutex;
+use tauri::{AppHandle, Emitter, LogicalSize, Manager, PhysicalPosition, Rect};
 
 const DEFAULT_PANEL_WIDTH: f64 = 280.0;
 const PANEL_LABEL: &str = "panel";
+
+/// Tray anchor in physical pixels: (center x of the tray icon, panel top y).
+/// Remembered when the panel opens so resizes can stay centered under the icon.
+#[derive(Default)]
+pub struct PanelAnchor(Mutex<Option<(f64, f64)>>);
 
 fn rect_position(rect: &Rect) -> (f64, f64) {
     match &rect.position {
@@ -42,6 +49,17 @@ pub fn toggle_panel(app: &AppHandle, rect: Rect) {
         if window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         } else {
+            // Restore the user's panel size before anchoring, if one is stored.
+            if let Some(state) = app.try_state::<SharedState>() {
+                let stored = {
+                    let s = state.lock().unwrap();
+                    (s.config.panel_width, s.config.panel_height)
+                };
+                if let (Some(w), Some(h)) = stored {
+                    let _ = window.set_size(LogicalSize::new(w, h));
+                }
+            }
+
             // Tray rect on macOS is reported in physical pixels. Compute
             // everything in physical pixels so set_position lines up.
             let scale = window.scale_factor().unwrap_or(1.0);
@@ -50,6 +68,13 @@ pub fn toggle_panel(app: &AppHandle, rect: Rect) {
                 .map(|s| s.width as f64)
                 .unwrap_or(DEFAULT_PANEL_WIDTH * scale);
             let (x, y) = panel_position(&rect, panel_width_physical);
+
+            if let Some(anchor) = app.try_state::<PanelAnchor>() {
+                let (px, _) = rect_position(&rect);
+                let (sw, _) = rect_size(&rect);
+                *anchor.0.lock().unwrap() = Some((px + sw / 2.0, y));
+            }
+
             let _ = window.set_position(PhysicalPosition::new(x, y));
 
             #[cfg(target_os = "macos")]
@@ -57,6 +82,11 @@ pub fn toggle_panel(app: &AppHandle, rect: Rect) {
 
             let _ = window.show();
             let _ = window.set_focus();
+
+            // fresh data the moment the panel opens
+            if let Some(trigger) = app.try_state::<std::sync::Arc<tokio::sync::Notify>>() {
+                trigger.notify_one();
+            }
         }
     }
 }
@@ -90,9 +120,44 @@ pub fn setup_panel(app: &AppHandle) {
         }
 
         let win = window.clone();
+        let app_handle = app.clone();
         window.on_window_event(move |event| {
-            if let tauri::WindowEvent::Focused(false) = event {
-                let _ = win.hide();
+            match event {
+                tauri::WindowEvent::Focused(false) => {
+                    // Persist the panel size once, on close, not per resize tick.
+                    if let Some(state) = app_handle.try_state::<SharedState>() {
+                        let s = state.lock().unwrap();
+                        if s.config.panel_width.is_some() {
+                            let _ = s.config.save(&s.config_dir);
+                        }
+                    }
+                    let _ = win.hide();
+                }
+                // Keep the panel centered under the tray icon while resizing,
+                // and remember the size in memory.
+                tauri::WindowEvent::Resized(size) => {
+                    if !win.is_visible().unwrap_or(false) {
+                        return;
+                    }
+
+                    let scale = win.scale_factor().unwrap_or(1.0);
+                    if let Some(state) = app_handle.try_state::<SharedState>() {
+                        let logical = size.to_logical::<f64>(scale);
+                        let mut s = state.lock().unwrap();
+                        s.config.panel_width = Some(logical.width);
+                        s.config.panel_height = Some(logical.height);
+                    }
+
+                    let Some(anchor) = app_handle.try_state::<PanelAnchor>() else {
+                        return;
+                    };
+                    let Some((center_x, top_y)) = *anchor.0.lock().unwrap() else {
+                        return;
+                    };
+                    let x = center_x - size.width as f64 / 2.0;
+                    let _ = win.set_position(PhysicalPosition::new(x, top_y));
+                }
+                _ => {}
             }
         });
         let _ = window.hide();

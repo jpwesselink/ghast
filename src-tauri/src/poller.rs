@@ -1,7 +1,7 @@
 use crate::github::GitHubClient;
 use crate::notify;
 use crate::panel;
-use crate::state::{PendingReview, SharedState, WorkflowRun};
+use crate::state::{Mention, PendingReview, SharedState, WorkflowRun};
 use crate::tray::update_tray_badge;
 use std::sync::Arc;
 use std::time::Duration;
@@ -33,16 +33,18 @@ pub fn start_polling(
 }
 
 async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
-    let (pat, repos, review_repos) = {
+    let (pat, repos, review_repos, mention_repos, runs_per_repo) = {
         let s = state.lock().unwrap();
         (
             s.github_pat.clone(),
             s.config.watched_repos.clone(),
             s.config.review_repos.clone(),
+            s.config.mention_repos.clone(),
+            s.config.runs_per_repo.clamp(1, 10) as u8,
         )
     };
 
-    if pat.is_empty() || (repos.is_empty() && review_repos.is_empty()) {
+    if pat.is_empty() || (repos.is_empty() && review_repos.is_empty() && mention_repos.is_empty()) {
         rebuild(app, state);
         return;
     }
@@ -57,29 +59,45 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
         }
     };
 
+    // All repos in parallel: sequential fetches made a full cycle take
+    // seconds-per-repo and the panel only updates when the cycle lands.
+    let mut handles = Vec::new();
     for repo in &repos {
-        let parts: Vec<&str> = repo.splitn(2, '/').collect();
-        if parts.len() != 2 {
+        let Some((owner, name)) = repo.split_once('/') else {
             continue;
-        }
-        let (owner, name) = (parts[0], parts[1]);
+        };
+        let (client, repo, owner, name) = (
+            client.clone(),
+            repo.clone(),
+            owner.to_string(),
+            name.to_string(),
+        );
+        handles.push(tauri::async_runtime::spawn(async move {
+            let result = client.get_workflow_runs(&owner, &name, runs_per_repo).await;
+            (repo, result)
+        }));
+    }
 
-        match client.get_workflow_runs(owner, name).await {
+    for handle in handles {
+        let Ok((repo, result)) = handle.await else {
+            continue;
+        };
+        match result {
             Ok(api_runs) => {
                 let runs: Vec<WorkflowRun> = api_runs
                     .iter()
-                    .map(|r| WorkflowRun::from_api(repo, r))
+                    .map(|r| WorkflowRun::from_api(&repo, r))
                     .collect();
 
                 let mut s = state.lock().unwrap();
                 if !s.first_poll {
-                    let old_runs = s.runs.get(repo).map(|r| r.as_slice());
+                    let old_runs = s.runs.get(&repo).map(|r| r.as_slice());
                     let completed = notify::detect_completions(old_runs, &runs);
                     for run in &completed {
                         notify::send_completion_notification(app, run);
                     }
                 }
-                s.runs.insert(repo.clone(), runs);
+                s.runs.insert(repo, runs);
                 s.auth_error = false;
             }
             Err(e) if e == "auth_error" => {
@@ -88,7 +106,7 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
                 break;
             }
             Err(_) => {
-                // Network error — skip this repo, retry next cycle
+                // Network error - skip this repo, retry next cycle
             }
         }
     }
@@ -98,7 +116,22 @@ async fn poll_once(app: &tauri::AppHandle, state: &SharedState) {
         s.first_poll = false;
     }
 
+    // paint run results immediately; the searches below take their time
+    rebuild(app, state);
+
     poll_review_requests(app, state, &client, &review_repos).await;
+    poll_mentions(app, state, &client, &mention_repos).await;
+
+    // own PRs across every repo selected anywhere
+    let mut all_repos: Vec<String> = repos
+        .iter()
+        .chain(review_repos.iter())
+        .chain(mention_repos.iter())
+        .cloned()
+        .collect();
+    all_repos.sort();
+    all_repos.dedup();
+    poll_my_prs(state, &client, &all_repos).await;
 
     rebuild(app, state);
 }
@@ -123,7 +156,10 @@ async fn poll_review_requests(
             s.auth_error = true;
             return;
         }
-        Err(_) => return, // network error — keep last known list
+        Err(e) => {
+            eprintln!("[ghast] review-request poll failed, keeping last list: {}", e.split("\nFound at").next().unwrap_or(&e).replace('\n', " | "));
+            return;
+        }
     };
 
     let new_reviews: Vec<PendingReview> =
@@ -144,6 +180,74 @@ async fn poll_review_requests(
     let mut s = state.lock().unwrap();
     s.pending_reviews = new_reviews;
     s.first_review_poll = false;
+}
+
+async fn poll_mentions(
+    app: &tauri::AppHandle,
+    state: &SharedState,
+    client: &GitHubClient,
+    repos: &[String],
+) {
+    if repos.is_empty() {
+        let mut s = state.lock().unwrap();
+        s.mentions.clear();
+        s.first_mention_poll = false;
+        return;
+    }
+
+    let api_mentions = match client.get_mentions(repos).await {
+        Ok(m) => m,
+        Err(e) if e == "auth_error" => {
+            let mut s = state.lock().unwrap();
+            s.auth_error = true;
+            return;
+        }
+        Err(e) => {
+            eprintln!("[ghast] mention poll failed, keeping last list: {}", e.split("\nFound at").next().unwrap_or(&e).replace('\n', " | "));
+            return;
+        }
+    };
+
+    let new_mentions: Vec<Mention> = api_mentions.iter().map(Mention::from_api).collect();
+
+    let to_notify: Vec<Mention> = {
+        let s = state.lock().unwrap();
+        if s.first_mention_poll {
+            Vec::new()
+        } else {
+            notify::detect_new_mentions(&s.mentions, &new_mentions)
+                .into_iter()
+                .filter(|m| m.unread)
+                .collect()
+        }
+    };
+    for mention in &to_notify {
+        notify::send_mention_notification(app, mention);
+    }
+
+    let mut s = state.lock().unwrap();
+    s.mentions = new_mentions;
+    s.first_mention_poll = false;
+}
+
+async fn poll_my_prs(state: &SharedState, client: &GitHubClient, repos: &[String]) {
+    if repos.is_empty() {
+        let mut s = state.lock().unwrap();
+        s.my_prs.clear();
+        return;
+    }
+
+    match client.get_my_prs(repos).await {
+        Ok(prs) => {
+            let mut s = state.lock().unwrap();
+            s.my_prs = prs.iter().map(PendingReview::from_api).collect();
+        }
+        Err(e) if e == "auth_error" => {
+            let mut s = state.lock().unwrap();
+            s.auth_error = true;
+        }
+        Err(e) => eprintln!("[ghast] my-PRs poll failed, keeping last list: {}", e.split("\nFound at").next().unwrap_or(&e).replace('\n', " | ")),
+    }
 }
 
 fn rebuild(app: &tauri::AppHandle, state: &SharedState) {

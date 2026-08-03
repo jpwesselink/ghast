@@ -1,5 +1,7 @@
 use crate::config::{self, Config};
-use crate::github::{ReviewRequest as ApiReviewRequest, WorkflowRun as ApiWorkflowRun};
+use crate::github::{
+    Mention as ApiMention, ReviewRequest as ApiReviewRequest, WorkflowRun as ApiWorkflowRun,
+};
 use crate::keychain;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
@@ -9,6 +11,7 @@ use std::sync::{Arc, Mutex};
 #[derive(Debug, Clone, PartialEq)]
 pub enum RunStatus {
     Queued,
+    Waiting,
     InProgress,
     Completed,
 }
@@ -26,22 +29,33 @@ pub enum RunConclusion {
 
 #[derive(Debug, Clone)]
 pub struct WorkflowRun {
+    pub run_id: u64,
     pub repo: String,
+    pub branch: String,
+    pub on_default_branch: bool,
+    pub pr_number: Option<u64>,
     pub workflow_name: String,
     pub status: RunStatus,
     pub conclusion: Option<RunConclusion>,
     pub html_url: String,
     pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl WorkflowRun {
     pub fn from_api(repo: &str, api_run: &ApiWorkflowRun) -> Self {
         Self {
+            run_id: api_run.id,
             repo: repo.to_string(),
+            branch: api_run.branch.clone(),
+            on_default_branch: api_run.on_default_branch,
+            pr_number: api_run.pr_number,
             workflow_name: api_run.name.clone(),
             status: match api_run.status.as_str() {
                 "in_progress" => RunStatus::InProgress,
                 "completed" => RunStatus::Completed,
+                // deployment-protection gate: a human has to approve
+                "waiting" | "action_required" => RunStatus::Waiting,
                 _ => RunStatus::Queued,
             },
             conclusion: api_run.conclusion.as_deref().map(|c| match c {
@@ -55,31 +69,45 @@ impl WorkflowRun {
             }),
             html_url: api_run.html_url.clone(),
             created_at: api_run.created_at,
+            updated_at: api_run.updated_at,
         }
     }
 
     pub fn is_active(&self) -> bool {
-        matches!(self.status, RunStatus::Queued | RunStatus::InProgress)
+        matches!(
+            self.status,
+            RunStatus::Queued | RunStatus::Waiting | RunStatus::InProgress
+        )
     }
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct PanelWorkflowRun {
+    pub run_id: u64,
     pub repo: String,
+    pub branch: String,
+    pub on_default_branch: bool,
+    pub pr_number: Option<u64>,
     pub workflow_name: String,
     pub status: String,
     pub conclusion: Option<String>,
     pub html_url: String,
     pub created_at: String,
+    pub updated_at: String,
 }
 
 impl From<&WorkflowRun> for PanelWorkflowRun {
     fn from(run: &WorkflowRun) -> Self {
         Self {
+            run_id: run.run_id,
             repo: run.repo.clone(),
+            branch: run.branch.clone(),
+            on_default_branch: run.on_default_branch,
+            pr_number: run.pr_number,
             workflow_name: run.workflow_name.clone(),
             status: match run.status {
                 RunStatus::Queued => "queued",
+                RunStatus::Waiting => "waiting",
                 RunStatus::InProgress => "in_progress",
                 RunStatus::Completed => "completed",
             }
@@ -95,6 +123,7 @@ impl From<&WorkflowRun> for PanelWorkflowRun {
             }.to_string()),
             html_url: run.html_url.clone(),
             created_at: run.created_at.to_rfc3339(),
+            updated_at: run.updated_at.to_rfc3339(),
         }
     }
 }
@@ -107,6 +136,7 @@ pub struct PendingReview {
     pub author: String,
     pub html_url: String,
     pub created_at: DateTime<Utc>,
+    pub draft: bool,
 }
 
 impl PendingReview {
@@ -118,6 +148,7 @@ impl PendingReview {
             author: api.author.clone(),
             html_url: api.html_url.clone(),
             created_at: api.created_at,
+            draft: api.draft,
         }
     }
 }
@@ -130,6 +161,7 @@ pub struct PanelPendingReview {
     pub author: String,
     pub html_url: String,
     pub created_at: String,
+    pub draft: bool,
 }
 
 impl From<&PendingReview> for PanelPendingReview {
@@ -141,6 +173,53 @@ impl From<&PendingReview> for PanelPendingReview {
             author: r.author.clone(),
             html_url: r.html_url.clone(),
             created_at: r.created_at.to_rfc3339(),
+            draft: r.draft,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Mention {
+    pub repo: String,
+    pub title: String,
+    pub subject_type: String,
+    pub html_url: String,
+    pub updated_at: DateTime<Utc>,
+    pub unread: bool,
+}
+
+impl Mention {
+    pub fn from_api(api: &ApiMention) -> Self {
+        Self {
+            repo: api.repo.clone(),
+            title: api.title.clone(),
+            subject_type: api.subject_type.clone(),
+            html_url: api.html_url.clone(),
+            updated_at: api.updated_at,
+            unread: api.unread,
+        }
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct PanelMention {
+    pub repo: String,
+    pub title: String,
+    pub subject_type: String,
+    pub html_url: String,
+    pub updated_at: String,
+    pub unread: bool,
+}
+
+impl From<&Mention> for PanelMention {
+    fn from(m: &Mention) -> Self {
+        Self {
+            repo: m.repo.clone(),
+            title: m.title.clone(),
+            subject_type: m.subject_type.clone(),
+            html_url: m.html_url.clone(),
+            updated_at: m.updated_at.to_rfc3339(),
+            unread: m.unread,
         }
     }
 }
@@ -150,6 +229,8 @@ pub struct PanelPayload {
     pub repos: Vec<String>,
     pub runs: HashMap<String, Vec<PanelWorkflowRun>>,
     pub pending_reviews: Vec<PanelPendingReview>,
+    pub my_prs: Vec<PanelPendingReview>,
+    pub mentions: Vec<PanelMention>,
     pub auth_error: bool,
     pub has_pat: bool,
     pub badge_count: usize,
@@ -160,10 +241,13 @@ pub struct AppState {
     pub github_pat: String,
     pub runs: HashMap<String, Vec<WorkflowRun>>,
     pub pending_reviews: Vec<PendingReview>,
+    pub my_prs: Vec<PendingReview>,
+    pub mentions: Vec<Mention>,
     pub auth_error: bool,
     pub config_dir: PathBuf,
     pub first_poll: bool,
     pub first_review_poll: bool,
+    pub first_mention_poll: bool,
 }
 
 impl AppState {
@@ -183,10 +267,13 @@ impl AppState {
             github_pat,
             runs: HashMap::new(),
             pending_reviews: Vec::new(),
+            my_prs: Vec::new(),
+            mentions: Vec::new(),
             auth_error: false,
             config_dir,
             first_poll: true,
             first_review_poll: true,
+            first_mention_poll: true,
         }
     }
 
@@ -214,24 +301,68 @@ impl AppState {
             sorted.iter().map(|r| PanelPendingReview::from(*r)).collect()
         };
 
+        let my_prs: Vec<PanelPendingReview> = {
+            let mut sorted: Vec<&PendingReview> = self.my_prs.iter().collect();
+            sorted.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+            sorted.iter().map(|r| PanelPendingReview::from(*r)).collect()
+        };
+
+        let mentions: Vec<PanelMention> = {
+            let mut sorted: Vec<&Mention> = self.mentions.iter().collect();
+            // unread first, then newest
+            sorted.sort_by(|a, b| b.unread.cmp(&a.unread).then(b.updated_at.cmp(&a.updated_at)));
+            sorted.iter().map(|m| PanelMention::from(*m)).collect()
+        };
+
         PanelPayload {
             repos,
             runs,
             pending_reviews,
+            my_prs,
+            mentions,
             auth_error: self.auth_error,
             has_pat: !self.github_pat.is_empty(),
             badge_count: self.badge_count(),
         }
     }
 
-    pub fn badge_count(&self) -> usize {
-        let active_runs = self
-            .runs
+    pub fn active_run_count(&self) -> usize {
+        self.runs
             .values()
             .flat_map(|runs| runs.iter())
             .filter(|r| r.is_active())
-            .count();
-        active_runs + self.pending_reviews.len()
+            .count()
+    }
+
+    pub fn badge_count(&self) -> usize {
+        self.active_run_count() + self.pending_reviews.len()
+    }
+
+    /// True when any repo's latest run of a workflow ended badly.
+    pub fn has_failing(&self) -> bool {
+        self.runs.values().any(|runs| {
+            let mut latest: HashMap<&str, &WorkflowRun> = HashMap::new();
+            for r in runs {
+                latest
+                    .entry(r.workflow_name.as_str())
+                    .and_modify(|cur| {
+                        if r.created_at > cur.created_at {
+                            *cur = r;
+                        }
+                    })
+                    .or_insert(r);
+            }
+            latest.values().any(|r| {
+                matches!(
+                    r.conclusion,
+                    Some(
+                        RunConclusion::Failure
+                            | RunConclusion::TimedOut
+                            | RunConclusion::ActionRequired
+                    )
+                )
+            })
+        })
     }
 }
 
@@ -245,11 +376,16 @@ mod tests {
 
     fn make_api_run(status: &str, conclusion: Option<&str>) -> ApiWorkflowRun {
         ApiWorkflowRun {
+            id: 1,
             name: "CI".to_string(),
+            branch: "main".to_string(),
+            on_default_branch: true,
+            pr_number: None,
             status: status.to_string(),
             conclusion: conclusion.map(String::from),
             html_url: "https://github.com/o/r/actions/runs/1".to_string(),
             created_at: Utc::now(),
+            updated_at: Utc::now(),
         }
     }
 
@@ -300,11 +436,16 @@ mod tests {
     #[test]
     fn test_from_api_fallback_name() {
         let api = ApiWorkflowRun {
+            id: 1,
             name: "Deploy".to_string(),
+            branch: "main".to_string(),
+            on_default_branch: true,
+            pr_number: None,
             status: "completed".to_string(),
             conclusion: Some("success".to_string()),
             html_url: "https://github.com/o/r/actions/runs/1".to_string(),
             created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
         let run = WorkflowRun::from_api("owner/repo", &api);
         assert_eq!(run.workflow_name, "Deploy");
