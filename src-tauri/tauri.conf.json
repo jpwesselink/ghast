@@ -1,6 +1,6 @@
 {
   "productName": "ghast",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "com.ghast.app",
   "build": {
     "frontendDist": "../src-panel/dist",
@@ -26,7 +26,9 @@
         "skipTaskbar": true,
         "resizable": true,
         "windowEffects": {
-          "effects": ["menu"],
+          "effects": [
+            "menu"
+          ],
           "state": "active",
           "radius": 14
         }
