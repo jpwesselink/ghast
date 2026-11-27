@@ -121,6 +121,19 @@ pub fn subject_html_url(api_url: &str) -> Option<String> {
     Some(format!("https://github.com/{owner}/{repo}/{kind}/{id}"))
 }
 
+/// `owner/name` from a repository API URL, e.g.
+/// `https://api.github.com/repos/o/r` -> `o/r`.
+fn repo_from_api_url(api_url: &str) -> Option<String> {
+    let rest = api_url.strip_prefix("https://api.github.com/repos/")?;
+    let mut segs = rest.split('/');
+    let owner = segs.next()?;
+    let repo = segs.next()?;
+    if owner.is_empty() || repo.is_empty() {
+        return None;
+    }
+    Some(format!("{owner}/{repo}"))
+}
+
 /// Anchor fragment for a notification's latest comment API URL, e.g.
 /// `.../issues/comments/42` -> `#issuecomment-42`,
 /// `.../pulls/comments/42` -> `#discussion_r42` (PR review comment),
@@ -294,15 +307,7 @@ impl GitHubClient {
 
         let mut out = Vec::new();
         for item in page.items {
-            let repo = item
-                .repository_url
-                .path_segments()
-                .and_then(|mut segs| {
-                    let owner = segs.next()?.to_string();
-                    let name = segs.next()?.to_string();
-                    Some(format!("{owner}/{name}"))
-                })
-                .unwrap_or_default();
+            let repo = repo_from_api_url(item.repository_url.as_str()).unwrap_or_default();
             let html_url = item.html_url.to_string();
             out.push(ReviewRequest {
                 repo,
@@ -581,6 +586,19 @@ mod tests {
     #[test]
     fn test_subject_html_url_not_api() {
         assert_eq!(subject_html_url("https://github.com/o/r/issues/12"), None);
+    }
+
+    #[test]
+    fn test_repo_from_api_url() {
+        assert_eq!(
+            repo_from_api_url("https://api.github.com/repos/o/r"),
+            Some("o/r".to_string())
+        );
+    }
+
+    #[test]
+    fn test_repo_from_api_url_not_api() {
+        assert_eq!(repo_from_api_url("https://github.com/o/r"), None);
     }
 
     #[test]
